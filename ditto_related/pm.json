@@ -1,0 +1,17 @@
+{
+    "policyId": "my.test:policy",
+    "attributes": {
+        "manufacturer": "Well known producer",
+        "serial number": "02",
+        "location": "Ground floor"
+    },
+    "features": {
+        "measurements": {
+            "properties": {
+                "power": 0,
+                "voltage": 0,
+                "current": 0
+            }
+        }
+    }
+}
