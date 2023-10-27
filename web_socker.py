@@ -1,22 +1,24 @@
+import sys
 import asyncio
 import websockets
 import parse_json
 import psycopg2
 import insert_data_3
 
-class YourWebSocketClient:
-    def __init__(self, conn):
-        self.ws = None
-        self.conn = conn
+conn = None
 
-    async def connect(self, connection_config, callback, conn):
+class YourWebSocketClient:
+    def __init__(self):
+        self.ws = None
+
+    async def connect(self, connection_config, callback):
         base_url = f"ws://{connection_config.get_username()}:{connection_config.get_password()}@{connection_config.get_host()}/ws/2"
         self.ws = await websockets.connect(base_url)
-        await self.on_open(callback, conn)
+        await self.on_open(callback)
 
-    async def on_open(self, callback, conn):
+    async def on_open(self, callback):
         # Implement your onOpen logic here
-        await callback(self,conn)
+        await callback(self)
 
 # Example usage:
 class ConnectionConfig:
@@ -37,10 +39,10 @@ class ConnectionConfig:
 async def main():
     conn = psycopg2.connect(**insert_data_3.db_params)
     connection_config = ConnectionConfig("ditto", "ditto", "localhost:8080")
-    client = YourWebSocketClient(conn)
-    await client.connect(connection_config, callback, conn)
+    client = YourWebSocketClient()
+    await client.connect(connection_config, callback)
 
-async def callback(client, conn):
+async def callback(client):
     print("WebSocket connection is open!")
     await client.ws.send("START-SEND-EVENTS")  # Send the "START-SEND-EVENTS" message
 
@@ -54,4 +56,17 @@ async def callback(client, conn):
             insert_data_3.insertData(conn, data)
 
 if __name__ == "__main__":
-    asyncio.get_event_loop().run_until_complete(main())
+    try:
+        conn = psycopg2.connect(**insert_data_3.db_params)
+        asyncio.get_event_loop().run_until_complete(main())
+    except KeyboardInterrupt:
+        if conn:
+            conn.close()  # Close the database connection
+            print("KeyboardInterrupt received. Cleaning up connection...")
+            sys.exit(0)
+
+
+
+
+
+
