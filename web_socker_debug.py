@@ -1,22 +1,31 @@
 import asyncio
 import websockets
-import parse_json
-import psycopg2
-import insert_data_3
 
 class YourWebSocketClient:
-    def __init__(self, conn):
+    def __init__(self):
         self.ws = None
-        self.conn = conn
+        self.response_queue = asyncio.Queue()  # Create a queue for responses
 
-    async def connect(self, connection_config, callback, conn):
+    async def connect(self, connection_config, callback):
         base_url = f"ws://{connection_config.get_username()}:{connection_config.get_password()}@{connection_config.get_host()}/ws/2"
         self.ws = await websockets.connect(base_url)
-        await self.on_open(callback, conn)
+        await self.on_open(callback)
+        print("1")
 
-    async def on_open(self, callback, conn):
+    async def on_open(self, callback):
         # Implement your onOpen logic here
-        await callback(self,conn)
+        await callback(self)
+        print("2")
+
+
+    async def start_response_handling(self):
+        print("3")
+
+        while True:
+            print(f"in:")
+            response = await self.response_queue.get()
+            # Handle the response here
+            print(f"Handling response:")
 
 # Example usage:
 class ConnectionConfig:
@@ -35,23 +44,28 @@ class ConnectionConfig:
         return self.host
 
 async def main():
-    conn = psycopg2.connect(**insert_data_3.db_params)
     connection_config = ConnectionConfig("ditto", "ditto", "localhost:8080")
-    client = YourWebSocketClient(conn)
-    await client.connect(connection_config, callback, conn)
+    client = YourWebSocketClient()
+    await client.connect(connection_config, callback)
 
-async def callback(client, conn):
+    # Start the response handling process
+    print("here1")
+    asyncio.create_task(client.start_response_handling())
+    print("here2")
+
+
+async def callback(client):
     print("WebSocket connection is open!")
     await client.ws.send("START-SEND-EVENTS")  # Send the "START-SEND-EVENTS" message
 
     while True:
+        print(f"befr:")
+
         response = await client.ws.recv()
-        print(f"Received: {response}")
+        print(f"Received:")
         
-        # Add your message processing logic here
-        data = parse_json.get_data(response)
-        if data is not None:
-            insert_data_3.insertData(conn, data)
+        await client.response_queue.put(response)  # Put the response into the queue
+        print(f"putted:")
 
 if __name__ == "__main__":
     asyncio.get_event_loop().run_until_complete(main())
