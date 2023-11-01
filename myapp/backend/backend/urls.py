@@ -18,13 +18,15 @@ from django.contrib import admin
 from django.urls import path, include
 from iot import views
 from rest_framework import routers
+
 # create a router object
 router = routers.DefaultRouter()
 
-router.register(r'tasks',views.PowerMeterDataView, 'task')
+router.register(r'database',views.PowerMeterDataView, 'task')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('members/', include('members.urls')),
-    path('api/', include(router.urls))
+    path('api/', include(router.urls)),
+    path('api2/', include('iot.urls'))
 ]

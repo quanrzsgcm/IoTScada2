@@ -20,9 +20,6 @@ function MonitorPage() {
                 Iot Management System
             </h1>
             <div>
-                <DarkExample />
-            </div>
-            <div>
                 <DataFetchingComponent />
             </div>
         </main>
