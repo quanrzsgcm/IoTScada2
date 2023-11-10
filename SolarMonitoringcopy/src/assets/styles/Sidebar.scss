@@ -1,0 +1,22 @@
+.sidebar {
+  color: white !important;
+  width: 240px;
+  min-width: 240px;
+  .pro-sidebar-inner {
+    border-right: 1px solid rgba(173, 173, 173, 0.2);
+    position: sticky !important;
+    top: 0 !important;
+  }
+  .pro-inner-list-item {
+    background-color: #01333d !important;
+    padding-right: 10px;
+    .pro-menu-item {
+      &:hover {
+        background-color: #6a8ca324;
+      }
+    }
+    .pro-menu-item.active {
+      background-color: #011d24cc;
+    }
+  }
+}
