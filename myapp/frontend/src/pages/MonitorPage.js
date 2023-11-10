@@ -40,7 +40,7 @@ function MonitorPage() {
                 Iot Management System
             </h1>
             <div>
-                {/* <DataFetchingComponent /> */}
+                <DataFetchingComponent />
             </div>
             <div>
                 <CustomDateTimeFormat importFunction={onTimeChange} />

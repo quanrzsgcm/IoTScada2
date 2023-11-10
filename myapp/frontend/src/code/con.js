@@ -45,4 +45,5 @@ export function fetchData(startTime, endTime) {
     console.log(e);
   }
 }
+fetchData('2023-10-27 10:46:30+07','2023-10-28 10:46:30+07');
 
