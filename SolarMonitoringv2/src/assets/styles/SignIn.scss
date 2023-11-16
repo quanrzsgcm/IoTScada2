@@ -1,0 +1,53 @@
+.sign-in {
+  min-height: 100vh;
+  width: 100%;
+  background: #fafaff;
+  position: relative;
+  z-index: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .sign-in-form {
+    background-color: #ffffff;
+    padding: 20px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 0 20px 0 rgba(0, 0, 0, 0.08);
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    .logo {
+      width: 160px;
+      margin-bottom: 20px;
+    }
+    .title {
+      font-size: 32px;
+      font-weight: 500;
+      line-height: 38px;
+      margin-bottom: 20px;
+    }
+    .form-container {
+      width: 100%;
+      .form-item {
+        margin-bottom: 16px;
+        &:last-child {
+          margin-bottom: 12px;
+        }
+      }
+      .btn-submit {
+        margin-bottom: 10px;
+      }
+      .forgot-password-section {
+        display: flex;
+        justify-content: end;
+        .forgot-password-link {
+          color: #a4a5b3;
+          font-size: 14px;
+          line-height: 22px;
+        }
+      }
+    }
+  }
+}

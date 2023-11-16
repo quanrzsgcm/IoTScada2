@@ -1,5 +1,4 @@
 import axios from 'axios';
-
 const SendResquestWithToken = axios.create({
   baseURL: process.env.REACT_APP_API_URL,
 });

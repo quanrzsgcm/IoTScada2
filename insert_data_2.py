@@ -8,6 +8,7 @@ password = "123456"
 host = "localhost"
 port = "5432"
 
+
 # Create a connection to the database
 connection = psycopg2.connect(
     dbname=dbname, user=user, password=password, host=host, port=port

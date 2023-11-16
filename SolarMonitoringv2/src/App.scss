@@ -1,0 +1,57 @@
+$sidebar-bg-color: #01333d;
+@import '~react-pro-sidebar/dist/scss/styles.scss';
+@import '~bootstrap/scss/bootstrap';
+
+//global classname
+.form-title {
+  font-weight: 500;
+  font-size: 32px;
+  line-height: 38px;
+}
+.form-subtitle {
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+}
+.form-label {
+  color: #000000 !important;
+  font-weight: 400 !important;
+  font-size: 16px !important;
+  line-height: 19px;
+  margin-bottom: 12px;
+}
+.form-input {
+  height: 40px;
+  padding: 8px 12px;
+  border: 1px solid #dcdcdc !important;
+  border-radius: 4px;
+  box-shadow: unset !important;
+  width: 100%;
+  outline: none;
+  &:hover {
+    border-color: #000000 !important;
+  }
+  &:focus {
+    border-width: 1px !important;
+    border-color: #000000;
+    box-shadow: unset !important;
+  }
+}
+.btn-primary {
+  height: 40px;
+  background-color: #0a6efa;
+  border: none;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 24px;
+  padding: 8px 16px;
+  border-radius: 4px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  &:disabled {
+    opacity: 0.5;
+  }
+}
