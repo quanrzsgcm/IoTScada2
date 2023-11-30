@@ -71,3 +71,68 @@ def proxy_view(request):
     print(data)
 
     return JsonResponse(data, safe=False)
+
+@csrf_exempt
+def create_powermeter_twin(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+
+            # Access the values in the JSON data
+            id_value = data.get('id')
+            policy_id_value = data.get('policyId')
+            attributes = data.get('attributes', {})
+            manufacturer_value = attributes.get('manufacturer')
+            location_value = attributes.get('location')
+            serial_number_value = attributes.get('serial number')
+
+            # Do something with the values
+            print("Policy ID:", policy_id_value)
+            print("ID:", id_value)
+            print("Manufacturer:", manufacturer_value)
+            print("Location:", location_value)
+            print("Serial Number:", serial_number_value)
+
+            data.pop("id", None)
+            print(json.dumps(data, indent=2))
+
+            target_url = f"http://localhost:8080/api/2/things/my.power:pm{id_value}"
+            print("Target URL:", target_url)
+            
+            # Extract authentication headers from the incoming request
+            auth_headers = {}
+            for header, value in request.headers.items():
+                if header.startswith('Authorization'):
+                    auth_headers[header] = value
+
+            # Forward the request to the target URL with authentication headers
+            response = requests.put(target_url, headers=auth_headers, json=data)
+
+            # Handle the response as needed
+            print("Response status code:", response.status_code)
+
+            if response.status_code == 200:
+                # Successful response
+                response_data = response.json()
+                print("Response content:", response_data)
+                return JsonResponse({'success': True, 'data': response_data})
+
+            elif response.status_code == 201:
+                # Resource created successfully
+                response_data = response.json()
+                print("Response content:", response_data)
+                return JsonResponse({'success': True, 'data': response_data}, status=201)
+
+            elif response.status_code == 204:
+                # No content
+                return JsonResponse({'success': True, 'message': 'Updated thing'}, status=200)
+            
+            else:
+                # Handle other status codes as needed
+                print("Error: Unexpected status code")
+                return JsonResponse({'error': 'Unexpected status code'}, status=500)                      
+
+        except:
+            return JsonResponse({'error': 'Bad Request'}, status=400)
+
+

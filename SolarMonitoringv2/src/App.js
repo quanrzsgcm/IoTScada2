@@ -10,6 +10,7 @@ import SiteView from './pages/SiteView';
 import SiteKPI from './pages/SiteKPI';
 import DeviceList from './pages/DL';
 import TypeOfDeviceTab from './components/Tab';
+import PmForm from './components/PMForm';
 
 
 function App() {
@@ -28,7 +29,7 @@ function App() {
         <Route element={<DashboardLayout />}>
           <Route path='/site-monitor/siteview' element={<SiteView />} />
           <Route path='/site-monitor/sitekpi' element={<SiteKPI />} />
-          <Route path='/site-monitor/dashboard' element={<DeviceList />} />
+          <Route path='/site-monitor/dashboard' element={<PmForm />} />
           <Route path='/site-monitor/devicelist' element={<DeviceList />} />
           
           {/* <Route path='/site-monitor/devicelist' element={<SiteKPI />} /> */}

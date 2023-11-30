@@ -6,7 +6,8 @@ import { Button, Flex } from 'antd';
 function DataTable() {
     const [data, setData] = useState(null);
     const fetchData = () => {
-        const url = process.env.REACT_APP_API_URL_1;
+        // const url = process.env.REACT_APP_API_URL_1;
+        const url = "http://localhost:8000/api2/my-api/things/";
         const username = process.env.REACT_APP_USERNAME;
         const password = process.env.REACT_APP_PASSWORD;
         const headers = new Headers({
