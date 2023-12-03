@@ -55,6 +55,7 @@ def deleteAllRowsFromTable(conn, table_name):
         cursor.close()
 
 if __name__ == "__main__":
+    # This is sample of data that will insert to SQL
     data = ('pm01', 76, 73, 42, '2023-10-27T03:46:30.689973564Z')
     insertData(conn, data)
     print('Data inserted into database')

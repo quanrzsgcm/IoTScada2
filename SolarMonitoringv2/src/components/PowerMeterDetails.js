@@ -6,25 +6,24 @@ import { getStartAndEndOfDay } from './testtime';
 
 const { Text, Link } = Typography;
 
-function fetchData(startTime, endTime) {
+function fetchData(localselectedThing, selectedLabel, dateString) {
     // const startTime = '2023-10-27 10:46:30+07';  // example format
     // const endTime = '2023-10-27 11:16:08+07';  
-    if (startTime == null) {
-        return null;
-    }
-
+   
     const requestData = {
-        start_time: startTime,
-        end_time: endTime
+        thingid : localselectedThing,
+        typeofmeasurement : 'power',
+        unitoftime : selectedLabel,
+        dateString: dateString,
     };
     console.log(requestData);
 
     // Get method 
     // const url = `http://127.0.0.1:8000/api2/my-api/?start_time=${encodeURIComponent(startTime)}&end_time=${encodeURIComponent(endTime)}`;
     // post method, the body store json data
-    // const url = `http://127.0.0.1:8000/api2/my-api/`;
-    
-    const url = process.env.REACT_APP_API_URL_2;
+
+    // const url = process.env.REACT_APP_API_URL_2;
+    const url = `http://127.0.0.1:8000/api2/my-api/test/`;
     console.log(url);
     
     fetch(url, {
@@ -35,7 +34,7 @@ function fetchData(startTime, endTime) {
         body: JSON.stringify(requestData)
     })
         .then(response => {
-            // console.log(response);
+            console.log(response);
             return response.json();
         })
         .then(data => {
@@ -46,11 +45,6 @@ function fetchData(startTime, endTime) {
             console.error('Error:', error);
         });
 }
-const fetchtimeseriesdatawrapper = (unitsOfTime) => {
-    switch (unitsOfTime) {
-
-    }
-}
 
 const PowerMeterDetails = ({ showState, selectedThing, updateThing }) => {
     const [show, setShow] = useState(showState);
@@ -59,6 +53,7 @@ const PowerMeterDetails = ({ showState, selectedThing, updateThing }) => {
     const [dateString, setDateString] = useState(null);
     const [startTime, setStartTime] = useState(null);
     const [endTime, setEndTime] = useState(null);
+    const [selectedLabel, setSelectedLabel] = useState('Day');
 
     useEffect(() => {
         setShow(showState);
@@ -78,7 +73,7 @@ const PowerMeterDetails = ({ showState, selectedThing, updateThing }) => {
             let { startOfDay, endOfDay } = result;
             setStartTime(startOfDay);
             setEndTime(endOfDay);
-            fetchData(startOfDay, endOfDay);
+            // fetchData(startOfDay, endOfDay);
         } else {
             console.log('Invalid date string from main');
         }
@@ -130,7 +125,8 @@ const PowerMeterDetails = ({ showState, selectedThing, updateThing }) => {
                 <div>
                     <Text strong>Production </Text>
 
-                    <App setDateString={setDateString} />
+                    <App setDateString={setDateString} uppersetSelectedLabel={setSelectedLabel}/>
+                    <Button onClick={() => fetchData(localselectedThing, selectedLabel, dateString)}> TEST HERE </Button>
                 </div>
                 <div>
                     <Text strong>dateString = {dateString} </Text>

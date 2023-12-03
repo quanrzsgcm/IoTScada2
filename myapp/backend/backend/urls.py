@@ -29,6 +29,5 @@ urlpatterns = [
     path('members/', include('members.urls')),
     path('api/', include(router.urls)),
     path('api2/', include('iot.urls')),
-    path('accounts/', include('accounts.urls')),
-
 ]
+ 

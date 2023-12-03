@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { DownOutlined, UserOutlined } from '@ant-design/icons';
 import { Button, Dropdown, message, Space, Tooltip } from 'antd';
 import { DatePicker } from 'antd';
+import moment from 'moment'
 
-const App = ({ setDateString }) => {
+const App = ({ setDateString, uppersetSelectedLabel }) => {
     const [selectedLabel, setSelectedLabel] = useState('Day');
     
     const handleButtonClick = (e) => {
@@ -14,9 +15,9 @@ const App = ({ setDateString }) => {
         const selectedItem = items.find(item => item.key === e.key);
         if (selectedItem) {
             setSelectedLabel(selectedItem.label);
+            uppersetSelectedLabel(selectedItem.label);
         }
-        console.log('selectedItem', selectedItem);
-        console.log('selectedLabel', selectedLabel);
+     
 
         //   setSelectedLabel(e.label);
     };
@@ -65,6 +66,7 @@ export default App;
 
 const MyDatePicker = ({ unitsOfTime,setDateString }) => {
     const [m_unitsOfTime, setunitsOfTime] = useState(unitsOfTime);
+    const now = moment();
 
     useEffect(() => {
         setunitsOfTime(unitsOfTime);
@@ -73,11 +75,14 @@ const MyDatePicker = ({ unitsOfTime,setDateString }) => {
     const onChange = (date, dateString) => {
         setDateString(JSON.parse(JSON.stringify(date)));
     };
+    useEffect(() => {
+        setDateString(JSON.parse(JSON.stringify(now)));
+    },[])
 
     const renderDatePicker = () => {
         switch (m_unitsOfTime) {
             case 'Day':
-                return <DatePicker onChange={onChange} />;
+                return <DatePicker onChange={onChange} defaultValue = {now}/>;
             case 'Week':
                 return <DatePicker onChange={onChange} picker="week" />;
             case 'Month':
