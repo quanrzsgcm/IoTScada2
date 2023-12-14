@@ -5,9 +5,9 @@ from rest_framework import viewsets
 from django.views.decorators.csrf import csrf_exempt
 import json
 from datetime import datetime, timezone, timedelta
-from django.utils import timezone
+from django.utils import timezone as django_timezone
 import pytz
-
+import calendar
 import requests
 # import the PowerMeterDataSerializer from the serializer file
 from .serializers import PowerMeterDataSerializer
@@ -25,7 +25,8 @@ class PowerMeterDataView(viewsets.ModelViewSet):
     # define a variable and populate it 
     # with the PowerMeterData list objects
     queryset = PowerMeterData.objects.all()
-def convert_and_extract_date(date_string, local_timezone='Asia/Bangkok'):
+
+def convert_and_extract_date(date_string, local_timezone='Asia/Ho_Chi_Minh'):
     # Parse the input date string
     original_date = timezone.datetime.fromisoformat(date_string[:-1])
 
@@ -38,8 +39,121 @@ def convert_and_extract_date(date_string, local_timezone='Asia/Bangkok'):
 
     return local_date_part
 
+def time_range_extract(dateString, unitoftime, local_timezone='Asia/Ho_Chi_Minh'):
+    date_object = datetime.strptime(dateString, "%Y-%m-%dT%H:%M:%S.%fZ")
+
+    # Convert the date_object to the local time zone
+    date_object = date_object.replace(tzinfo=pytz.UTC)
+    date_object_local = date_object.astimezone(pytz.timezone(local_timezone))
+    print(f'date_object_local = {date_object_local}')
+
+    start_of_day = date_object_local.replace(hour=0, minute=0, second=0, microsecond=0)
+    end_of_day = (start_of_day + timedelta(days=1)) - timedelta(microseconds=1)
+
+    if unitoftime == 'Day':
+        print("First time of the day:", start_of_day)
+        print("Last time of the day:", end_of_day)
+        return {'start': start_of_day, 'end': end_of_day}
+
+    if unitoftime == 'Week':
+        start_of_week = start_of_day - timedelta(days=start_of_day.weekday())
+        end_of_week = start_of_week + timedelta(days=6, hours=23, minutes=59, seconds=59, microseconds=999999)
+        print("Start of the week (Monday):", start_of_week)
+        print("End of the week (Sunday):", end_of_week)
+        return {'start': start_of_week, 'end': end_of_week}
+
+    elif unitoftime == 'Month':
+        start_of_month = start_of_day.replace(day=1)
+        _, last_day_of_month = calendar.monthrange(start_of_month.year, start_of_month.month)
+        end_of_month = start_of_month.replace(day=last_day_of_month, hour=23, minute=59, second=59, microsecond=999999)
+        print("Start of the month:", start_of_month)
+        print("End of the month:", end_of_month)
+        return {'start': start_of_month, 'end': end_of_month}
+
+    elif unitoftime == 'Year':
+        start_of_year = start_of_day.replace(month=1, day=1)
+        end_of_year = start_of_year.replace(month=12, day=31, hour=23, minute=59, second=59, microsecond=999999)
+        print("Start of the year:", start_of_year)
+        print("End of the year:", end_of_year)
+        return {'start': start_of_year, 'end': end_of_year}
+
+    else:
+        raise ValueError(f"Invalid unitoftime: {unitoftime}")
+
+
 @csrf_exempt 
-def specific_element(request):
+def specific_element_test(request):
+    if request.method == 'POST':    
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+            print(data)
+            thingid = data.get('thingid').split(':')
+            thingid = thingid[1]
+            typeofmeasurement = data.get('typeofmeasurement')
+            typeofmeasurement_values = [value.lower() for value in typeofmeasurement]
+            user_input_timezone = data.get('user_input_timezone')
+            try:
+                user_timezone = pytz.timezone(user_input_timezone)
+            except pytz.UnknownTimeZoneError:
+            # Use a default time zone if the user-provided time zone is invalid
+                user_timezone = pytz.timezone('Asia/Ho_Chi_Minh')
+
+            unitoftime = data.get('unitoftime')
+            dateString = data.get('dateString')
+            timeRange = time_range_extract(dateString, unitoftime)
+            print(timeRange['start'])
+            print(timeRange['end'])
+
+            result_list = []
+
+            # Query PowerMeterData for the specified time range
+            if unitoftime == 'Day':
+                query = PowerMeterData.objects.filter(
+                meter_id=thingid,
+                timestamp__gte=timeRange['start'],
+                timestamp__lte=timeRange['end'],
+                ).values('meter_id', 'timestamp', *typeofmeasurement_values)
+                result_list = list(query)                               
+
+            elif unitoftime == 'Week':
+                query = PowerMeterData.objects.filter(
+                meter_id=thingid,
+                timestamp__gte=timeRange['start'],
+                timestamp__lte=timeRange['end'],
+                ).values('meter_id', 'timestamp', *typeofmeasurement_values)
+                result_list = list(query)                
+
+            elif unitoftime == 'Month':
+                query = PowerMeterData.objects.filter(
+                meter_id=thingid,
+                timestamp__gte=timeRange['start'],
+                timestamp__lte=timeRange['end'],
+                ).values('meter_id', 'timestamp', *typeofmeasurement_values)
+                result_list = list(query)               
+
+            elif unitoftime == 'Year':
+                query = PowerMeterData.objects.filter(
+                meter_id=thingid,
+                timestamp__gte=timeRange['start'],
+                timestamp__lte=timeRange['end'],
+                ).values('meter_id', 'timestamp', *typeofmeasurement_values)
+                result_list = list(query)
+            else:
+                return JsonResponse({"error": "Invalid unit of time"})
+            
+            for result in result_list:
+                result['timestamp'] = result['timestamp'].astimezone(user_timezone)
+                print(result)
+            return JsonResponse(result_list, safe = False)
+                                                         
+        except json.JSONDecodeError as e:
+            return JsonResponse({"error": "Invalid JSON data"}, status=400)
+    else:
+        return JsonResponse({"error": "Invalid request method"}, status=200)
+
+
+@csrf_exempt 
+def specific_element_depricated(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body.decode('utf-8'))
@@ -49,6 +163,7 @@ def specific_element(request):
             typeofmeasurement = data.get('typeofmeasurement')
             unitoftime = data.get('unitoftime')
             dateString = data.get('dateString')
+            
             
             # Convert the string to a datetime object in UTC
             date_utc = datetime.strptime(dateString, "%Y-%m-%dT%H:%M:%S.%fZ")
@@ -89,7 +204,7 @@ def specific_element(request):
                 meter_id=thingid,
                 timestamp__gte=start_of_day,
                 timestamp__lte=end_of_day
-            ).values('timestamp', typeofmeasurement)[:10]
+            ).values('timestamp', typeofmeasurement)
             result_list = list(query)
 
             return JsonResponse(result_list, safe = False)     

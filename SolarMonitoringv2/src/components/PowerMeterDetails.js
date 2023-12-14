@@ -3,57 +3,24 @@ import { Button } from 'antd'
 import { Space, Typography } from 'antd';
 import App from './DropDownButtonTime';
 import { getStartAndEndOfDay } from './testtime';
+import ElectricalParameterCheckbox from './Checkbox_PVC';
+import MyChart from './Chart_Template';
+import MyChart2 from './Chart_Template2';
 
 const { Text, Link } = Typography;
-
-function fetchData(localselectedThing, selectedLabel, dateString) {
-    // const startTime = '2023-10-27 10:46:30+07';  // example format
-    // const endTime = '2023-10-27 11:16:08+07';  
-   
-    const requestData = {
-        thingid : localselectedThing,
-        typeofmeasurement : 'power',
-        unitoftime : selectedLabel,
-        dateString: dateString,
-    };
-    console.log(requestData);
-
-    // Get method 
-    // const url = `http://127.0.0.1:8000/api2/my-api/?start_time=${encodeURIComponent(startTime)}&end_time=${encodeURIComponent(endTime)}`;
-    // post method, the body store json data
-
-    // const url = process.env.REACT_APP_API_URL_2;
-    const url = `http://127.0.0.1:8000/api2/my-api/test/`;
-    console.log(url);
-    
-    fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestData)
-    })
-        .then(response => {
-            console.log(response);
-            return response.json();
-        })
-        .then(data => {
-            console.log(data);
-            // Handle the response data
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
-}
 
 const PowerMeterDetails = ({ showState, selectedThing, updateThing }) => {
     const [show, setShow] = useState(showState);
     const [data, setData] = useState(null);
+    const [powerTSData, setpowerTSData] = useState(null);
     const [localselectedThing, setlocalSelectedThing] = useState(selectedThing);
     const [dateString, setDateString] = useState(null);
     const [startTime, setStartTime] = useState(null);
     const [endTime, setEndTime] = useState(null);
     const [selectedLabel, setSelectedLabel] = useState('Day');
+
+    const plainOptions = ['Power', 'Voltage', 'Current'];
+    const [defaultCheckedList, setdefaultCheckedList] = useState(['Power', 'Voltage', 'Current']);
 
     useEffect(() => {
         setShow(showState);
@@ -61,8 +28,8 @@ const PowerMeterDetails = ({ showState, selectedThing, updateThing }) => {
 
     useEffect(() => {
         setlocalSelectedThing(selectedThing);
-        console.log("from details1", localselectedThing);
-        console.log("from details2", selectedThing);
+        console.log("from details", selectedThing);
+        setpowerTSData(null);
         fetchDataOneThing(selectedThing);
     }, [selectedThing]);
 
@@ -101,6 +68,46 @@ const PowerMeterDetails = ({ showState, selectedThing, updateThing }) => {
                 console.error('Error:', error);
             });
     }
+    const fetchData = (localselectedThing, selectedLabel, dateString, typeofmeasurement) => {
+        // const startTime = '2023-10-27 10:46:30+07';  // example format
+        // const endTime = '2023-10-27 11:16:08+07';  
+
+        const requestData = {
+            thingid: localselectedThing,
+            typeofmeasurement: typeofmeasurement,
+            unitoftime: selectedLabel,
+            dateString: dateString,
+        };
+        console.log(requestData);
+
+        // Get method 
+        // const url = `http://127.0.0.1:8000/api2/my-api/?start_time=${encodeURIComponent(startTime)}&end_time=${encodeURIComponent(endTime)}`;
+        // post method, the body store json data
+
+        // const url = process.env.REACT_APP_API_URL_2;
+        const url = `http://127.0.0.1:8000/api2/my-api/test/`;
+        console.log(url);
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        })
+            .then(response => {
+                // console.log(response);
+                return response.json();
+            })
+            .then(data => {
+                const jsonElement = JSON.stringify(data, null, 2);
+                console.log(jsonElement);
+                setpowerTSData(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
 
 
     if (show === true) {
@@ -124,18 +131,15 @@ const PowerMeterDetails = ({ showState, selectedThing, updateThing }) => {
                 </div>
                 <div>
                     <Text strong>Production </Text>
-
-                    <App setDateString={setDateString} uppersetSelectedLabel={setSelectedLabel}/>
-                    <Button onClick={() => fetchData(localselectedThing, selectedLabel, dateString)}> TEST HERE </Button>
+                    <App setDateString={setDateString} uppersetSelectedLabel={setSelectedLabel} />
+                    <Button onClick={() => fetchData(localselectedThing, selectedLabel, dateString, defaultCheckedList)}> TEST HERE </Button>
+                </div>                                    
+                <ElectricalParameterCheckbox defaultCheckedList={defaultCheckedList} setdefaultCheckedList={setdefaultCheckedList} plainOptions={plainOptions} />
+                <div>
+                    <MyChart data={powerTSData} />
                 </div>
                 <div>
-                    <Text strong>dateString = {dateString} </Text>
-                </div>
-                <div>
-                    <Text strong>startTime = {startTime} </Text>
-                </div>
-                <div>
-                    <Text strong>endTime = {endTime} </Text>
+                    <MyChart2  />
                 </div>
             </div>
         )
