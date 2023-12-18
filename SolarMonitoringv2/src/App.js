@@ -11,6 +11,9 @@ import SiteKPI from './pages/SiteKPI';
 import DeviceList from './pages/DL';
 import TypeOfDeviceTab from './components/Tab';
 import PmForm from './components/PMForm';
+import HomePage from './pages/HomePage'
+import Header from './components/Header'
+import { AuthProvider } from './context/AuthContext'
 
 
 function App() {
@@ -22,21 +25,33 @@ function App() {
   windowHeight();
   return (
     <BrowserRouter>
-      <Routes>
-       {/* <Route path='/' element={<Navigate to='/sign-in' />} /> */}
-        <Route path='/' element={<Navigate to='/site-monitor/siteview' />} />
-        <Route path='/sign-in' element={<SignIn />} />
-        <Route element={<DashboardLayout />}>
-          <Route path='/site-monitor/siteview' element={<SiteView />} />
-          <Route path='/site-monitor/sitekpi' element={<SiteKPI />} />
-          <Route path='/site-monitor/dashboard' element={<PmForm />} />
-          <Route path='/site-monitor/devicelist' element={<DeviceList />} />
+      <AuthProvider>
+        <Routes>
+          <Route path="/" element={
+            <PrivateRoute>
+              <HomePage />
+            </PrivateRoute>} />
+
+          <Route element={<DashboardLayout />}>
+            <Route path='/site-monitor/siteview' element={<PrivateRoute><SiteView /></PrivateRoute>} />
+            <Route path='/site-monitor/sitekpi' element={<PrivateRoute><SiteKPI /></PrivateRoute>} />
+
+            <Route path='/site-monitor/dashboard' element={<PrivateRoute><PmForm /></PrivateRoute>} />
+            <Route path='/site-monitor/devicelist' element={<PrivateRoute><DeviceList /></PrivateRoute>} />
+
+      
           
-          {/* <Route path='/site-monitor/devicelist' element={<SiteKPI />} /> */}
-        </Route>
-      </Routes>
+
+
+
+          </Route>
+          <Route path="/login" element={<SignIn />} />
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
+
   );
 }
 
 export default App;
+

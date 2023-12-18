@@ -16,6 +16,7 @@
     "bootstrap": "^5.2.0",
     "i18next": "^21.9.1",
     "i18next-http-backend": "^1.4.1",
+    "jwt-decode": "^4.0.0",
     "libphonenumber-js": "^1.10.20",
     "moment": "^2.29.4",
     "node-sass": "^7.0.1",

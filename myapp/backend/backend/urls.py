@@ -18,6 +18,13 @@ from django.contrib import admin
 from django.urls import path, include
 from iot import views
 from rest_framework import routers
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+    TokenVerifyView,
+)
+from users import views as users_view
+
 
 # create a router object
 router = routers.DefaultRouter()
@@ -27,7 +34,18 @@ router.register(r'database',views.PowerMeterDataView, 'task')
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('members/', include('members.urls')),
-    path('api/', include(router.urls)),
+    # path('api/', include(router.urls)),
     path('api2/', include('iot.urls')),
+    path('api/token/', users_view.MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+    path('api/users/', include('users.urls')),
 ]
  
+
+
+# urlpatterns = [
+#     ...
+#     
+#     ...
+# ]

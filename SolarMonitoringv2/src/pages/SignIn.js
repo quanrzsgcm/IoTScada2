@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import '../assets/styles/SignIn.scss';
 import Logo from '../assets/images/logo.png';
 import { Checkbox, Form, Input } from 'antd';
 import { Link } from 'react-router-dom';
+import AuthContext from '../context/AuthContext';
 
 export default function SignIn() {
   const [userInfo, setUserInfo] = useState({
@@ -13,6 +14,43 @@ export default function SignIn() {
     setUserInfo({ ...userInfo, [field]: value });
   };
   const [form] = Form.useForm();
+
+  let {loginUser} = useContext(AuthContext)
+
+  const handleLogin = () => {
+    const e = {
+      email: userInfo.username,
+      password: userInfo.password
+    }
+    console.log(e.email);
+    
+    loginUser(e);
+  };
+
+  // const handleLogin = async () => {
+  //   try {
+  //     const response = await fetch('http://localhost:8000/api/token/', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({
+  //         email: userInfo.username,
+  //         password: userInfo.password,
+  //       }),
+  //     });
+
+  //     if (response.ok) {
+  //       // Handle successful login, e.g., redirect to another page
+  //       console.log('Login successful');
+  //     } else {
+  //       // Handle login failure
+  //       console.error('Login failed');
+  //     }
+  //   } catch (error) {
+  //     console.error('An error occurred during login:', error);
+  //   }
+  // };
   return (
     <div className='sign-in'>
       <div className='sign-in-form'>
@@ -93,6 +131,7 @@ export default function SignIn() {
             className='btn-primary btn-submit'
             type='submit'
             form='signin_form'
+            onClick={handleLogin}
           >
             Login
           </button>
