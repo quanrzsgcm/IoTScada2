@@ -6,4 +6,8 @@ urlpatterns = [
     path('my-api/things/', views.proxy_view, name='proxy_view'),
     path('my-api/create-things/', views.create_powermeter_twin, name='create_things'),
     path('my-api/test/', views.specific_element_test, name='specific_element'),
+    path('my-api/energy/', views.calculate_daily_energy, name='calculate_daily_energy'),
+    path('my-api/main-energy/', views.handle_energy_request, name='handle_energy_request'),
+    path('my-api/month-energy/', views.update_monthly_energy, name='update_monthly_energy'),
+
 ]

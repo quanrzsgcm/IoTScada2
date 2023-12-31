@@ -17,7 +17,7 @@ payload = {
     "power": random_number_1,
     "voltage": random_number_2,
     "current": random_number_3,
-    "thingId": "my.power:pm01"
+    "thingId": "my.power:pm09"
 }
 payload_json = json.dumps(payload)
 

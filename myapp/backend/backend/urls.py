@@ -43,9 +43,3 @@ urlpatterns = [
 ]
  
 
-
-# urlpatterns = [
-#     ...
-#     
-#     ...
-# ]
