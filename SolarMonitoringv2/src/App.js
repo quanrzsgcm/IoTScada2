@@ -31,19 +31,11 @@ function App() {
             <PrivateRoute>
               <HomePage />
             </PrivateRoute>} />
-
           <Route element={<DashboardLayout />}>
             <Route path='/site-monitor/siteview' element={<PrivateRoute><SiteView /></PrivateRoute>} />
             <Route path='/site-monitor/sitekpi' element={<PrivateRoute><SiteKPI /></PrivateRoute>} />
-
-            <Route path='/site-monitor/dashboard' element={<PrivateRoute><PmForm /></PrivateRoute>} />
+            <Route path='/site-monitor/addnewdevice' element={<PrivateRoute><PmForm /></PrivateRoute>} />
             <Route path='/site-monitor/devicelist' element={<PrivateRoute><DeviceList /></PrivateRoute>} />
-
-      
-          
-
-
-
           </Route>
           <Route path="/login" element={<SignIn />} />
         </Routes>

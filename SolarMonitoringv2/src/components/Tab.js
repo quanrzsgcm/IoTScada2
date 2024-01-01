@@ -28,7 +28,7 @@ const TypeOfDeviceTab = ({ showState, selectedThing, updateThing, toggleShow }) 
     {
       key: '2',
       label: 'Weather Station',
-      content: <LineChart />, // Replace this with the component you want to render
+      content: <p>There is no weather station yet</p>, // Replace this with the component you want to render
     },
     // {
     //   key: '3',

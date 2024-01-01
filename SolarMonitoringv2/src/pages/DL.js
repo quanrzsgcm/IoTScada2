@@ -29,10 +29,11 @@ export default function DeviceList() {
     <MainviewLayout>
       <div className='siteview'>Device List</div>
       {/* <div> */}
-        <Button onClick={toggle}> Back to list </Button>
+        {showDetail && <Button onClick={toggle}> Back to list </Button>}
       {/* </div> */}
       <div> <TypeOfDeviceTab showState={showTable} selectedThing={selectedThing} updateThing={updateThing} toggleShow={toggle}/></div>
       <div> <PowerMeterDetails showState={showDetail} selectedThing={selectedThing} updateThing={updateThing}/></div>
     </MainviewLayout>
   );
 }
+

@@ -25,8 +25,13 @@ export const AuthProvider = ({children}) => {
             },
             body: JSON.stringify({email: e.email, password: e.password })
         });
+        if (response.status === 401) {
+            // Handle 401 Unauthorized error
+            alert('Invalid username or password. Please try again.');
+            return;
+        }
 
-        let data = await response.json();
+        let data = await response.json();        
 
         if(data){
             localStorage.setItem('authTokens', JSON.stringify(data));

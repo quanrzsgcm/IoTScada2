@@ -4,9 +4,8 @@ const SendResquestWithToken = axios.create({
 });
 SendResquestWithToken.interceptors.request.use((req) => {
   if (localStorage.getItem('user')) {
-    req.headers.authorization = `Bearer ${
-      JSON.parse(localStorage.getItem('user')).access_token
-    }`;
+    req.headers.authorization = `Bearer ${JSON.parse(localStorage.getItem('user')).access_token
+      }`;
   }
   return req;
 });

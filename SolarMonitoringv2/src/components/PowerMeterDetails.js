@@ -60,8 +60,6 @@ const PowerMeterDetails = ({ showState, selectedThing, updateThing }) => {
         })
             .then((response) => response.json())
             .then((data) => {
-                console.log(data);
-                console.log("type of data: ", typeof (data));
                 setData(data);
             })
             .catch((error) => {
@@ -78,6 +76,7 @@ const PowerMeterDetails = ({ showState, selectedThing, updateThing }) => {
             unitoftime: selectedLabel,
             dateString: dateString,
         };
+        console.log('requestData');
         console.log(requestData);
 
         // Get method 
@@ -113,26 +112,28 @@ const PowerMeterDetails = ({ showState, selectedThing, updateThing }) => {
     if (show === true) {
         return (
             <div>
-                <div>PowerMeterDetails</div>
+                <div>PowerMeter Details</div>
                 <div style={{ display: 'inline-block' }}>
                     <h2>
                         <pre>{localselectedThing}</pre>
                     </h2>
                     <Space size="large">
                         <Text type="success">Running</Text>
-                        <Text type="secondary">Manufacturer: </Text>
-                        <Text type="secondary">Model:</Text>
-                        <Text type="secondary">Serial Number:</Text>
-                        <Text strong>Power: </Text>
-                        <Text strong>Voltage: </Text>
-                        <Text strong>Current: </Text>
+                        <Text type="secondary">Manufacturer: {data.attributes.manufacturer}</Text>
+                        <Text type="secondary">Model: N/A</Text>
+                        <Text type="secondary">Serial Number: data.attributes['serial number']</Text>
+                        <Text strong>Power: {data.features.measurements.properties.power}</Text>
+                        <Text strong>Voltage: {data.features.measurements.properties.voltage}</Text>
+                        <Text strong>Current: {data.features.measurements.properties.current}</Text>
                     </Space>
 
                 </div>
                 <div>
-                    <Text strong>Production </Text>
+                    {/* <Text strong>Production </Text> */}
+                    <Space size="large">
                     <App setDateString={setDateString} uppersetSelectedLabel={setSelectedLabel} />
-                    <Button onClick={() => fetchData(localselectedThing, selectedLabel, dateString, defaultCheckedList)}> TEST HERE </Button>
+                    <Button onClick={() => fetchData(localselectedThing, selectedLabel, dateString, defaultCheckedList)}> Get Data </Button>
+                    </Space>
                 </div>                                    
                 <ElectricalParameterCheckbox defaultCheckedList={defaultCheckedList} setdefaultCheckedList={setdefaultCheckedList} plainOptions={plainOptions} />
                 <div>

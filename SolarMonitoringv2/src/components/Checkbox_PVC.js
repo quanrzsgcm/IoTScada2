@@ -10,9 +10,6 @@ const ElectricalParameterCheckbox = ( {setdefaultCheckedList, plainOptions, defa
     const onChange = (list) => {
         setCheckedList(list);
         setdefaultCheckedList(list);
-        console.log('setCheckedList');
-        console.log(list);
-
     };
     const onCheckAllChange = (e) => {
         setCheckedList(e.target.checked ? plainOptions : []);

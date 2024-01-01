@@ -20,24 +20,24 @@ import { NavLink, useLocation } from 'react-router-dom';
 import '../assets/styles/Sidebar.scss';
 const Sidebar = ({ image, collapsed, rtl, toggled, handleToggleSidebar }) => {
   const [sidebarData, setSidebarData] = useState([
-    {
-      title: 'Central Monitor',
-      icon: <FaGem />,
-      subNav: [
-        {
-          title: 'Fleetview',
-          path: `/central-monitor/fleetview`,
-        },
-        {
-          title: 'Site List',
-          path: '/central-monitor/sitelist',
-        },
-        {
-          title: 'Leaderboard',
-          path: '/central-monitor/leaderboard',
-        },
-      ],
-    },
+    // {
+    //   title: 'Central Monitor',
+    //   icon: <FaGem />,
+    //   subNav: [
+    //     {
+    //       title: 'Fleetview',
+    //       path: `/central-monitor/fleetview`,
+    //     },
+    //     {
+    //       title: 'Site List',
+    //       path: '/central-monitor/sitelist',
+    //     },
+    //     {
+    //       title: 'Leaderboard',
+    //       path: '/central-monitor/leaderboard',
+    //     },
+    //   ],
+    // },
     {
       title: 'Site Monitor',
       icon: <FaGem />,
@@ -51,8 +51,8 @@ const Sidebar = ({ image, collapsed, rtl, toggled, handleToggleSidebar }) => {
           path: `/site-monitor/sitekpi`,
         },
         {
-          title: 'Dashboard',
-          path: `/site-monitor/dashboard`,
+          title: 'Add new device',
+          path: `/site-monitor/addnewdevice`,
         },
         {
           title: 'Device List',

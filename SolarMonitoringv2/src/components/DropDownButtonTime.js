@@ -6,9 +6,7 @@ import moment from 'moment'
 
 const App = ({ setDateString, uppersetSelectedLabel }) => {
     const [selectedLabel, setSelectedLabel] = useState('Day');
-    
     const handleButtonClick = (e) => {
-
         console.log('click left button', e);
     };
     const handleMenuClick = (e) => {

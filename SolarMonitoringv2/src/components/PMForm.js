@@ -10,8 +10,8 @@ const PmForm = () => {
         policyId: "my.test:policy",
         attributes: {
             manufacturer: "Well known producer",
-            "serial number": "02",
-            location: "Ground floor"
+            "serial number": "01",
+            location: "Not specified"
         },
         features: {
             measurements: {
@@ -33,15 +33,9 @@ const PmForm = () => {
     const fetchData = () => {
         // const url = process.env.REACT_APP_API_URL_1;
         const url = "http://localhost:8000/api2/my-api/create-things/";
-        const username = process.env.REACT_APP_USERNAME;
-        const password = process.env.REACT_APP_PASSWORD;
-        const headers = new Headers({
-            'Content-Type': 'application/json',
-            'Authorization': 'Basic ' + btoa(username + ':' + password),
-        });
+
         fetch(url, {
             method: 'POST',
-            headers: headers,
             body: JSON.stringify(pwtwin),
         })
             .then((response) => {
