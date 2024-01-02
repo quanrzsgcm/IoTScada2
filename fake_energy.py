@@ -3,10 +3,19 @@ import pytz
 import random
 import psycopg2
 import insert_data_3
+import os
+from dotenv import load_dotenv, set_key, get_key
+
+# Load environment variables from the .env file
+load_dotenv()
+
+
 
 conn = psycopg2.connect(**insert_data_3.db_params)
 
 def generate_samples():
+    energy = os.getenv("ENERGY_VAL")
+    energy = int(energy)
     # Set the timezone to Vietnam (Asia/Ho_Chi_Minh)
     local_timezone = pytz.timezone('Asia/Ho_Chi_Minh')
 
@@ -14,24 +23,31 @@ def generate_samples():
     current_year = datetime.now().year
 
     # Create a datetime object for November 1st of the current year with your local timezone
-    current_timestamp = local_timezone.localize(datetime(current_year, 1, 1))
+    current_timestamp = local_timezone.localize(datetime(2023, 12, 28))
     print(current_timestamp)
 
-    for _ in range(300):
-        meter_id = 'pm08'
+    for _ in range(50000):
+        meter_id = 'pm09'
         power = random.randint(1, 100)
         voltage = random.randint(1, 100)
         current = random.randint(1, 100)
+        energy = energy + random.randint(1, 100)
 
         timestamp_str = current_timestamp.strftime('%Y-%m-%dT%H:%M:%S.%f%z')
-        yield (meter_id, power, voltage, current, timestamp_str)
+        yield (meter_id, power, voltage, current, timestamp_str, energy)
 
-        # Increment timestamp by 1 minute
-        current_timestamp += timedelta(minutes=20)
+        # # Increment timestamp by 1 minute
+        # current_timestamp += timedelta(minutes=1)
+        # Add 1 minute and 1 second
+        current_timestamp += timedelta(minutes=1, seconds=1)
+    
+    # Set or update a key-value pair in the .env file
+    set_key(".env", "ENERGY_VAL", str(energy))
 
 # Print the generated samples
 for sample in generate_samples():
-    print(sample[4])
+    print(sample[5])
+    # print(sample[4])
     insert_data_3.insertData(conn,sample)
 
 conn.close()  # Close the database connection

@@ -1,6 +1,13 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.db.models import Max
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.permissions import IsAuthenticated
+import os
+import requests
+import json
+from base64 import b64encode
+from dotenv import load_dotenv
 
 # import view sets from the REST framework
 from rest_framework import viewsets
@@ -10,13 +17,15 @@ from datetime import datetime, timezone, timedelta
 from django.utils import timezone as django_timezone
 import pytz
 import calendar
-import requests
 
 # import the PowerMeterDataSerializer from the serializer file
 from .serializers import PowerMeterDataSerializer
 
 from .models import PowerMeterData, DailyEnergySum, MonthlyEnergySum
 from django.db.models import Sum
+
+# Load environment variables from the .env file
+load_dotenv()
 
 
 # create a class for the Todo model viewsets
@@ -28,21 +37,6 @@ class PowerMeterDataView(viewsets.ModelViewSet):
     # define a variable and populate it
     # with the PowerMeterData list objects
     queryset = PowerMeterData.objects.all()
-
-
-def convert_and_extract_date(date_string, local_timezone="Asia/Ho_Chi_Minh"):
-    # Parse the input date string
-    original_date = timezone.datetime.fromisoformat(date_string[:-1])
-
-    # Convert to local time
-    local_tz = pytz.timezone(local_timezone)
-    local_date = original_date.replace(tzinfo=timezone.utc).astimezone(tz=local_tz)
-
-    # Extract the date part
-    local_date_part = local_date.date()
-
-    return local_date_part
-
 
 def time_range_extract(dateString, unitoftime, local_timezone="Asia/Ho_Chi_Minh"):
     try:
@@ -103,16 +97,28 @@ def time_range_extract(dateString, unitoftime, local_timezone="Asia/Ho_Chi_Minh"
 
 
 @csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def specific_element_test(request):
+    print(request.user)
+    print(request.user.first_name)
+    print(request.user.timezone)
+
     if request.method == "POST":
         try:
             data = json.loads(request.body.decode("utf-8"))
             print(data)
+            user = request.user
+
+            print(user.first_name)
+            print(user.first_name)
+            print(user.first_name)
+            
             thingid = data.get("thingid").split(":")
             thingid = thingid[1]
             typeofmeasurement = data.get("typeofmeasurement")
             typeofmeasurement_values = [value.lower() for value in typeofmeasurement]
-            user_input_timezone = data.get("user_input_timezone")
+            user_input_timezone = request.user.timezone
             try:
                 user_timezone = pytz.timezone(user_input_timezone)
             except pytz.UnknownTimeZoneError:
@@ -121,7 +127,7 @@ def specific_element_test(request):
 
             unitoftime = data.get("unitoftime")
             dateString = data.get("dateString")
-            timeRange = time_range_extract(dateString, unitoftime)
+            timeRange = time_range_extract(dateString, unitoftime, user_input_timezone)
             print(timeRange["start"])
             print(timeRange["end"])
 
@@ -172,75 +178,6 @@ def specific_element_test(request):
     else:
         return JsonResponse({"error": "Invalid request method"}, status=200)
 
-
-@csrf_exempt
-def specific_element_depricated(request):
-    if request.method == "POST":
-        try:
-            data = json.loads(request.body.decode("utf-8"))
-            print(data)
-            thingid = data.get("thingid").split(":")
-            thingid = thingid[1]
-            typeofmeasurement = data.get("typeofmeasurement")
-            unitoftime = data.get("unitoftime")
-            dateString = data.get("dateString")
-
-            # Convert the string to a datetime object in UTC
-            date_utc = datetime.strptime(dateString, "%Y-%m-%dT%H:%M:%S.%fZ")
-            date_utc = date_utc.replace(tzinfo=pytz.UTC)
-
-            # Convert to your local time zone
-            local_timezone = pytz.timezone(
-                "Asia/Ho_Chi_Minh"
-            )  # Replace 'YourLocalTimeZone' with your actual time zone
-            date_local = date_utc.astimezone(local_timezone)
-
-            # Get the first time of that day in your local time zone
-            first_time_of_day = date_local.replace(
-                hour=0, minute=0, second=0, microsecond=0
-            )
-
-            # Get the last time of that day in your local time zone
-            last_time_of_day = (first_time_of_day + timedelta(days=1)) - timedelta(
-                microseconds=1
-            )
-
-            print("First time of the day:", first_time_of_day)
-            print("Last time of the day:", last_time_of_day)
-
-            # Assuming dateString is provided as '2023-11-02T03:16:55.677Z'
-            date_object = datetime.strptime(dateString, "%Y-%m-%dT%H:%M:%S.%fZ")
-
-            # Replace 'YourLocalTimeZone' with your actual time zone
-            local_timezone = "Asia/Ho_Chi_Minh"
-
-            # Convert the date_object to the local time zone
-            date_object = date_object.replace(tzinfo=pytz.UTC)
-            date_object_local = date_object.astimezone(pytz.timezone(local_timezone))
-
-            # Calculate the start and end of the day in the local time zone
-            start_of_day = date_object_local.replace(
-                hour=0, minute=0, second=0, microsecond=0
-            )
-            end_of_day = (start_of_day + timedelta(days=1)) - timedelta(microseconds=1)
-
-            print("First time of the day:", start_of_day)
-            print("Last time of the day:", end_of_day)
-
-            # Query PowerMeterData for the specified time range
-            query = PowerMeterData.objects.filter(
-                meter_id=thingid, timestamp__gte=start_of_day, timestamp__lte=end_of_day
-            ).values("timestamp", typeofmeasurement)
-            result_list = list(query)
-
-            return JsonResponse(result_list, safe=False)
-
-        except json.JSONDecodeError as e:
-            return JsonResponse({"error": "Invalid JSON data"}, status=400)
-    else:
-        return JsonResponse({"error": "Invalid request method"}, status=200)
-
-
 @csrf_exempt
 def my_api_view(request):
     if request.method == "POST":
@@ -278,20 +215,32 @@ def my_api_view(request):
     elif request.method == "GET":
         return JsonResponse({"error": "Invalid request method"}, status=200)
 
-
+@permission_classes([IsAuthenticated])
 def proxy_view(request):
-    target_url = (
-        "http://localhost:8080/api/2/things"  # Replace with your actual target URL
-    )
+    # target_url = (
+    #     "http://localhost:8080/api/2/things"  # Replace with your actual target URL
+    # )
+    # # Extract authentication headers from the incoming request
+    # auth_headers = {}
+    # for header, value in request.headers.items():
+    #     if header.startswith("Authorization"):
+    #         auth_headers[header] = value
 
-    # Extract authentication headers from the incoming request
-    auth_headers = {}
-    for header, value in request.headers.items():
-        if header.startswith("Authorization"):
-            auth_headers[header] = value
+    # Retrieve the base URL from the environment
+    target_url = os.getenv("BASE_URL_GET_ALL_THING")
+  
+    print("Target URL:", target_url)
+
+    username = os.getenv("USERNAME")
+    password = os.getenv("PASSWORD")
+
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Basic ' + b64encode((username + ':' + password).encode()).decode('utf-8'),
+    }
 
     # Forward the request to the target URL with authentication headers
-    response = requests.get(target_url, headers=auth_headers)
+    response = requests.get(target_url, headers=headers)
 
     data = response.json()
     print(data)
@@ -300,6 +249,7 @@ def proxy_view(request):
 
 
 @csrf_exempt
+@permission_classes([IsAuthenticated])
 def create_powermeter_twin(request):
     if request.method == "POST":
         try:
@@ -323,20 +273,32 @@ def create_powermeter_twin(request):
             data.pop("id", None)
             print(json.dumps(data, indent=2))
 
-            target_url = f"http://localhost:8080/api/2/things/my.power:pm{id_value}"
+            # target_url = f"http://localhost:8080/api/2/things/my.power:pm{id_value}"
+
+             # Retrieve the base URL from the environment
+            base_url = os.getenv("BASE_URL_CREATE_PM")
+          
+            # Construct the target_url by concatenating base_url with id_value
+            target_url = f"{base_url}{id_value}"
+
             print("Target URL:", target_url)
 
-            # Extract authentication headers from the incoming request
-            auth_headers = {}
-            for header, value in request.headers.items():
-                if header.startswith("Authorization"):
-                    auth_headers[header] = value
+            username = os.getenv("USERNAME")
+            password = os.getenv("PASSWORD")
+       
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': 'Basic ' + b64encode((username + ':' + password).encode()).decode('utf-8'),
+            }
 
             # Forward the request to the target URL with authentication headers
-            response = requests.put(target_url, headers=auth_headers, json=data)
+            response = requests.put(target_url, headers=headers, json=data)
+            print("Response status code2:", response.status_code)
+
+            response.raise_for_status()
 
             # Handle the response as needed
-            print("Response status code:", response.status_code)
+            print("Response status code3:", response.status_code)
 
             if response.status_code == 200:
                 # Successful response
@@ -365,7 +327,7 @@ def create_powermeter_twin(request):
 
         except:
             return JsonResponse({"error": "Bad Request"}, status=400)
-
+        
 def really_calculate_daily_energy(dateString):
     timeRange = time_range_extract(
             dateString, "Day", local_timezone="Asia/Ho_Chi_Minh"
@@ -413,6 +375,7 @@ def really_calculate_daily_energy(dateString):
     return {'total_energy': total_energy_of_day, 'end_timestamp': end_timestamp}
 
 @csrf_exempt
+@permission_classes([IsAuthenticated])
 def calculate_daily_energy(request): # my-api/energy/
     if request.method == "POST":
         try:
@@ -443,7 +406,6 @@ def get_list_of_day(unitoftime, start_time, end_time):
         print(days_in_month)
         return days_in_month
     return None
-
 
 def update_monthly_energy(list_of_day_in_month):
     total_energy_of_month = 0
@@ -503,45 +465,599 @@ def check_energy_month(dateString):
         total_energy_of_month += entry_energy['total_energy']
 
 
-
-
 @csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def handle_energy_request(request):
     if request.method == "POST":
         try:
             data = json.loads(request.body.decode("utf-8"))
             print(data)
-            user_input_timezone = data.get("user_input_timezone", "Asia/Ho_Chi_Minh")
+            user_input_timezone = request.user.timezone
             try:
                 user_timezone = pytz.timezone(user_input_timezone)
             except pytz.UnknownTimeZoneError:
                 # Use a default time zone if the user-provided time zone is invalid
                 user_timezone = pytz.timezone("Asia/Ho_Chi_Minh")
 
+    
+            meter_id = data.get("thingid").split(":")
+            meter_id = meter_id[1]
+            
             unitoftime = data.get("unitoftime")
             dateString = data.get("dateString")
-            timeRange = time_range_extract(dateString, unitoftime)
-            list_of_day = get_list_of_day(unitoftime,timeRange["start"],timeRange["end"])
+            timeRange = time_range_extract(dateString, unitoftime, user_input_timezone)
             
-            list_of_day_in_month = list_of_day
-            if unitoftime == "Day":
-                return JsonResponse({"error": "Not supported yet"})
-            elif unitoftime == "Week":
-                result = []            
-                for entry in list_of_day:
-                    result.append(really_calculate_daily_energy(entry))
+            result = timeRange
+            startTime = timeRange["start"]
+            endTime = timeRange["end"]                                            
+
+            if unitoftime == "Day":    
+
+                # Query to get all unique meter_id values
+                unique_meter_ids = PowerMeterData.objects.values('meter_id').distinct()
+
+                # Extract the unique meter_id values from the queryset
+                
+                
+                endTimeOfTheDayBefore = endTime - timedelta(days=1)
+                print(endTime)           
+                print(endTimeOfTheDayBefore)
+                energy_query_end = PowerMeterData.objects.filter(
+                    meter_id=meter_id,
+                    timestamp__lte=endTime
+                ).order_by('-timestamp').values("meter_id", "energy","timestamp").first()  # Order by timestamp in descending order and take the first record
+           
+               
+
+                energy_query_start = PowerMeterData.objects.filter(
+                    meter_id=meter_id,
+                    timestamp__lte=endTimeOfTheDayBefore
+                ).order_by('-timestamp').values("meter_id", "energy","timestamp").first()  # Order by timestamp in descending order and take the first record
+                
+                if energy_query_end is None or energy_query_end['energy'] is None:
+                    energy_end = 0
+                else :
+                    energy_end = energy_query_end['energy']
+
+                if energy_query_start is None or energy_query_start['energy'] is None:
+                    energy_start = 0
+                else :
+                    energy_start = energy_query_start['energy']
+                    
+                temp = {
+                    'energy_measured' : energy_end - energy_start,
+                    'endOfDay' : endTime
+                }
+             
+                return JsonResponse(temp)
+                
+            elif unitoftime == "Week":                
+                result = get_energy("Week", startTime, endTime, meter_id)
+                                                                           
                 return JsonResponse(result, safe=False)
                 
             elif unitoftime == "Month":
-                update_monthly_energy(list_of_day_in_month)
+                print('endTime of month', endTime)                
+                result = get_energy("Month", startTime, endTime, meter_id)
                 return JsonResponse(result, safe=False)
-                pass
-           
-            return JsonResponse(result, safe=False)
+                
 
+            elif unitoftime == "Year":
+                print('endTime of month', endTime)                
+                result = get_energy("Year", startTime, endTime, meter_id)
+                return JsonResponse(result, safe=False)
+
+            return JsonResponse(result, safe=False)
+        
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON format"})
         
-
     else:
         return JsonResponse({"error": "Invalid request method"}, status=200)
+
+def get_energy(unitoftime, startTime, endTime, meter_id):
+    print('endTime')
+    print(endTime)
+    result = []
+    if unitoftime == "Week":
+        endTimeOfTheDayBefore = endTime - timedelta(days=7)
+        print('endTimeOfTheDayBefore')
+        print(endTimeOfTheDayBefore)
+        
+        for i in range(7):
+            print(f"Loop : {i+1}")
+
+            endOfNextDay = endTimeOfTheDayBefore + timedelta(days=1)
+            print('endOfNextDay')
+            print(endOfNextDay)
+
+            energy_query_end = PowerMeterData.objects.filter(
+                        meter_id=meter_id,
+                        timestamp__lte=endOfNextDay
+                    ).order_by('-timestamp').values("meter_id", "energy","timestamp").first()  # Order by timestamp in descending order and take the first record
+            
+           
+
+            energy_query_start = PowerMeterData.objects.filter(
+                        meter_id=meter_id,
+                        timestamp__lte=endTimeOfTheDayBefore
+                    ).order_by('-timestamp').values("meter_id", "energy","timestamp").first()  # Order by timestamp in descending order and take the first record
+
+           
+
+            if energy_query_end is None or energy_query_end['energy'] is None:
+                energy_end = 0
+            else :
+                energy_end = energy_query_end['energy']
+
+            if energy_query_start is None or energy_query_start['energy'] is None:
+                energy_start = 0
+            else :
+                energy_start = energy_query_start['energy']
+                
+            temp = {
+                'energy_measured' : energy_end - energy_start,
+                'endOfDay' : endOfNextDay
+            }
+            
+            
+            result.append(temp)
+
+            endTimeOfTheDayBefore = endOfNextDay
+            print('endTimeOfTheDayBefore')
+            print(endTimeOfTheDayBefore)
+        return result
+
+    if unitoftime == "Month":
+        year = endTime.year
+        month = endTime.month
+
+        # Use the calendar module to get the number of days in the specified month
+        num_days_in_month = calendar.monthrange(year, month)[1]
+        print('num_days_in_month')
+        print(num_days_in_month)
+
+        endTimeOfTheDayBefore = endTime - timedelta(days=num_days_in_month)
+        print('endTimeOfTheDayBefore')
+        print(endTimeOfTheDayBefore)
+        
+        for i in range(num_days_in_month):
+            print(f"Loop : {i+1}")
+
+            endOfNextDay = endTimeOfTheDayBefore + timedelta(days=1)
+            print('endOfNextDay')
+            print(endOfNextDay)
+
+            energy_query_end = PowerMeterData.objects.filter(
+                        meter_id=meter_id,
+                        timestamp__lte=endOfNextDay
+                    ).order_by('-timestamp').values("meter_id", "energy","timestamp").first()  # Order by timestamp in descending order and take the first record
+            
+            energy_query_start = PowerMeterData.objects.filter(
+                        meter_id=meter_id,
+                        timestamp__lte=endTimeOfTheDayBefore
+                    ).order_by('-timestamp').values("meter_id", "energy","timestamp").first()  # Order by timestamp in descending order and take the first record
+
+
+            if energy_query_end is None or energy_query_end['energy'] is None:
+                energy_end = 0
+            else :
+                energy_end = energy_query_end['energy']
+
+            if energy_query_start is None or energy_query_start['energy'] is None:
+                energy_start = 0
+            else :
+                energy_start = energy_query_start['energy']
+                
+            temp = {
+                'energy_measured' : energy_end - energy_start,
+                'endOfDay' : endOfNextDay
+            }
+            
+            
+            result.append(temp)
+
+            endTimeOfTheDayBefore = endOfNextDay
+            print('endTimeOfTheDayBefore')
+            print(endTimeOfTheDayBefore)
+
+        return result
+
+    if unitoftime == "Year":
+        year = endTime.year
+        num_days_in_year = calendar.isleap(year) and 366 or 365
+        print('num_days_in_year')
+        print(num_days_in_year)
+
+        endTimeOfTheDayBefore = endTime - timedelta(days=num_days_in_year)
+        print('endTimeOfTheDayBefore')
+        print(endTimeOfTheDayBefore)
+        
+        for i in range(num_days_in_year):
+            print(f"Loop : {i+1}")
+
+            endOfNextDay = endTimeOfTheDayBefore + timedelta(days=1)
+            print('endOfNextDay')
+            print(endOfNextDay)
+
+            energy_query_end = PowerMeterData.objects.filter(
+                        meter_id=meter_id,
+                        timestamp__lte=endOfNextDay
+                    ).order_by('-timestamp').values("meter_id", "energy","timestamp").first()  # Order by timestamp in descending order and take the first record
+            
+            
+
+            energy_query_start = PowerMeterData.objects.filter(
+                        meter_id=meter_id,
+                        timestamp__lte=endTimeOfTheDayBefore
+                    ).order_by('-timestamp').values("meter_id", "energy","timestamp").first()  # Order by timestamp in descending order and take the first record
+
+            
+            if energy_query_end is None or energy_query_end['energy'] is None:
+                energy_end = 0
+            else :
+                energy_end = energy_query_end['energy']
+
+            if energy_query_start is None or energy_query_start['energy'] is None:
+                energy_start = 0
+            else :
+                energy_start = energy_query_start['energy']
+                
+            temp = {
+                'energy_measured' : energy_end - energy_start,
+                'endOfDay' : endOfNextDay
+            }
+            
+            result.append(temp)
+
+            endTimeOfTheDayBefore = endOfNextDay
+            print('endTimeOfTheDayBefore')
+            print(endTimeOfTheDayBefore)
+
+        return result
+
+    return result
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def handle_total_energy_request(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body.decode("utf-8"))
+            print(data)
+            user_input_timezone = request.user.timezone
+            try:
+                user_timezone = pytz.timezone(user_input_timezone)
+            except pytz.UnknownTimeZoneError:
+                # Use a default time zone if the user-provided time zone is invalid
+                user_timezone = pytz.timezone("Asia/Ho_Chi_Minh")
+                       
+            unitoftime = data.get("unitoftime")
+            dateString = data.get("dateString")
+            timeRange = time_range_extract(dateString, unitoftime, user_input_timezone)
+            
+            result = timeRange
+            startTime = timeRange["start"]
+            endTime = timeRange["end"]       
+
+            # Query to get all unique meter_id values
+            unique_meter_ids = PowerMeterData.objects.values('meter_id').distinct().order_by('meter_id')
+
+            # Extract the unique meter_id values from the queryset
+            unique_meter_ids_list = [entry['meter_id'] for entry in unique_meter_ids]
+
+            print(unique_meter_ids_list)
+
+            if unitoftime == "Day":
+
+                endTimeOfTheDayBefore = endTime - timedelta(days=1)
+                print(endTime)           
+                print(endTimeOfTheDayBefore)
+
+                # Initialize a variable to store the total energy sum
+                total_energy_sum = 0
+                
+                for meter_id in unique_meter_ids_list:
+
+                    energy_query_end = PowerMeterData.objects.filter(
+                        meter_id=meter_id,
+                        timestamp__lte=endTime
+                    ).order_by('-timestamp').values("meter_id", "energy","timestamp").first()  # Order by timestamp in descending order and take the first record
+                 
+                 
+                    energy_query_start = PowerMeterData.objects.filter(
+                        meter_id=meter_id,
+                        timestamp__lte=endTimeOfTheDayBefore
+                    ).order_by('-timestamp').values("meter_id", "energy","timestamp").first()  # Order by timestamp in descending order and take the first record
+
+                     
+
+                    if energy_query_end is None or energy_query_end['energy'] is None:
+                        energy_end = 0
+                    else :
+                        energy_end = energy_query_end['energy']
+
+                    if energy_query_start is None or energy_query_start['energy'] is None:
+                        energy_start = 0
+                    else :
+                        energy_start = energy_query_start['energy']
+                        
+                    temp = {
+                        'total_energy_measured' : energy_end - energy_start,
+                        'endOfDay' : endTime
+                    }  
+
+                                     
+                    energy_measured = energy_end - energy_start
+
+                    total_energy_sum += energy_measured
+
+                return JsonResponse({"total_energy_measured": total_energy_sum,"endOfDay": endTime})
+                
+            elif unitoftime == "Week":
+                total_energy_sum = 0
+                result = []
+                week_day = []
+                
+            
+                for meter_id in unique_meter_ids_list:       
+                    temp = get_total_energy("Week", startTime, endTime, meter_id)
+                    print(temp)
+                    result.append(temp)
+                    
+
+                # Create a dictionary to store cumulative energy values for each endOfDay
+                cumulative_energy_dict = {}
+
+                # Iterate through the nested lists and update the cumulative values
+                for nested_list in result:
+                    for entry in nested_list:
+                        end_of_day = entry["endOfDay"]
+                        energy_measured = float(entry["total_energy_measured"])
+
+                        # Check if the key exists in the dictionary
+                        if end_of_day in cumulative_energy_dict:
+                            cumulative_energy_dict[end_of_day] += energy_measured
+                        else:
+                            cumulative_energy_dict[end_of_day] = energy_measured
+
+                # Convert the dictionary back to the desired list format
+                result_list = [{"total_energy_measured": str(value), "endOfDay": key} for key, value in cumulative_energy_dict.items()]
+
+                # Create a list containing the result_list
+                final_result = [result_list]
+
+                return JsonResponse(final_result,safe=False)                                                                       
+                
+                
+            elif unitoftime == "Month":
+                result = []
+                print('endTime of month', endTime)    
+                for meter_id in unique_meter_ids_list:       
+                    temp = get_total_energy("Month", startTime, endTime, meter_id)
+                    print(temp)
+                    result.append(temp)
+
+                # Create a dictionary to store cumulative energy values for each endOfDay
+                cumulative_energy_dict = {}
+
+                # Iterate through the nested lists and update the cumulative values
+                for nested_list in result:
+                    for entry in nested_list:
+                        end_of_day = entry["endOfDay"]
+                        energy_measured = float(entry["total_energy_measured"])
+
+                        # Check if the key exists in the dictionary
+                        if end_of_day in cumulative_energy_dict:
+                            cumulative_energy_dict[end_of_day] += energy_measured
+                        else:
+                            cumulative_energy_dict[end_of_day] = energy_measured
+
+                # Convert the dictionary back to the desired list format
+                result_list = [{"total_energy_measured": str(value), "endOfDay": key} for key, value in cumulative_energy_dict.items()]
+
+                # Create a list containing the result_list
+                final_result = [result_list]
+
+                return JsonResponse(final_result,safe=False)        
+                        
+
+            elif unitoftime == "Year":
+                print('endTime of month', endTime)      
+                result = []
+                for meter_id in unique_meter_ids_list:       
+                    temp = get_total_energy("Year", startTime, endTime, meter_id)
+                    print(temp)
+                    result.append(temp)
+                
+                # Create a dictionary to store cumulative energy values for each endOfDay
+                cumulative_energy_dict = {}
+
+                # Iterate through the nested lists and update the cumulative values
+                for nested_list in result:
+                    for entry in nested_list:
+                        end_of_day = entry["endOfDay"]
+                        energy_measured = float(entry["total_energy_measured"])
+
+                        # Check if the key exists in the dictionary
+                        if end_of_day in cumulative_energy_dict:
+                            cumulative_energy_dict[end_of_day] += energy_measured
+                        else:
+                            cumulative_energy_dict[end_of_day] = energy_measured
+
+                # Convert the dictionary back to the desired list format
+                result_list = [{"total_energy_measured": str(value), "endOfDay": key} for key, value in cumulative_energy_dict.items()]
+
+                # Create a list containing the result_list
+                final_result = [result_list]
+
+                return JsonResponse(final_result,safe=False)     
+
+            return JsonResponse(result, safe=False)
+        
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON format"})
+        
+    else:
+        return JsonResponse({"error": "Invalid request method"}, status=200)
+
+def get_total_energy(unitoftime, startTime, endTime, meter_id):
+    print('endTime')
+    print(endTime)
+    result = []
+    if unitoftime == "Week":
+        endTimeOfTheDayBefore = endTime - timedelta(days=7)
+        print('endTimeOfTheDayBefore')
+        print(endTimeOfTheDayBefore)
+        
+        for i in range(7):
+            print(f"Loop : {i+1}")
+
+            endOfNextDay = endTimeOfTheDayBefore + timedelta(days=1)
+            print('endOfNextDay')
+            print(endOfNextDay)
+
+            energy_query_end = PowerMeterData.objects.filter(
+                        meter_id=meter_id,
+                        timestamp__lte=endOfNextDay
+                    ).order_by('-timestamp').values("meter_id", "energy","timestamp").first()  # Order by timestamp in descending order and take the first record
+                                 
+            energy_query_start = PowerMeterData.objects.filter(
+                        meter_id=meter_id,
+                        timestamp__lte=endTimeOfTheDayBefore
+                    ).order_by('-timestamp').values("meter_id", "energy","timestamp").first()  # Order by timestamp in descending order and take the first record
+                      
+            
+            if energy_query_end is None or energy_query_end['energy'] is None:
+                energy_end = 0
+            else :
+                energy_end = energy_query_end['energy']
+
+            if energy_query_start is None or energy_query_start['energy'] is None:
+                energy_start = 0
+            else :
+                energy_start = energy_query_start['energy']
+                
+            temp = {
+                'total_energy_measured' : energy_end - energy_start,
+                'endOfDay' : endOfNextDay
+            }
+            result.append(temp)
+
+            endTimeOfTheDayBefore = endOfNextDay
+            print('endTimeOfTheDayBefore')
+            print(endTimeOfTheDayBefore)
+        return result
+
+    if unitoftime == "Month":
+        year = endTime.year
+        month = endTime.month
+
+        # Use the calendar module to get the number of days in the specified month
+        num_days_in_month = calendar.monthrange(year, month)[1]
+        print('num_days_in_month')
+        print(num_days_in_month)
+
+        endTimeOfTheDayBefore = endTime - timedelta(days=num_days_in_month)
+        print('endTimeOfTheDayBefore')
+        print(endTimeOfTheDayBefore)
+        
+        for i in range(num_days_in_month):
+            print(f"Loop : {i+1}")
+
+            endOfNextDay = endTimeOfTheDayBefore + timedelta(days=1)
+            print('endOfNextDay')
+            print(endOfNextDay)
+
+            energy_query_end = PowerMeterData.objects.filter(
+                        meter_id=meter_id,
+                        timestamp__lte=endOfNextDay
+                    ).order_by('-timestamp').values("meter_id", "energy","timestamp").first()  # Order by timestamp in descending order and take the first record
+                
+
+            energy_query_start = PowerMeterData.objects.filter(
+                        meter_id=meter_id,
+                        timestamp__lte=endTimeOfTheDayBefore
+                    ).order_by('-timestamp').values("meter_id", "energy","timestamp").first()  # Order by timestamp in descending order and take the first record
+
+            if energy_query_end is None or energy_query_end['energy'] is None:
+                energy_end = 0
+            else :
+                energy_end = energy_query_end['energy']
+
+            if energy_query_start is None or energy_query_start['energy'] is None:
+                energy_start = 0
+            else :
+                energy_start = energy_query_start['energy']
+                
+            temp = {
+                'total_energy_measured' : energy_end - energy_start,
+                'endOfDay' : endOfNextDay
+            }
+            
+        
+            result.append(temp)
+
+            endTimeOfTheDayBefore = endOfNextDay
+            print('endTimeOfTheDayBefore')
+            print(endTimeOfTheDayBefore)
+
+        return result
+
+    if unitoftime == "Year":
+        year = endTime.year
+        num_days_in_year = calendar.isleap(year) and 366 or 365
+        print('num_days_in_year')
+        print(num_days_in_year)
+
+        endTimeOfTheDayBefore = endTime - timedelta(days=num_days_in_year)
+        print('endTimeOfTheDayBefore')
+        print(endTimeOfTheDayBefore)
+        
+        for i in range(num_days_in_year):
+            print(f"Loop : {i+1}")
+
+            endOfNextDay = endTimeOfTheDayBefore + timedelta(days=1)
+            print('endOfNextDay')
+            print(endOfNextDay)
+
+            energy_query_end = PowerMeterData.objects.filter(
+                        meter_id=meter_id,
+                        timestamp__lte=endOfNextDay
+                    ).order_by('-timestamp').values("meter_id", "energy","timestamp").first()  # Order by timestamp in descending order and take the first record
+            
+    
+            energy_query_start = PowerMeterData.objects.filter(
+                        meter_id=meter_id,
+                        timestamp__lte=endTimeOfTheDayBefore
+                    ).order_by('-timestamp').values("meter_id", "energy","timestamp").first()  # Order by timestamp in descending order and take the first record
+
+           
+
+            if energy_query_end is None or energy_query_end['energy'] is None:
+                energy_end = 0
+            else :
+                energy_end = energy_query_end['energy']
+
+            if energy_query_start is None or energy_query_start['energy'] is None:
+                energy_start = 0
+            else :
+                energy_start = energy_query_start['energy']
+                
+            temp = {
+                'total_energy_measured' : energy_end - energy_start,
+                'endOfDay' : endOfNextDay
+            }
+            
+            
+            result.append(temp)
+
+            endTimeOfTheDayBefore = endOfNextDay
+            print('endTimeOfTheDayBefore')
+            print(endTimeOfTheDayBefore)
+
+        return result
+
+    return result

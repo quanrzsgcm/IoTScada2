@@ -1,7 +1,7 @@
 import React from 'react';
 import Chart from 'react-apexcharts';
 
-const MyChart2 = ({ rawData }) => {
+const MyChart2c = ({ rawData }) => {
     if (rawData === null) {
         return <div>No data</div>;
     }
@@ -65,7 +65,7 @@ const MyChart2 = ({ rawData }) => {
             chart: {
                 id: 'line-chart',
             },
-            colors: ['#eba134', '#66DA26', '#546E7A', '#E91E63', '#FF9800'],
+            colors: ['#2E93fA', '#66DA26', '#546E7A', '#E91E63', '#FF9800'],
             legend: {
                 show: true,
                 position: 'top',
@@ -135,7 +135,7 @@ const MyChart2 = ({ rawData }) => {
         },
         series: [
             {
-                name: "Power",
+                name: "Current",
                 // data: [
                 //     { x: '2023-12-01T00:00:00+07:00', y: '75.00' },
                 //     { x: '2023-12-01T00:15:00+07:00', y: '75.00' },
@@ -146,7 +146,7 @@ const MyChart2 = ({ rawData }) => {
                 // ],
                 data: rawData.map(item => ({
                     x: item.timestamp,
-                    y: parseFloat(item.power)  // Assuming 'power' is a string, convert it to a floating-point number
+                    y: parseFloat(item.current)  // Assuming 'current' is a string, convert it to a floating-point number
                   })),
                 
 
@@ -167,4 +167,4 @@ const MyChart2 = ({ rawData }) => {
     );
 };
 
-export default MyChart2;
+export default MyChart2c;

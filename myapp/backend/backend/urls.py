@@ -33,7 +33,6 @@ router.register(r'database',views.PowerMeterDataView, 'task')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('members/', include('members.urls')),
     # path('api/', include(router.urls)),
     path('api2/', include('iot.urls')),
     path('api/token/', users_view.MyTokenObtainPairView.as_view(), name='token_obtain_pair'),

@@ -8,6 +8,10 @@ const MyChart = ({ data }) => {
     // Transform the data for the chart
     const transformedData = {
         options: {
+            tooltip: {
+                enabled: true,
+                theme: 'dark',
+            },
            
             chart: {
                 id: 'line-chart',

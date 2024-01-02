@@ -1,10 +1,14 @@
 import React from 'react';
 import Chart from 'react-apexcharts';
 
-const MyChart2 = ({ rawData }) => {
-    if (rawData === null) {
+const MyChart2e = ({ rawData }) => {
+    
+    if (rawData === null || rawData.length === 0 || rawData[0].length === 0) {
         return <div>No data</div>;
     }
+
+    // Flatten the nested array structure
+    const flattenedData = rawData[0];
     // Transform the data for the chart
     const transformedData = {
         options: {
@@ -63,7 +67,7 @@ const MyChart2 = ({ rawData }) => {
             //     },
             // },
             chart: {
-                id: 'line-chart',
+                id: 'bar-chart',
             },
             colors: ['#eba134', '#66DA26', '#546E7A', '#E91E63', '#FF9800'],
             legend: {
@@ -135,7 +139,7 @@ const MyChart2 = ({ rawData }) => {
         },
         series: [
             {
-                name: "Power",
+                name: "Energy",
                 // data: [
                 //     { x: '2023-12-01T00:00:00+07:00', y: '75.00' },
                 //     { x: '2023-12-01T00:15:00+07:00', y: '75.00' },
@@ -144,9 +148,9 @@ const MyChart2 = ({ rawData }) => {
                 //     { x: '2023-12-01T01:00:00+07:00', y: '10.00' },
                 //     { x: '2023-12-01T01:15:00+07:00', y: '15.00' },
                 // ],
-                data: rawData.map(item => ({
-                    x: item.timestamp,
-                    y: parseFloat(item.power)  // Assuming 'power' is a string, convert it to a floating-point number
+                data: flattenedData.map(item => ({
+                    x: item.endOfDay,
+                    y: parseFloat(item['total_energy_measured'])  // Assuming 'power' is a string, convert it to a floating-point number
                   })),
                 
 
@@ -159,7 +163,7 @@ const MyChart2 = ({ rawData }) => {
             <Chart
                 options={transformedData.options}
                 series={transformedData.series}
-                type="line"
+                type="bar"
                 width="1000"
             />
 
@@ -167,4 +171,4 @@ const MyChart2 = ({ rawData }) => {
     );
 };
 
-export default MyChart2;
+export default MyChart2e;

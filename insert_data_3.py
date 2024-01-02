@@ -19,8 +19,8 @@ def insertData(conn, data_to_insert):
 
         # Define the SQL query with placeholders for data
         insert_query = """
-            INSERT INTO iot_powermeterdata (meter_id, power, voltage, current, timestamp)
-            VALUES (%s, %s, %s, %s, %s);
+            INSERT INTO iot_powermeterdata (meter_id, power, voltage, current, timestamp, energy)
+            VALUES (%s, %s, %s, %s, %s, %s);
         """
 
         # Execute the query with the data tuple
@@ -56,7 +56,7 @@ def deleteAllRowsFromTable(conn, table_name):
 
 if __name__ == "__main__":
     # This is sample of data that will insert to SQL
-    data = ('pm01', 76, 73, 42, '2023-10-27T03:46:30.689973564Z')
+    data = ('pm01', 76, 73, 42, '2023-10-27T03:46:30.689973564Z', 500)
     insertData(conn, data)
     print('Data inserted into database')
 
