@@ -3,7 +3,12 @@ Create policy
 curl -X PUT 'http://localhost:8080/api/2/policies/my.test:policy' -u 'ditto:ditto' -H 'Content-Type: application/json' -d @policy.json
 
 CREATE THINGS
+
+
 curl -X PUT 'http://localhost:8080/api/2/things/my.power:pm01' -u 'ditto:ditto' -H 'Content-Type: application/json' -d @pm.json
+
+
+
 curl -X PUT 'http://localhost:8080/api/2/things/my.power:pm02' -u 'ditto:ditto' -H 'Content-Type: application/json' -d @pm.json
 
 CREATE CONNECTION

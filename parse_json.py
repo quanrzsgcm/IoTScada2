@@ -23,6 +23,7 @@ def get_data(response):
         power = parsed_data["value"]["measurements"]["properties"]["power"]
         voltage = parsed_data["value"]["measurements"]["properties"]["voltage"]
         current = parsed_data["value"]["measurements"]["properties"]["current"]
+        energy = parsed_data["value"]["measurements"]["properties"]["energy"]
         timestamp = parsed_data["timestamp"]
 
         try:
@@ -35,7 +36,7 @@ def get_data(response):
             # Handle the case where there is no second element (e.g., if the "topic" is not in the expected format)
             print("Error: Unable to extract 'pm01' from the topic.")
 
-        result = (thingID, power, voltage, current, timestamp)
+        result = (thingID, power, voltage, current, timestamp, energy)
         print(result)
         return result
         

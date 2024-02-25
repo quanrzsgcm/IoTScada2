@@ -1,6 +1,16 @@
 import paho.mqtt.client as mqtt
 import json
 import random
+import os
+from dotenv import load_dotenv, set_key, get_key
+
+# Load environment variables from the .env file
+load_dotenv()
+
+energy = os.getenv("ENERGY_VAL_03")
+energy = int(energy)
+
+energy = energy + random.randint(1, 100)
 
 # Define the MQTT broker and topic
 broker_address = "test.mosquitto.org"
@@ -13,12 +23,17 @@ random_number_2 = random.randint(1, 100)
 random_number_3 = random.randint(1, 100)
 
 # Define the JSON payload
+
+
 payload = {
     "power": random_number_1,
     "voltage": random_number_2,
     "current": random_number_3,
-    "thingId": "my.power:pm09"
+    "energy": energy,
+    "thingId": "my.power:pm03"
 }
+
+
 payload_json = json.dumps(payload)
 
 # Create an MQTT client
@@ -29,6 +44,9 @@ client.connect(broker_address, broker_port)
 
 # Publish the JSON payload to the specified topic
 client.publish(topic, payload_json)
-print(f'Published {random_number_1} {random_number_2} {random_number_3}')
+print(f'Published {random_number_1} {random_number_2} {random_number_3} {energy}')
 # Disconnect from the broker
 client.disconnect()
+# Set or update a key-value pair in the .env file
+set_key(".env", "ENERGY_VAL_03", str(energy))
+print("store ",energy)

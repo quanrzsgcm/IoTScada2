@@ -18,7 +18,8 @@ const PmForm = () => {
                 properties: {
                     power: 0,
                     voltage: 0,
-                    current: 0
+                    current: 0,
+                    energy: 0
                 }
             }
         }

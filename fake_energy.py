@@ -23,11 +23,11 @@ def generate_samples():
     current_year = datetime.now().year
 
     # Create a datetime object for November 1st of the current year with your local timezone
-    current_timestamp = local_timezone.localize(datetime(2023, 12, 28))
+    current_timestamp = local_timezone.localize(datetime(2023, 11, 28))
     print(current_timestamp)
 
-    for _ in range(50000):
-        meter_id = 'pm09'
+    for _ in range(5000):
+        meter_id = 'pm03'
         power = random.randint(1, 100)
         voltage = random.randint(1, 100)
         current = random.randint(1, 100)
@@ -39,7 +39,13 @@ def generate_samples():
         # # Increment timestamp by 1 minute
         # current_timestamp += timedelta(minutes=1)
         # Add 1 minute and 1 second
-        current_timestamp += timedelta(minutes=1, seconds=1)
+        current_timestamp += timedelta(minutes=20, seconds=1)
+        current_time = datetime.now(local_timezone)
+        if current_timestamp >= current_time:
+            print("Stopping the loop as current timestamp is equal to the current time.")
+            break
+    
+
     
     # Set or update a key-value pair in the .env file
     set_key(".env", "ENERGY_VAL", str(energy))
