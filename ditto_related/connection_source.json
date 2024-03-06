@@ -6,7 +6,7 @@
     "piggybackCommand": {
         "type": "connectivity.commands:createConnection",
         "connection": {
-            "id": "mqtt-connection-source",
+            "id": "mqtt-connection-source-6",
             "connectionType": "mqtt",
             "connectionStatus": "open",
             "failoverEnabled": true,
@@ -14,7 +14,7 @@
             "sources": [
                 {
                     "addresses": [
-                        "my.powers/#"
+                        "my.powers2/#"
                     ],
                     "authorizationContext": [
                         "nginx:ditto"
@@ -31,7 +31,8 @@
                     "loadBytebufferJS": "false",
                     "loadLongJS": "false"
                 }
-            }
+            },
+            "tags": ["site2"]
         }
     }
 }

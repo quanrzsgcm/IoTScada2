@@ -1,18 +1,16 @@
 Create policy
-
 curl -X PUT 'http://localhost:8080/api/2/policies/my.test:policy' -u 'ditto:ditto' -H 'Content-Type: application/json' -d @policy.json
 
 CREATE THINGS
-
-
 curl -X PUT 'http://localhost:8080/api/2/things/my.power:pm01' -u 'ditto:ditto' -H 'Content-Type: application/json' -d @pm.json
-
-
 
 curl -X PUT 'http://localhost:8080/api/2/things/my.power:pm02' -u 'ditto:ditto' -H 'Content-Type: application/json' -d @pm.json
 
 CREATE CONNECTION
 curl -X POST 'http://localhost:8080/devops/piggyback/connectivity?timeout=10' -u 'devops:foobar' -H 'Content-Type: application/json' -d @connection_source.json
+
+GET ALL CONNECTIONS
+curl -X 'GET' -u 'devops:foobar' 'http://localhost:8080/api/2/connections' -H 'accept: application/json' | python -m json.tool
 
 GET ALL THINGS
 curl -X GET 'http://localhost:8080/api/2/things/' -u 'ditto:ditto' -H 'Content-Type: application/json' | python -m json.tool

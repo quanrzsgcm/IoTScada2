@@ -15,7 +15,7 @@ energy = energy + random.randint(1, 100)
 # Define the MQTT broker and topic
 broker_address = "test.mosquitto.org"
 broker_port = 1883
-topic = "my.powers"
+topic = "my.powers2"
 
 # Generate random numbers between 1 and 100 (inclusive)
 random_number_1 = random.randint(1, 100)
@@ -30,7 +30,7 @@ payload = {
     "voltage": random_number_2,
     "current": random_number_3,
     "energy": energy,
-    "thingId": "my.power:pm03"
+    "thingId": "my.power2:pm01"
 }
 
 

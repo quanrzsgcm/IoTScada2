@@ -1,0 +1,21 @@
+{
+    "policyId": "my.test:policy",
+    "attributes": {
+        "manufacturer": "Well known producer",
+        "model": "NA",
+        "serial number": "02",
+        "location": "Ground floor",
+        "site": "NA"
+    },
+    "features": {
+        "measurements": {
+            "properties": {
+                "capacity": 0,
+                "internal temp": 0,
+                "input power": 0,
+                "grid frequency": 0,
+                "power factor": 0
+            }
+        }
+    }
+}

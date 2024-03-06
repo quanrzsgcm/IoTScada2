@@ -44,35 +44,44 @@ INSTALLED_APPS = [
     'accounts',
     'users',
     'rest_framework_simplejwt',
+    'myadmin',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'backend.urls'
 
 CORS_ORIGIN_WHITELIST = (
     'http://localhost:3000',
+    'http://localhost:5173',
+
 )
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    # Add other origins as needed
-]
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3000",
+#     'http://localhost:5173',
+
+#     # Add other origins as needed
+# ]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
+    'http://localhost:5173',
+
 ]
 
 # Optional: Allow credentials (cookies, authentication headers) to be included in cross-origin requests
+CORS_ALLOW_ALL_ORIGINS = True
+
 CORS_ALLOW_CREDENTIALS = True
 
 TEMPLATES = [

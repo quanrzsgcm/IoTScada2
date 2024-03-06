@@ -24,6 +24,7 @@ from rest_framework_simplejwt.views import (
     TokenVerifyView,
 )
 from users import views as users_view
+from myadmin import views as myadmin_view
 
 
 # create a router object
@@ -39,6 +40,8 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     path('api/users/', include('users.urls')),
+    path('myadmin/', include('myadmin.urls')),
+    # path('<path:unknown_path>/', myadmin_view.unknown_view), # '<path:unknown_path>' will match any path
 ]
  
 
