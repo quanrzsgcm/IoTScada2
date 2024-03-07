@@ -1,22 +1,47 @@
-import { List, Datagrid, TextField, useRecordContext } from 'react-admin';
+import { List, Datagrid, TextField, useRecordContext, EditGuesser, Create, usePrevious, useReference, CreateButton, ExportButton } from 'react-admin';
+import { Edit, ReferenceInput, SimpleForm, TextInput } from 'react-admin';
 import { useParams } from 'react-router-dom';
 import { Button } from '@mui/material';
 import { Link } from 'react-router-dom';
 import EditIcon from '@mui/icons-material/Edit';
+import { useNavigate } from "react-router-dom";
+import { TopToolbar } from 'react-admin';
+import internal from 'stream';
+import { useState, useEffect } from 'react';
 
+
+const ListActions = () => (
+    <TopToolbar>
+        <TestButton />
+        <ExportButton />
+    </TopToolbar>
+);
 export const InverterList = () => {
     const { id } = useParams();
     return (
-        <List resource="inverters" filter={{ site_id: id }}>
-            <Datagrid rowClick="edit">
-                <TextField source="id" />
+        <List resource="inverters" filter={{ site_id: id }} actions={<ListActions />} >
+            <Datagrid>
                 <TextField source="manufacturer" />
                 <TextField source="model" />
                 <TextField source="serialNumber" />
-                <TextField source="location" />         
-                {/* <EditSongButton /> */}
+                <TextField source="location" />
+                <EditSongButton />
             </Datagrid>
         </List>
+    );
+};
+
+const TestButton = () => {
+    const { id } = useParams();
+    console.log(id)
+    return (
+        <Button
+            component={Link}
+            to={`/inverters/create/${id}`}
+            startIcon={<EditIcon />}
+        >
+            Test
+        </Button>
     );
 };
 
@@ -32,3 +57,61 @@ const EditSongButton = () => {
         </Button>
     );
 };
+
+export const InverterEdit = () => (
+    <Edit>
+        <SimpleForm>
+            <TextInput source="id" />
+            <ReferenceInput source="site_id" reference="sites" />
+            <TextInput source="manufacturer" />
+            <TextInput source="model" />
+            <TextInput source="serialNumber" />
+            <TextInput source="location" />
+        </SimpleForm>
+    </Edit>
+);
+
+const customAction = () => {
+    window.history.go(-1);
+
+}
+
+const PostCreateActions = () => (
+    <TopToolbar>
+        {/* Add your custom actions */}
+        <Button color="primary" onClick={customAction}>Custom Action</Button>
+    </TopToolbar>
+);
+
+export const InverterCreate = () => {
+    const inverter = useParams()
+    console.log(inverter)
+
+    const [id, setId] = useState(null);
+
+    useEffect(() => {
+        // Get the current pathname
+        const pathname = window.location.href;
+
+        // Split the pathname by '/'
+        const parts = pathname.split('/');
+
+        // Extract the last part which should be the number
+        const number = parts[parts.length - 1];
+
+        // Set the extracted number as id
+        setId(number);
+    }, []);
+
+    return (
+        <Create actions={<PostCreateActions />}>
+            <SimpleForm>
+                <TextInput defaultValue={id} source="siteId" />
+                <TextInput source="manufacturer" />
+                <TextInput source="model" />
+                <TextInput source="serialNumber" />
+                <TextInput source="location" />
+            </SimpleForm>
+        </Create>
+    );
+}

@@ -1,11 +1,11 @@
 {
     "policyId": "my.test:policy",
     "attributes": {
-        "manufacturer": "Well known producer",
-        "model": "NA",
-        "serial number": "02",
-        "location": "Ground floor",
-        "site": "NA"
+        "manufacturer": "Empty",
+        "model": "Empty",
+        "serial number": "Empty",
+        "location": "Empty",
+        "site": "Empty"
     },
     "features": {
         "measurements": {

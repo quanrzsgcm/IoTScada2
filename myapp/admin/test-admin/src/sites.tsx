@@ -2,10 +2,11 @@ import { Datagrid, List, TextField, EditButton, Show , SimpleShowLayout, useReco
 import MyUrlField from "./MyLocationField";
 import { Button } from '@mui/material';
 import { Link } from 'react-router-dom';
+import { Edit, SimpleForm, TextInput, Create } from 'react-admin';
 
 export const SiteList = () => (
     <List>
-        <Datagrid >
+        <Datagrid>
             <TextField source="id" />
             <TextField source="siteName" />
             <MyUrlField source="location" />
@@ -51,3 +52,22 @@ const ConnectionButton = () => {
         </Button>
     );
 };
+
+export const SiteEdit = () => (
+    <Edit>
+        <SimpleForm>
+            <TextInput source="id" InputProps={{ disabled: true }}/>
+            <TextInput source="siteName" />
+            <TextInput source="location" />
+        </SimpleForm>
+    </Edit>
+);
+
+export const SiteCreate = () => (
+    <Create>
+        <SimpleForm>
+            <TextInput source="siteName" />
+            <TextInput source="location" />
+        </SimpleForm>
+    </Create>
+);
