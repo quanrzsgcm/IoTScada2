@@ -7,6 +7,8 @@ urlpatterns = [
     path('inverters/<int:inverter_id>/', views.get_inverters),
     path('inverters/', views.get_inverters),
     path('connections/', views.get_connection),
+    path('connections/<str:connection_id>/', views.get_connection),
+    path('connectionstest/', views.get_connection_new),
     
     
 ]

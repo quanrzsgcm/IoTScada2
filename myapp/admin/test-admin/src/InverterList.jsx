@@ -4,10 +4,10 @@ import { useParams } from 'react-router-dom';
 import { Button } from '@mui/material';
 import { Link } from 'react-router-dom';
 import EditIcon from '@mui/icons-material/Edit';
-import { useNavigate } from "react-router-dom";
+import AddIcon from '@mui/icons-material/Add';
 import { TopToolbar } from 'react-admin';
-import internal from 'stream';
 import { useState, useEffect } from 'react';
+import { useNotify, useRedirect } from 'react-admin';
 
 
 const ListActions = () => (
@@ -38,9 +38,9 @@ const TestButton = () => {
         <Button
             component={Link}
             to={`/inverters/create/${id}`}
-            startIcon={<EditIcon />}
+            startIcon={<AddIcon />}
         >
-            Test
+            Create
         </Button>
     );
 };
@@ -76,14 +76,18 @@ const customAction = () => {
 
 }
 
-const PostCreateActions = () => (
-    <TopToolbar>
-        {/* Add your custom actions */}
-        <Button color="primary" onClick={customAction}>Custom Action</Button>
-    </TopToolbar>
-);
+
 
 export const InverterCreate = () => {
+
+    const notify = useNotify();
+    const redirect = useRedirect();
+
+    const onSuccess = (data) => {
+        notify(`Changes saved`);
+        redirect(`/sites/${data.siteId}/inverters/`);
+        console.log(data);
+    };
     const inverter = useParams()
     console.log(inverter)
 
@@ -98,13 +102,14 @@ export const InverterCreate = () => {
 
         // Extract the last part which should be the number
         const number = parts[parts.length - 1];
+        const parsedId = parseInt(number);
 
         // Set the extracted number as id
-        setId(number);
+        setId(parsedId);
     }, []);
 
     return (
-        <Create actions={<PostCreateActions />}>
+        <Create mutationOptions={{ onSuccess }}>
             <SimpleForm>
                 <TextInput defaultValue={id} source="siteId" />
                 <TextInput source="manufacturer" />
