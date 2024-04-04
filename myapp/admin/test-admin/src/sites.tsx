@@ -32,10 +32,10 @@ const InverterButton = () => {
     return (
         <Button
             component={Link}
-            to={`/sites/${record.id}/inverters`}
+            to={`/sites/${record.id}/devices`}
             color="primary"
         >
-            Inverter
+            Devices
         </Button>
     );
 };

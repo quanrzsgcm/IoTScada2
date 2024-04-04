@@ -16,6 +16,12 @@
                 "grid frequency": 0,
                 "power factor": 0
             }
+        },
+        "runningStatus" : {
+            "properties" : {
+                "running" : true,
+                "fanSpeed" : 0
+            }
         }
     }
 }

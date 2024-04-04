@@ -10,6 +10,7 @@ from base64 import b64encode
 import json
 from django.db.models import Max
 import logging
+import uuid
 
 logger = logging.getLogger(__name__)
 
@@ -353,7 +354,7 @@ def get_inverters(request, inverter_id=None):
                 'manufacturer': post_data.get("manufacturer"),
                 'model': post_data.get("model"),
                 'serialNumber': post_data.get("serialNumber"),
-                'location': "conmemay",
+                'location':  post_data.get("location"),
             }
             return JsonResponse(response)
         except Exception as e:
@@ -905,59 +906,870 @@ def get_connection_new(request, connection_id=None):
 
     
     return JsonResponse({"ok":"bro"})
-def get_list_view(request):
-    # Create some sample objects
-    data = [
-        {
-            "id": 1,
-            "name": "Leanne Graham",
-            "username": "Bret",
-            "email": "Sincere@april.biz",
-            "address": {
-                "street": "Kulas Light",
-                "suite": "Apt. 556",
-                "city": "Gwenborough",
-                "zipcode": "92998-3874",
-                "geo": {"lat": "-37.3159", "lng": "81.1496"},
-            },
-            "phone": "1-770-736-8031 x56442",
-            "website": "hildegard.org",
-            "company": {
-                "name": "Romaguera-Crona",
-                "catchPhrase": "Multi-layered client-server neural-net",
-                "bs": "harness real-time e-markets",
-            },
-        },
-        {
-            "id": 2,
-            "name": "Ervin Howell",
-            "username": "Antonette",
-            "email": "Shanna@melissa.tv",
-            "address": {
-                "street": "Victor Plains",
-                "suite": "Suite 879",
-                "city": "Wisokyburgh",
-                "zipcode": "90566-7771",
-                "geo": {"lat": "-43.9509", "lng": "-34.4618"},
-            },
-            "phone": "010-692-6593 x09125",
-            "website": "anastasia.net",
-            "company": {
-                "name": "Deckow-Crist",
-                "catchPhrase": "Proactive didactic contingency",
-                "bs": "synergize scalable supply-chains",
-            },
-        },
-    ]
 
-    print(data)
-    # Return the data as JSON response
-    response = JsonResponse(data, safe=False)
+@csrf_exempt
+def get_token(request):
+    url = 'http://192.168.1.210:7000/api/v2/login'
 
-    # Add Content-Range header
-    # response['Content-Range'] = f'bytes 0-{len(data) - 1}/{len(data)}'
-    response["Access-Control-Expose-Headers"] = "X-Total-Count"
-    response["X-Total-Count"] = 4
+    # Define the headers
+    headers = {
+        'Content-Type': 'application/json',
+        # 'Authorization': 'Bearer <token>'
+    }
 
-    # Return the data as JSON response
-    return response
+    data = {
+        "name": "admin",
+        "pass": "0000"
+    }
+
+    response = requests.post(url, headers=headers, json=data)
+    if response.status_code == 200:
+        # Extract JWT token from response and store it in Django's session
+
+        jwt_token = response.json().get('token')
+        request.session['jwt_token'] = jwt_token
+        print(jwt_token)
+
+        # Process the response data
+        data = response.json()
+    return JsonResponse({"token": jwt_token})
+
+def refresh_token(request):
+    url = 'http://192.168.1.210:7000/api/v2/login'
+
+    # Define the headers
+    headers = {
+        'Content-Type': 'application/json',
+        # 'Authorization': 'Bearer <token>'
+    }
+
+    data = {
+        "name": "admin",
+        "pass": "0000"
+    }
+
+    response = requests.post(url, headers=headers, json=data)
+    if response.status_code == 200:
+        # Extract JWT token from response and store it in Django's session
+
+        jwt_token = response.json().get('token')
+        request.session['jwt_token'] = jwt_token
+        print(jwt_token)
+        return jwt_token
+    return None
+
+@csrf_exempt
+def test_token(request):
+    token = request.session.get('jwt_token')
+    print(token)
+    return JsonResponse({"token": token})
+
+@csrf_exempt
+def create_device(request):
+    token = request.session.get('jwt_token')
+
+    headers = {
+    'Content-Type': 'application/json',
+    'Authorization': f'Bearer {token}'  # Using f-string to insert the token
+    }
+
+    # Define the JSON data
+    data = {
+        "name": "modbus-tcp-node",
+        "plugin": "Modbus TCP",
+        "params": {
+            "param1": 1,
+            "param2": "1.1.1.1",
+            "param3": True,
+            "param4": 11.22
+        }
+    }
+    url = 'http://192.168.1.210:7000/api/v2/node'
+    # Send the POST request
+    response = requests.post(url, headers=headers, json=data)
+
+    # Print the response
+    print(response.text)
+    print(response.status_code)
+    if response.status_code == 409:
+        return JsonResponse({"already": "exist"})
+    
+    # NODE SETTING
+    url = 'http://192.168.1.210:7000/api/v2/node/setting'
+
+    data = {
+        "node": "modbus-tcp-node",
+        "params": {
+            # // required, 0 the neuron driver is used as the client, 1 the neuron driver is used as the server
+            "connection_mode": 0,
+            # // required, client: host means the ip of the remote device. server: it means the ip used by neuron locally
+            "host": "127.0.0.1", ### USER INPUT ###
+            # // required, client: port means the tcp port of the remote device. server: it means the tcp port used by neuron locally
+            "port": 502, ### USER INPUT ###
+            # // required, timeout for sending requests to the device
+            "timeout": 3000, ### USER INPUT ###
+            # // required, send reading instruction interval(ms)
+            "interval": 20,
+            # // required, TCP transfer(0) or UDP transfer(1)
+            "transport_mode": 0,
+            # // required, the maximum number of retries after a failed attempt to send a read command
+            "max_retries": 0,
+            # // required, resend reading instruction interval(ms) after a failed attempt to send a read command
+            "retry_interval": 0
+        }
+    }
+    response = requests.post(url, headers=headers, json=data)
+
+    # Print the response
+    print(response.text)
+    print(response.status_code)
+    if response.status_code == 404:
+        return JsonResponse({"not": "exist"})
+
+    ### ADD GROUP ###
+    url = 'http://192.168.1.210:7000/api/v2/group'
+
+    data = {
+        # group name
+        "group": "defaultgroup",
+        # node name
+        "node": "modbus-tcp-node",
+        # read/upload interval(ms)
+        "interval": 10000 ### USER INPUT ###
+    }
+
+    response = requests.post(url, headers=headers, json=data)
+    # Print the response
+    print("group")
+    print(response.text)
+    print(response.status_code)
+    if response.status_code == 400:
+        return JsonResponse({"something": "wrong"})
+    print("group")
+    
+
+
+    ### ADD TAG ###
+
+    return JsonResponse({"good": "dfs"})
+
+def device_setting(request, node, token, host, port):
+    headers = {
+    'Content-Type': 'application/json',
+    'Authorization': f'Bearer {token}'  # Using f-string to insert the token
+    }
+    
+    # NODE SETTING
+    url = 'http://192.168.1.210:7000/api/v2/node/setting'
+
+    data = {
+        "node": node,
+        "params": {
+            # // required, 0 the neuron driver is used as the client, 1 the neuron driver is used as the server
+            "connection_mode": 0,
+            # // required, client: host means the ip of the remote device. server: it means the ip used by neuron locally
+            "host": host, ### USER INPUT ###
+            # // required, client: port means the tcp port of the remote device. server: it means the tcp port used by neuron locally
+            "port": port, ### USER INPUT ###
+            # // required, timeout for sending requests to the device
+            "timeout": 3000, ### USER INPUT ###
+            # // required, send reading instruction interval(ms)
+            "interval": 20,
+            # // required, TCP transfer(0) or UDP transfer(1)
+            "transport_mode": 0,
+            # // required, the maximum number of retries after a failed attempt to send a read command
+            "max_retries": 0,
+            # // required, resend reading instruction interval(ms) after a failed attempt to send a read command
+            "retry_interval": 0
+        }
+    }
+    response = requests.post(url, headers=headers, json=data)
+
+    # Print the response
+    print(response.text)
+    print(response.status_code)
+    if response.status_code == 404:
+        return 1
+    if response.status_code == 403 or response.status_code == 401:
+        token = refresh_token(request)
+        if token is not None:
+            return device_setting(request, node, token, host, port)
+        else :
+            return 1
+
+    # ### ADD GROUP ###
+    # url = 'http://192.168.1.210:7000/api/v2/group'
+
+    # data = {
+    #     # group name
+    #     "group": "defaultgroup",
+    #     # node name
+    #     "node": "modbus-tcp-node",
+    #     # read/upload interval(ms)
+    #     "interval": 10000 ### USER INPUT ###
+    # }
+
+    # response = requests.post(url, headers=headers, json=data)
+    # # Print the response
+    # print("group")
+    # print(response.text)
+    # print(response.status_code)
+    # if response.status_code == 400:
+    #     return JsonResponse({"something": "wrong"})
+    # print("group")
+    
+
+
+    ### ADD TAG ###
+
+    return 0
+
+@csrf_exempt
+def add_group(node, token, request):
+    ### ADD GROUP ###
+    if token is None:
+        token = refresh_token(request)
+
+    headers = {
+    'Content-Type': 'application/json',
+    'Authorization': f'Bearer {token}'  # Using f-string to insert the token
+    }
+    url = f'http://192.168.1.210:7000/api/v2/group?node={node}'
+    print(url)
+
+   
+
+    response = requests.get(url, headers=headers)
+    # Print the response
+    print(response.text)
+    print(response.status_code)
+    if response.status_code == 400:
+        return JsonResponse({"something": "wrong"})
+    elif response.status_code == 403:
+        token = refresh_token(request)
+        return add_group(node, token, request)
+    elif response.status_code == 200:
+        data = response.json()
+        if len(data.get('groups', [])) == 0:
+            print("The 'groups' key contains an empty list.")
+            ### add default group
+            url = f'http://192.168.1.210:7000/api/v2/group'
+            data = {
+                "group": "defaultgroup",
+                "node": node,
+                "interval": 10000
+            }
+            response = requests.post(url, headers=headers, json=data)
+            # Print the response
+            print(response.text)
+            print(response.status_code)
+            if response.status_code == 400:
+                return JsonResponse({"something": "wrong"})
+            elif response.status_code == 403:
+                token = refresh_token(request)
+                return add_group(node, token, request)
+            elif response.status_code == 200:
+                return 0
+
+            ###
+        else:
+            return 0
+
+    
+    
+    ### ADD TAG ###
+
+    return JsonResponse({"good": "dfs"})
+
+
+@csrf_exempt
+def add_tag(request):
+    ### ADD GROUP ###
+    token = request.session.get('jwt_token')
+
+    headers = {
+    'Content-Type': 'application/json',
+    'Authorization': f'Bearer {token}'  # Using f-string to insert the token
+    }
+    url = 'http://192.168.1.210:7000/api/v2/tags'
+
+    data = {
+    # //node name
+        "node": "modbus-tcp-node",
+    # //group name
+        "group": "defaultgroup",
+        "tags": [
+            {
+                "name": "tag3",
+                "address": "1!00001", # cant be 
+                "attribute": 3,
+                "type": 11,
+                "decimal": 0.01
+            },
+        ]
+    }
+    
+    ## INT8 UINT8 INT16 UINT16 INT32 UINT32 INT64 UINT64 FLOAT DOUBLE BIT BOOL STRING BYTES ERROR WORD DWORD LWORD 
+    ##   1    2    3      4      5       6    7     8       9    10    11   12   13    14     15   16   17     18
+
+    response = requests.post(url, headers=headers, json=data)
+    # Print the response
+    print("group")
+    print(response.text)
+    print(response.status_code)
+    print("group")
+    if response.status_code == 400:
+        return JsonResponse({"something": "wrong"})
+    if response.status_code == 403:
+        refresh_token(request)
+        return add_tag(request)
+    
+    ### ADD TAG ###
+
+    return JsonResponse({"good": "dfs"})
+
+@csrf_exempt
+def create_northapp(request):
+    token = request.session.get('jwt_token')
+
+    headers = {
+    'Content-Type': 'application/json',
+    'Authorization': f'Bearer {token}'  # Using f-string to insert the token
+    }
+    url = 'http://192.168.1.210:7000/api/v2/node'
+
+    data = {
+    # //node name
+        "name": "mqtttest",
+    # //group name
+        "plugin": "MQTT"
+    }
+    
+    ## INT8 UINT8 INT16 UINT16 INT32 UINT32 INT64 UINT64 FLOAT DOUBLE BIT BOOL STRING BYTES ERROR WORD DWORD LWORD 
+    ##   1    2    3      4      5       6    7     8       9    10    11   12   13    14     15   16   17     18
+
+    response = requests.post(url, headers=headers, json=data)
+    # Print the response
+    print(response.text)
+    print(response.status_code)
+
+
+    if response.status_code == 400:
+        return JsonResponse({"something": "wrong"})
+    if response.status_code == 403:
+        refresh_token(request)
+        return create_northapp(request)
+
+    return JsonResponse({"good": "dfs"})
+    
+def change_middle_string(original_string, new_middle):
+    # Split the original string based on the delimiter '/'
+    parts = original_string.split('/')
+    
+    # Replace the middle part with the new string
+    middle_index = len(parts) // 2
+    parts[middle_index] = new_middle
+    
+    # Join the parts back together using the delimiter '/'
+    modified_string = '/'.join(parts)
+    
+    return modified_string
+
+
+@csrf_exempt
+def setting_northapp(request):
+    token = request.session.get('jwt_token')
+
+    headers = {
+    'Content-Type': 'application/json',
+    'Authorization': f'Bearer {token}'  # Using f-string to insert the token
+    }
+    url = 'http://192.168.1.210:7000/api/v2/node/setting'
+
+
+    client_id = str(uuid.uuid4())
+    print(client_id)
+
+    req_string = "/neuron/ore/write/req"
+    new_node = "mqtttest"  # Or any other string you want to use
+    new_req_string = change_middle_string(req_string, new_node)
+    req_string = "/neuron/ore/write/resp"
+    new_node = "mqtttest"  # Or any other string you want to use
+    new_resp_string = change_middle_string(req_string, new_node)
+
+    data = {
+        "node": "mqtttest",
+        "params":{
+            "client-id": client_id,
+            "qos":0,
+            "format":0,
+            "write-req-topic": new_req_string,
+            "write-resp-topic": new_resp_string,
+            "offline-cache":False,
+            "cache-sync-interval":100,
+            "host":"broker.emqx.io",
+            "port":1883,
+            "username":"",
+            "password":"",
+            "ssl":False
+        }
+    }
+    
+
+    response = requests.post(url, headers=headers, json=data)
+    # Print the response
+    print(response.text)
+    print(response.status_code)
+
+
+    if response.status_code == 400:
+        return JsonResponse({"something": "wrong"})
+    if response.status_code == 403:
+        refresh_token(request)
+        return setting_northapp(request)
+
+    return JsonResponse({"good": "dfs"})
+
+@csrf_exempt
+def subscribe(request):
+    token = request.session.get('jwt_token')
+
+    headers = {
+    'Content-Type': 'application/json',
+    'Authorization': f'Bearer {token}'  # Using f-string to insert the token
+    }
+    url = 'http://192.168.1.210:7000/api/v2/subscribe'
+
+    data = {
+        "app": "mqtttest",
+        "driver": "modbus-tcp-node",
+        "group": "defaultgroup",
+        "params": {
+            "topic": "/neuron/mqtt/group-1"
+        }
+    }  
+
+    response = requests.post(url, headers=headers, json=data)
+    # Print the response
+    print(response.text)
+    print(response.status_code)
+
+
+    if response.status_code == 400:
+        return JsonResponse({"something": "wrong"})
+    if response.status_code == 403:
+        refresh_token(request)
+        return setting_northapp(request)
+
+    return JsonResponse({"good": "dfs"})
+    
+@csrf_exempt
+def get_devices(request, inverter_id=None):
+    if request.method == "GET":
+
+        if inverter_id is not None:
+            try:
+                inverter = get_object_or_404(Inverter, pk=inverter_id)
+                print(inverter)
+                # Printing all attributes of the inverter object
+                data = {
+                    "id": inverter.inverterID,
+                    "manufacturer": inverter.manufacturer,
+                    "model": inverter.model,
+                    "serialNumber": inverter.serialNumber,
+                    "location": inverter.location,
+                    "site_id": inverter.site_id,
+                }
+                
+                token = request.session.get('jwt_token')
+                print(token)
+
+                headers = {
+                'Content-Type': 'application/json',
+                'Authorization': f'Bearer {token}'  # Using f-string to insert the token
+                }
+                url = 'http://192.168.1.210:7000/api/v2/node/setting'
+                param = f'?node=inv{inverter.inverterID}'
+
+                # Concatenate the strings
+                url = url + param
+                print(url)              
+                response = requests.get(url, headers=headers)
+                # Print the response
+                print(response.text)
+                print(response.status_code)
+
+                if response.status_code == 200:                    
+                    data_dict = response.json()
+                    add_data = {
+                        "host": data_dict["params"]["host"],
+                        "port": data_dict["params"]["port"]
+                    }
+                    data.update(add_data)                                           
+
+                if response.status_code == 400:
+                    return JsonResponse({"something": "wrong"})
+                if response.status_code == 403 or response.status_code == 401:
+                    refresh_token(request)
+                    return get_devices(request, inverter_id)
+
+                return JsonResponse(data)
+            except Http404:
+                # If the object is not found, handle the exception here
+                # For example, return a custom response or redirect to another page
+                return JsonResponse({"error": "Inverter not found"}, status=404)
+        # Parse query parameters
+        start = int(request.GET.get("_start", 0))
+        end = int(request.GET.get("_end", 10))
+        sort_field = request.GET.get("_sort", "id")
+        site_id = request.GET.get("site_id")
+
+        # Checking if site_id is provided and valid
+        if site_id is not None:
+            try:
+                site_id = int(site_id)
+                # Filtering inverters based on site_id
+                if site_id != 0:
+                    inverters = Inverter.objects.filter(site_id=site_id)
+                else:
+                    inverters = Inverter.objects.all()
+
+                
+            except ValueError:
+                return JsonResponse(
+                    {"error": "Invalid site_id. Please provide a valid integer value."},
+                    status=400,
+                )
+        else:
+            # Handling case where site_id is missing
+            inverters = Inverter.objects.all()
+
+        if sort_field == "id":
+            sort_field = "inverterID"
+        print(sort_field)
+        order = request.GET.get("_order", "ASC")
+
+        # Define sorting order
+        if order == "DESC":
+            sort_field = "-" + sort_field
+
+        # Query inverter
+        inverters = inverters.order_by(sort_field)[start:end]
+
+        # Serialize data
+        data = list(inverters.values())
+
+        for item in data:
+            new_item = {}
+            for (
+                key,
+                value,
+            ) in item.items():  # Iterate over key-value pairs of the dictionary
+                if key == "inverterID":
+                    new_item["id"] = value
+                else:
+                    new_item[key] = value
+            # Update the original dictionary with the modified one
+            item.clear()
+            item.update(new_item)
+
+        response = JsonResponse(data, safe=False)
+        response["Access-Control-Expose-Headers"] = "X-Total-Count"
+        response["X-Total-Count"] = len(data)
+
+        # Return JSON response
+        return response
+    elif request.method == "POST":
+        try:
+            # Retrieve the base URL from the environment
+            target_url = os.getenv("BASE_URL_GET_ALL_THING")
+
+            username = os.getenv("USERNAME")
+            password = os.getenv("PASSWORD")
+
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": "Basic "
+                + b64encode((username + ":" + password).encode()).decode("utf-8"),
+            }
+
+            # Forward the request to the target URL with authentication headers
+            # response = requests.get(target_url, headers=headers)
+            post_data = json.loads(request.body)
+            site_id = int(post_data.get('siteId'))
+
+            site_instance = get_object_or_404(Site, siteID=site_id)
+            print(site_id)
+            latest_id = Inverter.objects.aggregate(Max("inverterID"))["inverterID__max"]
+            print("last id", latest_id)
+
+            # Increment the ID for the new record
+            new_id = latest_id + 1 if latest_id is not None else 1
+
+            target_url_with_id = f"{target_url}/my.inverter:inv{new_id}"
+            print("Target URL with ID:", target_url_with_id)
+
+            new_inverters = {
+                "policyId": "my.test:policy",
+                "attributes": {
+                    "manufacturer": post_data.get("manufacturer"),
+                    "model": post_data.get("model"),
+                    "serial number": post_data.get("serialNumber"),
+                    "location": post_data.get("location"),
+                    "site": post_data.get("siteId"),
+                },
+                "features": {
+                    "measurements": {
+                        "properties": {
+                            "capacity": 0,
+                            "internal temp": 0,
+                            "input power": 0,
+                            "grid frequency": 0,
+                            "power factor": 0,
+                        }
+                    }
+                },
+            }
+
+            print(type(new_inverters))
+            json_data = json.dumps(new_inverters)
+            print(type(json_data))
+
+            response = requests.put(
+                target_url_with_id, json=new_inverters, headers=headers
+            )
+
+            print(response.text)  # This prints the response content as a string
+            print(response.status_code)  # This prints the HTTP status code
+            if response.status_code == 201 or response.status_code == 204:
+                # Request was successful
+                print("PUT request was successful")
+                # Save the new Site instance to the database
+                try:
+                    # Create a new Site instance with the extracted data
+                    inverter = Inverter(
+                        inverterID=new_id,
+                        site=site_instance,
+                        manufacturer=post_data.get("manufacturer"),
+                        model=post_data.get("model"),
+                        serialNumber=post_data.get("serialNumber"),
+                        location=post_data.get("location"),
+                    )
+                    inverter.full_clean()  # Validate the model fields
+                    inverter.save()  # Save the record
+                    # Create in ditto
+
+                except ValidationError as e:
+                    return JsonResponse({"error": str(e)}, status=400)
+
+            else:
+                # Print the status code if the request was not successful
+                print(f"PUT request failed with status code {response.status_code}")
+                return JsonResponse({"error": "Something went wrong"}, status=500)
+            response = {
+                'id': post_data.get("id"),
+                'site_id': post_data.get("site_id"),
+                'manufacturer': post_data.get("manufacturer"),
+                'model': post_data.get("model"),
+                'serialNumber': post_data.get("serialNumber"),
+                'location':  post_data.get("location"),
+            }
+            return JsonResponse(response)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    elif request.method == "PUT":
+        try:
+            # Logic for handling PUT requests
+            put_data = json.loads(request.body)
+            print("Request body:", put_data)
+
+            # Extract relevant fields
+            id = put_data.get("id")
+            site_id = put_data.get("site_id")
+            node = str(id)
+            node = "inv" + node
+            host = put_data.get("host")
+            port = put_data.get("port")
+            print("host")
+            print(host)
+            print("node")
+            print(node)
+
+            # Retrieve the existing record from the database
+            try:
+                inverter = Inverter.objects.get(pk=id)
+            except Inverter.DoesNotExist:
+                return JsonResponse({"error": "Inverter not found"}, status=404)
+
+            # Retrieve the base URL from the environment
+            target_url = os.getenv("BASE_URL_GET_ALL_THING")
+
+            username = os.getenv("USERNAME")
+            password = os.getenv("PASSWORD")
+
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": "Basic "
+                + b64encode((username + ":" + password).encode()).decode("utf-8"),
+            }
+            target_url_with_id = f"{target_url}/my.inverter:inv{id}"
+            print("Target URL with ID:", target_url_with_id)
+
+            new_inverters = {
+                "policyId": "my.test:policy",
+                "attributes": {
+                    "manufacturer": put_data.get("manufacturer"),
+                    "model": put_data.get("model"),
+                    "serial number": put_data.get("serialNumber"),
+                    "location": put_data.get("location"),
+                    "site": put_data.get("site_id"),
+                },
+                "features": {
+                    "measurements": {
+                        "properties": {
+                            "capacity": 0,
+                            "internal temp": 0,
+                            "input power": 0,
+                            "grid frequency": 0,
+                            "power factor": 0,
+                        }
+                    }
+                },
+            }
+            response = requests.put(
+                target_url_with_id, json=new_inverters, headers=headers
+            )
+
+            print(response.text)  # This prints the response content as a string
+            print(response.status_code)  # This prints the HTTP status code
+            if response.status_code == 201 or response.status_code == 204:
+                print("PUT request was successful")
+                try:
+                    # Get the site ID from the request data
+                    site_id = int(put_data.get("site_id"))
+
+                    # Fetch the Site instance corresponding to the site ID
+                    site_instance = get_object_or_404(Site, siteID=site_id)
+
+                    # Create or update the Inverter instance
+                    inverter.inverterID=id
+                    inverter.site=site_instance
+                    inverter.manufacturer=put_data.get("manufacturer")
+                    inverter.model=put_data.get("model")
+                    inverter.serialNumber=put_data.get("serialNumber")
+                    inverter.location=put_data.get("location")
+
+                    # Validate the model fields
+                    inverter.full_clean()
+
+                    # Save the record
+                    inverter.save()       
+                    token = request.session.get('jwt_token')
+
+                    temp = device_setting(request, node, token, host, port)
+                    if temp == 1:
+                        return JsonResponse({"error": "Internal Server Error. Please try again later."}, status=500)
+
+                except ValidationError as e:
+                    logger.error("Validation Error: %s", str(e))
+                    return JsonResponse({"error": str(e)}, status=400)
+
+            else:
+                print(f"PUT request failed with status code {response.status_code}")
+                return JsonResponse({"error": "PUT request failed"}, status=400)
+            
+            response = {
+                'id': put_data.get("id"),
+                'site_id': put_data.get("site_id"),
+                'manufacturer': put_data.get("manufacturer"),
+                'model': put_data.get("model"),
+                'serialNumber': put_data.get("serialNumber"),
+                'location': put_data.get("location"),
+            }
+            return JsonResponse(response)
+
+        except Exception as e:
+            print(str(e))
+            # logger.error("Validation Error: %s", str(e))
+            return JsonResponse({"error": str(e)}, status=500)
+
+    elif request.method == "DELETE":
+        # Logic for handling DELETE requests
+        inverter = get_object_or_404(Inverter, pk=inverter_id)
+        print(inverter)
+        # Retrieve the base URL from the environment
+        target_url = os.getenv("BASE_URL_GET_ALL_THING")
+
+        username = os.getenv("USERNAME")
+        password = os.getenv("PASSWORD")
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Basic "
+            + b64encode((username + ":" + password).encode()).decode("utf-8"),
+        }
+        target_url_with_id = f"{target_url}/my.inverter:inv{inverter_id}"
+        print("Target URL with ID:", target_url_with_id)
+        response = requests.delete(
+                target_url_with_id, headers=headers
+        )
+        print(response.status_code)
+        # Delete the site
+        inverter.delete()
+        return JsonResponse({"message": "This is a DELETE request"})
+
+    else:
+        # Return an error response for unsupported methods
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_tags(request, inverter_id=None):
+    if request.method == "GET":
+        device_id = request.GET.get('deviceId')
+        node = "inv" + str(device_id)
+        token = refresh_token(request)
+        add_group(node, token, request)
+        headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {token}'  # Using f-string to insert the token
+        }
+        url = f'http://192.168.1.210:7000/api/v2/tags?node={node}&group=defaultgroup'
+        print(url)
+
+    
+
+        response = requests.get(url, headers=headers)
+        # Print the response
+        print(response.text)
+        print(response.status_code)
+        if response.status_code == 400:
+            return JsonResponse({"something": "wrong"})
+        elif response.status_code == 403:
+            token = refresh_token(request)
+            return get_tags(node, token, request)
+        elif response.status_code == 200:
+            data = response.json()
+            data = data["tags"]
+            print(data)
+           
+           
+        
+            response = JsonResponse(data, safe=False)
+            response["Access-Control-Expose-Headers"] = "X-Total-Count"
+            response["X-Total-Count"] = len(data)
+
+            # Return JSON response
+            return response
+
+        # Optionally, you can return a response if needed
+        return JsonResponse({"message": "GET request parameters printed"})
+        
+    elif request.method == "POST":
+        add_group(node, None, request)
+        pass
+    elif request.method == "PUT":
+        add_group(node, None, request)
+        pass
+    elif request.method == "POST":
+        pass

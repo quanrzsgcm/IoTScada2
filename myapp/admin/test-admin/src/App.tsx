@@ -12,14 +12,22 @@ import customDataProvider from "./customDataprovider";
 import { InverterDetail } from "./InverterDetail";
 import { InverterCreate } from "./InverterList";
 import { ConnectionDetail } from "./ConnectionDetail";
+import { DeviceList } from "./DeviceList";
+import { DeviceDetail } from "./DeviceDetail";
+import { DeviceCreate } from "./DeviceList";
+import { TagList } from "./TagList";
 
-export const App = () => <Admin title="My Custom Admin" catchAll={NotFound} dataProvider={customDataProvider('http://localhost:8000/myadmin')} dashboard={Dashboard}>
+export const App = () => <Admin title="My Custom Admin" catchAll={NotFound} dataProvider={customDataProvider('http://192.168.1.209:8000/myadmin')} dashboard={Dashboard}>
   <Resource name="sites" list={SiteList} icon={PlaceIcon} edit={SiteEdit} show={ShowGuesser} create={SiteCreate}>
     <Route path=":id/inverters" element={<InverterList />} />
     <Route path=":id/inverters/:inverterId" element={<InverterDetail />} />
+    <Route path=":id/devices" element={<DeviceList />} />
+    <Route path=":id/devices/:deviceId" element={<DeviceDetail />} />
+    <Route path=":id/devices/:deviceId/tags" element={<TagList />} />
     <Route path=":id/connections" element={<ConnectionList />} />
     <Route path=":id/connections/:connectionId" element={<ConnectionDetail />} />
   </Resource>
   <Resource name="inverters" show={ShowGuesser} create={InverterCreate} />
+  <Resource name="devices" show={ShowGuesser} create={DeviceCreate} />
   <Resource name="connections" show={ShowGuesser} create={ConnectionCreate}/>
 </Admin>;
