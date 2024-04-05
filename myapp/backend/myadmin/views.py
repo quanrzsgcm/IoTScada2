@@ -964,9 +964,8 @@ def test_token(request):
     print(token)
     return JsonResponse({"token": token})
 
-@csrf_exempt
-def create_device(request):
-    token = request.session.get('jwt_token')
+def create_device(node, request):
+    token = refresh_token(request)
 
     headers = {
     'Content-Type': 'application/json',
@@ -975,7 +974,7 @@ def create_device(request):
 
     # Define the JSON data
     data = {
-        "name": "modbus-tcp-node",
+        "name": node,
         "plugin": "Modbus TCP",
         "params": {
             "param1": 1,
@@ -992,66 +991,9 @@ def create_device(request):
     print(response.text)
     print(response.status_code)
     if response.status_code == 409:
-        return JsonResponse({"already": "exist"})
+        return 409
     
-    # NODE SETTING
-    url = 'http://192.168.1.210:7000/api/v2/node/setting'
-
-    data = {
-        "node": "modbus-tcp-node",
-        "params": {
-            # // required, 0 the neuron driver is used as the client, 1 the neuron driver is used as the server
-            "connection_mode": 0,
-            # // required, client: host means the ip of the remote device. server: it means the ip used by neuron locally
-            "host": "127.0.0.1", ### USER INPUT ###
-            # // required, client: port means the tcp port of the remote device. server: it means the tcp port used by neuron locally
-            "port": 502, ### USER INPUT ###
-            # // required, timeout for sending requests to the device
-            "timeout": 3000, ### USER INPUT ###
-            # // required, send reading instruction interval(ms)
-            "interval": 20,
-            # // required, TCP transfer(0) or UDP transfer(1)
-            "transport_mode": 0,
-            # // required, the maximum number of retries after a failed attempt to send a read command
-            "max_retries": 0,
-            # // required, resend reading instruction interval(ms) after a failed attempt to send a read command
-            "retry_interval": 0
-        }
-    }
-    response = requests.post(url, headers=headers, json=data)
-
-    # Print the response
-    print(response.text)
-    print(response.status_code)
-    if response.status_code == 404:
-        return JsonResponse({"not": "exist"})
-
-    ### ADD GROUP ###
-    url = 'http://192.168.1.210:7000/api/v2/group'
-
-    data = {
-        # group name
-        "group": "defaultgroup",
-        # node name
-        "node": "modbus-tcp-node",
-        # read/upload interval(ms)
-        "interval": 10000 ### USER INPUT ###
-    }
-
-    response = requests.post(url, headers=headers, json=data)
-    # Print the response
-    print("group")
-    print(response.text)
-    print(response.status_code)
-    if response.status_code == 400:
-        return JsonResponse({"something": "wrong"})
-    print("group")
-    
-
-
-    ### ADD TAG ###
-
-    return JsonResponse({"good": "dfs"})
+    return 0
 
 def device_setting(request, node, token, host, port):
     headers = {
@@ -1399,13 +1341,16 @@ def get_devices(request, inverter_id=None):
                 print(response.text)
                 print(response.status_code)
 
-                if response.status_code == 200:                    
+                if response.status_code == 200:      
+                             
                     data_dict = response.json()
-                    add_data = {
-                        "host": data_dict["params"]["host"],
-                        "port": data_dict["params"]["port"]
-                    }
-                    data.update(add_data)                                           
+                    if data_dict["error"] == 0:
+                        add_data = {
+                            "host": data_dict["params"]["host"],
+                            "port": data_dict["params"]["port"]
+                        }
+                    
+                        data.update(add_data)                                           
 
                 if response.status_code == 400:
                     return JsonResponse({"something": "wrong"})
@@ -1557,7 +1502,10 @@ def get_devices(request, inverter_id=None):
                     )
                     inverter.full_clean()  # Validate the model fields
                     inverter.save()  # Save the record
-                    # Create in ditto
+                    # Create in neuron
+                    node = "inv" + f'{new_id}'
+                    temp = create_device(node, request)
+                    print(temp)
 
                 except ValidationError as e:
                     return JsonResponse({"error": str(e)}, status=400)
@@ -1567,8 +1515,8 @@ def get_devices(request, inverter_id=None):
                 print(f"PUT request failed with status code {response.status_code}")
                 return JsonResponse({"error": "Something went wrong"}, status=500)
             response = {
-                'id': post_data.get("id"),
-                'site_id': post_data.get("site_id"),
+                'id': new_id,
+                'site_id': site_id,
                 'manufacturer': post_data.get("manufacturer"),
                 'model': post_data.get("model"),
                 'serialNumber': post_data.get("serialNumber"),
@@ -1752,6 +1700,13 @@ def get_tags(request, inverter_id=None):
             data = response.json()
             data = data["tags"]
             print(data)
+            id = 1
+            for entry in data:
+                add_data = {
+                    "id": id
+                }
+                entry.update(add_data)
+                id+=1
            
            
         
@@ -1766,10 +1721,333 @@ def get_tags(request, inverter_id=None):
         return JsonResponse({"message": "GET request parameters printed"})
         
     elif request.method == "POST":
-        add_group(node, None, request)
-        pass
+        json_data = json.loads(request.body)
+        device_id = json_data.get('deviceId')
+
+        node = "inv" + str(device_id)
+
+        token = refresh_token(request)
+        # add_group(node, token, request)
+        # token = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJuZXVyb24iLCJib2R5RW5jb2RlIjowLCJleHAiOjE3MTIyNjAwMjksImlhdCI6MTcxMjI1NjQyOSwiaXNzIjoibmV1cm9uIn0.nHFasAjzoPfkfy46YCutWoOA-QsyrMIXOg94CIoI_HYyLj8bxOftCyaGLJCdSw1bc6qe_jSk9h8s6Y_o4WswaqUNmPQ8nsspJ-kRkAGJWDGn22uVv996BSBCsiWY7zOBtRzfJXMTgRmxkkLhtawfHZVsGqbJyBSd0_5XnL_hD0KydMC8MiGgJdz6JcYr8YjHLL5ozh4F02_03wqSHxi3RVb2mowpRe3UPoHQRV9XpsGrnFO8LpQp5yVIJ6NeHvZKUpajfhgWAoB0DNGxWMDcqLaAno3RYcQKibsChg5HUm8YO9tKsHbuAatbG44ggbm8ZEVZQbdW3xp0bO-tKVXTJQ"
+
+        headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {token}'  # Using f-string to insert the token
+        }
+        url = f'http://192.168.1.210:7000/api/v2/tags'
+        data = {
+            "node": node,
+            "group": "defaultgroup",
+            "tags": [        
+                {
+                    "name": json_data.get('name'),
+                    "address": json_data.get('address'),
+                    "attribute": int(json_data.get('attribute')),
+                    "type": int(json_data.get('type'))
+                }
+            ]
+        }
+        print(data)
+
+        response = requests.post(url, headers=headers, json=data)
+        # Print the response
+        print(response.text)
+        print(response.status_code)
+        if response.status_code == 400:
+            return JsonResponse({"error": "Bad Request"}, status=400)
+        elif response.status_code == 403:
+            return JsonResponse({"error": "Forbidden"}, status=403)
+        elif response.status_code == 200:
+            # data = {
+            #     'siteId': ### TODO find siteId using deviceId later
+            #     'deviceId':json_data.get('deviceId')
+            # }
+            return JsonResponse({"message": "Success"}, status=200)
+
+    
     elif request.method == "PUT":
         add_group(node, None, request)
         pass
     elif request.method == "POST":
         pass
+    else:
+        # Handle other request methods or return a default response
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+
+@csrf_exempt
+def get_connection_ditto_neuron(request, connection_id=None):
+    if request.method == 'GET':
+
+        target_url = os.getenv("BASE_URL_GET_ALL_CONNECTION")
+        username = os.getenv("USERNAME_DEVOPS")
+        password = os.getenv("PASSWORD_DEVOPS")
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Basic "
+            + b64encode((username + ":" + password).encode()).decode("utf-8"),
+        }
+
+        response = requests.get(target_url, headers=headers)
+
+        # Checking if the request was successful (status code 200)
+        if response.status_code == 200:
+            result = []
+            # Parsing the JSON response
+            data = response.json()
+
+            # Handle parameters
+            # Parse query parameters
+            start = int(request.GET.get("_start", 0))
+            end = int(request.GET.get("_end", 10))
+            sort_field = request.GET.get("_sort", "id")
+            site_id = request.GET.get("site_id")
+
+            if connection_id is not None:
+                for item in data:
+                    if item.get("id") == connection_id:
+                        # Constructing dictionary for each item
+                        site = item.get("tags", [])[0]
+                        numeric_part = int(site[len("site") :])
+                        connection_data = {
+                            "id": connection_id,
+                            "uri": item.get("uri"),
+                            "source": item.get("sources", [{}])[0].get(
+                                    "addresses", []
+                                )[0],
+                            "site_id": int(numeric_part),
+                        }
+                        return JsonResponse(connection_data)
+                return JsonResponse({'error':'Not found'}, status=404)
+
+            # Checking if site_id is provided and valid
+            if site_id is not None:
+                try:
+                    site_id = int(site_id)
+                    # Filtering inverters based on site_id
+                    if site_id != 0:
+                        for item in data:
+                            # # Extracting relevant data from each item
+                            site = item.get("tags", [])[0]
+
+                            numeric_part = int(site[len("site") :])
+
+                            if numeric_part == site_id:
+                                print(f"numeric_part == clled")
+                                connection_id = item.get("id")
+                                uri = item.get("uri")
+                                # Accessing nested structures safely with get() to avoid KeyError
+                                source_address = item.get("sources", [{}])[0].get(
+                                    "addresses", []
+                                )[0]
+                                site = item.get("tags", [])[0]
+
+                                # Constructing dictionary for each item
+                                connection_data = {
+                                    "id": connection_id,
+                                    "uri": uri,
+                                    "source": source_address,
+                                    "site_id": int(numeric_part),
+                                }
+                                result.append(connection_data)
+                        print("result")
+                        print(result)
+                except ValueError:
+                    return JsonResponse(
+                        {
+                            "error": "Invalid site_id. Please provide a valid integer value."
+                        },
+                        status=400,
+                    )
+            else:
+                # Handling case where site_id is missing
+                ####
+                #### get all connections
+                # Iterating over items in the JSON data
+                for item in data:
+                    # Extracting relevant data from each item
+                    connection_id = item.get("id")
+                    uri = item.get("uri")
+                    # Accessing nested structures safely with get() to avoid KeyError
+                    source_address = item.get("sources", [{}])[0].get("addresses", [])[
+                        0
+                    ]
+                    site = item.get("tags", [])[0]
+                    numeric_part = site[len("site") :]
+
+                    # Constructing dictionary for each item
+                    connection_data = {
+                        "id": connection_id,
+                        "uri": uri,
+                        "source": source_address,
+                        "site_id": int(numeric_part),
+                    }
+                    result.append(connection_data)
+
+            # Handle sorting,
+            order = request.GET.get("_order", "ASC")
+            print(result)
+            result = handle_request(result, start, end, sort_field, order)
+
+            response = JsonResponse(result, safe=False)
+            response["Access-Control-Expose-Headers"] = "X-Total-Count"
+            response["X-Total-Count"] = len(result)
+            return response
+        else:
+            result = []
+            response = JsonResponse(result, safe=False)
+            response["Access-Control-Expose-Headers"] = "X-Total-Count"
+            response["X-Total-Count"] = len(result)
+    elif request.method == "POST":
+        ### Create connection in Ditto
+        ### Create connection in Neuron
+        pass
+    elif request.method == "PUT":
+        pass
+    elif request.method == "DELETE":
+        pass
+
+        if request.method == 'GET':
+            target_url = os.getenv("BASE_URL_GET_ALL_CONNECTION")
+            username = os.getenv("USERNAME_DEVOPS")
+            password = os.getenv("PASSWORD_DEVOPS")
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": "Basic "
+                + b64encode((username + ":" + password).encode()).decode("utf-8"),
+            }
+
+            response = requests.get(target_url, headers=headers)
+
+            # Checking if the request was successful (status code 200)
+            if response.status_code == 200:
+                result = []
+                # Parsing the JSON response
+                data = response.json()
+
+                # Handle parameters
+                # Parse query parameters
+                start = int(request.GET.get("_start", 0))
+                end = int(request.GET.get("_end", 10))
+                sort_field = request.GET.get("_sort", "id")
+                site_id = request.GET.get("site_id")
+
+                if connection_id is not None:
+                    for item in data:
+                        if item.get("id") == connection_id:
+                            # Constructing dictionary for each item
+                            site = item.get("tags", [])[0]
+                            numeric_part = int(site[len("site") :])
+                            connection_data = {
+                                "id": connection_id,
+                                "uri": item.get("uri"),
+                                "source": item.get("sources", [{}])[0].get(
+                                        "addresses", []
+                                    )[0],
+                                "site_id": int(numeric_part),
+                            }
+                            return JsonResponse(connection_data)
+                    return JsonResponse({'error':'Not found'}, status=404)
+
+                # Checking if site_id is provided and valid
+                if site_id is not None:
+                    try:
+                        site_id = int(site_id)
+                        # Filtering inverters based on site_id
+                        if site_id != 0:
+                            for item in data:
+                                # # Extracting relevant data from each item
+                                site = item.get("tags", [])[0]
+
+                                numeric_part = int(site[len("site") :])
+
+                                if numeric_part == site_id:
+                                    print(f"numeric_part == clled")
+                                    connection_id = item.get("id")
+                                    uri = item.get("uri")
+                                    # Accessing nested structures safely with get() to avoid KeyError
+                                    source_address = item.get("sources", [{}])[0].get(
+                                        "addresses", []
+                                    )[0]
+                                    site = item.get("tags", [])[0]
+
+                                    # Constructing dictionary for each item
+                                    connection_data = {
+                                        "id": connection_id,
+                                        "uri": uri,
+                                        "source": source_address,
+                                        "site_id": int(numeric_part),
+                                    }
+                                    result.append(connection_data)
+                            print("result")
+                            print(result)
+                    except ValueError:
+                        return JsonResponse(
+                            {
+                                "error": "Invalid site_id. Please provide a valid integer value."
+                            },
+                            status=400,
+                        )
+                else:
+                    # Handling case where site_id is missing
+                    ####
+                    #### get all connections
+                    # Iterating over items in the JSON data
+                    for item in data:
+                        # Extracting relevant data from each item
+                        connection_id = item.get("id")
+                        uri = item.get("uri")
+                        # Accessing nested structures safely with get() to avoid KeyError
+                        source_address = item.get("sources", [{}])[0].get("addresses", [])[
+                            0
+                        ]
+                        site = item.get("tags", [])[0]
+                        numeric_part = site[len("site") :]
+
+                        # Constructing dictionary for each item
+                        connection_data = {
+                            "id": connection_id,
+                            "uri": uri,
+                            "source": source_address,
+                            "site_id": int(numeric_part),
+                        }
+                        result.append(connection_data)
+
+                # Handle sorting,
+                order = request.GET.get("_order", "ASC")
+                print(result)
+                result = handle_request(result, start, end, sort_field, order)
+
+                response = JsonResponse(result, safe=False)
+                response["Access-Control-Expose-Headers"] = "X-Total-Count"
+                response["X-Total-Count"] = len(result)
+                return response
+        elif request.method == 'POST':
+            body_str = request.body.decode('utf-8')
+            
+            # Parse the string as JSON
+            post_data = json.loads(body_str)
+            
+            # Print the JSON data
+            print(post_data)
+            connection_data = connection_factory(post_data.get("id"), post_data.get("uri"), post_data.get("source"), post_data.get("siteId"))
+            print(json.dumps(connection_data, indent=4))
+            # Send to ditto
+            target_url = os.getenv("BASE_URL_CREATE_CONNECTION")
+            username = os.getenv("USERNAME_DEVOPS")
+            password = os.getenv("PASSWORD_DEVOPS")
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": "Basic "
+                + b64encode((username + ":" + password).encode()).decode("utf-8"),
+            }
+
+            response = requests.post(target_url, headers=headers, json=connection_data)
+
+            print(response.text)
+            response_data = response.json()
+            if response_data['status'] == 409:
+                data = {'message': 'The Connection with this ID was already created. If you need to update it, remove it first before creating it again.'}
+                return JsonResponse(data, status=400)
+            data = {'message': 'Created a new object'}
+            return JsonResponse(data, status=201)
+ 

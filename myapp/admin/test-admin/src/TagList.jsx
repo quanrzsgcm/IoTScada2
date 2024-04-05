@@ -25,12 +25,11 @@ export const TagList = () => {
     return (
         <List resource="tags" filter={{ deviceId: deviceId }} actions={<ListActions />} empty={false}>
             <Datagrid>
-                <TextField source="manufacturer" />
-                <TextField source="model" />
-                <TextField source="serialNumber" />
-                <TextField source="location" />
-                <TextField source="connectionStatus" />
-                <EditSongButton />
+                <TextField source="name" />
+                <TextField source="attribute" />
+                <TextField source="type" />
+                <TextField source="address" />
+                {/* <EditSongButton /> */}
             </Datagrid>
         </List>
     );
@@ -78,19 +77,16 @@ export const DeviceEdit = () => (
 
 const customAction = () => {
     window.history.go(-1);
-
 }
 
-
-
-export const InverterCreate = () => {
+export const TagCreate = () => {
 
     const notify = useNotify();
     const redirect = useRedirect();
 
     const onSuccess = (data) => {
         notify(`Changes saved`);
-        redirect(`/sites/${data.siteId}/devices/`);
+        redirect(`/sites`);
         console.log(data);
     };
     const inverter = useParams()
@@ -116,11 +112,11 @@ export const InverterCreate = () => {
     return (
         <Create mutationOptions={{ onSuccess }}>
             <SimpleForm>
-                <TextInput defaultValue={id} source="siteId" />
-                <TextInput source="manufacturer" />
-                <TextInput source="model" />
-                <TextInput source="serialNumber" />
-                <TextInput source="location" />
+                <TextInput defaultValue={id} source="deviceId" />
+                <TextInput source="name" />
+                <TextInput source="attribute" />
+                <TextInput source="type" />
+                <TextInput source="address" />
             </SimpleForm>
         </Create>
     );

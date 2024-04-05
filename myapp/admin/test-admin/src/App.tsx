@@ -15,7 +15,8 @@ import { ConnectionDetail } from "./ConnectionDetail";
 import { DeviceList } from "./DeviceList";
 import { DeviceDetail } from "./DeviceDetail";
 import { DeviceCreate } from "./DeviceList";
-import { TagList } from "./TagList";
+import { TagList, TagCreate } from "./TagList";
+
 
 export const App = () => <Admin title="My Custom Admin" catchAll={NotFound} dataProvider={customDataProvider('http://192.168.1.209:8000/myadmin')} dashboard={Dashboard}>
   <Resource name="sites" list={SiteList} icon={PlaceIcon} edit={SiteEdit} show={ShowGuesser} create={SiteCreate}>
@@ -30,4 +31,5 @@ export const App = () => <Admin title="My Custom Admin" catchAll={NotFound} data
   <Resource name="inverters" show={ShowGuesser} create={InverterCreate} />
   <Resource name="devices" show={ShowGuesser} create={DeviceCreate} />
   <Resource name="connections" show={ShowGuesser} create={ConnectionCreate}/>
+  <Resource name="tags" show={ShowGuesser} create={TagCreate}/>
 </Admin>;
