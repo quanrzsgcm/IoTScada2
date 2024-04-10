@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { DownOutlined, UserOutlined } from '@ant-design/icons';
-import { Button, Dropdown, message, Space, Tooltip } from 'antd';
+import { Button, Dropdown, message, Space, Tooltip, ConfigProvider } from 'antd';
 import { DatePicker } from 'antd';
+import '../assets/styles/SiteView.scss'; // Import SCSS file
+//test
+import  App2  from './droptest';
+
 import moment from 'moment'
 
 const App = ({ setDateString, uppersetSelectedLabel }) => {
@@ -48,14 +52,16 @@ const App = ({ setDateString, uppersetSelectedLabel }) => {
     };
     return (
         <Space wrap>
-            <Dropdown menu={menuProps}>
-                <Button>
+            {/* <Dropdown  menu={menuProps} style={{ backgroundColor: 'lightblue'}}> */}
+            <Dropdown menu={menuProps} type="primary" className="custom-dropdown">
+            <Button style={{ backgroundColor: '#043b3e', color: 'white' }}>
                     <Space>
                         {selectedLabel}
-                        <DownOutlined />
+                     
                     </Space>
                 </Button>
             </Dropdown>
+            <App2 value={selectedLabel} setValue={setSelectedLabel}/>
             <MyDatePicker unitsOfTime={selectedLabel} setDateString={setDateString}/>
         </Space>
     );
@@ -80,13 +86,14 @@ const MyDatePicker = ({ unitsOfTime,setDateString }) => {
     const renderDatePicker = () => {
         switch (m_unitsOfTime) {
             case 'Day':
-                return <DatePicker onChange={onChange} defaultValue = {now}/>;
+                return   <DatePicker onChange={onChange} defaultValue={now} style={{ backgroundColor: '#043b3e', color: 'red' }} />
+                             
             case 'Week':
-                return <DatePicker onChange={onChange} picker="week" />;
+                return <DatePicker onChange={onChange} picker="week" style={{ backgroundColor: '#043b3e', color: "red"  }}/>;
             case 'Month':
-                return <DatePicker onChange={onChange} picker="month" />;
+                return <DatePicker onChange={onChange} picker="month" style={{ backgroundColor: '#043b3e', color: "red"  }}/>;
             case 'Year':
-                return <DatePicker onChange={onChange} picker="year" />;
+                return <DatePicker onChange={onChange} picker="year" style={{ backgroundColor: '#043b3e', color: "red"  }}/>;
             default:
                 return null;
         }

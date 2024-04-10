@@ -23,25 +23,45 @@ function App() {
   };
   window.addEventListener('resize', windowHeight);
   windowHeight();
-  return (
-    <BrowserRouter>
-      <AuthProvider>
-        <Routes>
-          <Route path="/" element={
-            <PrivateRoute>
-              <HomePage />
-            </PrivateRoute>} />
-          <Route element={<DashboardLayout />}>
-            <Route path='/site-monitor/siteview' element={<PrivateRoute><SiteView /></PrivateRoute>} />
-            <Route path='/site-monitor/sitekpi' element={<PrivateRoute><SiteKPI /></PrivateRoute>} />
-            <Route path='/site-monitor/addnewdevice' element={<PrivateRoute><PmForm /></PrivateRoute>} />
-            <Route path='/site-monitor/devicelist' element={<PrivateRoute><DeviceList /></PrivateRoute>} />
-          </Route>
-          <Route path="/login" element={<SignIn />} />
-        </Routes>
-      </AuthProvider>
-    </BrowserRouter>
-  );
+  // return (
+  //   <BrowserRouter>
+  //     <AuthProvider>
+  //       <Routes>
+  //         <Route path="/" element={
+  //           <PrivateRoute>
+  //             <HomePage />
+  //           </PrivateRoute>} />
+  //         <Route element={<DashboardLayout />}>
+  //           <Route path='/site-monitor/siteview' element={<PrivateRoute><SiteView /></PrivateRoute>} />
+  //           <Route path='/site-monitor/sitekpi' element={<PrivateRoute><SiteKPI /></PrivateRoute>} />
+  //           <Route path='/site-monitor/addnewdevice' element={<PrivateRoute><PmForm /></PrivateRoute>} />
+  //           <Route path='/site-monitor/devicelist' element={<PrivateRoute><DeviceList /></PrivateRoute>} />
+  //         </Route>
+  //         <Route path="/login" element={<SignIn />} />
+  //       </Routes>
+  //     </AuthProvider>
+  //   </BrowserRouter>
+  // );
+return (
+  <BrowserRouter>
+  <AuthProvider>
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route element={<DashboardLayout />}>
+        <Route path='/site-monitor/siteview' element={<SiteView />} />
+        <Route path='/site-monitor/sitekpi' element={<SiteKPI />} />
+        <Route path='/site-monitor/addnewdevice' element={<PmForm />} />
+        <Route path='/site-monitor/devicelist' element={<DeviceList />} />
+      </Route>
+      <Route path="/login" element={<SignIn />} />
+    </Routes>
+  </AuthProvider>
+</BrowserRouter>
+
+)
+
+
+
 }
 
 export default App;

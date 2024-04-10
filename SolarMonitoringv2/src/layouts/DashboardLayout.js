@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
 import { Outlet } from 'react-router-dom';
+import MyBreadcrumb from '../components/Breadcrumb';
+
 export default function DashboardLayout({ children }) {
   const [toggled, setToggled] = useState(true);
   const handleToggleSidebar = (value) => {
@@ -25,7 +27,7 @@ export default function DashboardLayout({ children }) {
           toggled={toggled}
           handleToggleSidebar={handleToggleSidebar}
         />
-        <div className='w-100 h-100' style={{ overflow: 'auto' }}>
+        <div className='w-100 h-100' style={{ overflow: 'auto' }}>        
           <Outlet />
         </div>
       </div>

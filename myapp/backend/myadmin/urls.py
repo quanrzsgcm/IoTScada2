@@ -19,7 +19,10 @@ urlpatterns = [
     path('create_northapp/', views.create_northapp),
     path('setting_northapp/', views.setting_northapp),
     path('subscribe/', views.subscribe),
-    
     path('tags/', views.get_tags),
+    path('get_connection_ditto_neuron/', views.get_connection_ditto_neuron),
+    path('connectionsnew/', views.get_connection_ditto_neuron),
+
+    
     
 ]

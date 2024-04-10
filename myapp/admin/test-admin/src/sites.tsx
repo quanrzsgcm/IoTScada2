@@ -45,7 +45,7 @@ const ConnectionButton = () => {
     return (
         <Button
             component={Link}
-            to={`/sites/${record.id}/connections`}
+            to={`/sites/${record.id}/connectionsnew`}
             color="primary"
         >
             Connections

@@ -21,4 +21,35 @@
   .selected {
     background-color: lightblue;
   }
+
+  .flex-container {
+    display: flex;
+    height: 115px;
+    align-items: center;
+  }
+  
+  .formatted-text {
+    font-size: 16px;
+    color: #9a9999;
+    font-weight: bold;
+  }
+
+
+
+  .vertical-line {
+    width: 1px;
+    height: 30%;
+    background-color: rgb(255, 255, 255); /* Adjust color as needed */
+    margin: 0 10px; /* Adjust margin as needed */
+  }
+
+  .custom-dropdown .ant-dropdown {
+    background-color: rgb(255, 0, 0);
+    padding: 10px;
+    border-radius: 5px;
+  }
+  
+  .custom-dropdown .ant-dropdown-menu {
+    background-color: rgb(255, 0, 0);
+  }
   

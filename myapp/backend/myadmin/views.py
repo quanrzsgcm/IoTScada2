@@ -11,6 +11,7 @@ import json
 from django.db.models import Max
 import logging
 import uuid
+import pprint
 
 logger = logging.getLogger(__name__)
 
@@ -1218,10 +1219,7 @@ def change_middle_string(original_string, new_middle):
     return modified_string
 
 
-@csrf_exempt
-def setting_northapp(request):
-    token = request.session.get('jwt_token')
-
+def setting_northapp(node, host, port, request, token):
     headers = {
     'Content-Type': 'application/json',
     'Authorization': f'Bearer {token}'  # Using f-string to insert the token
@@ -1233,14 +1231,14 @@ def setting_northapp(request):
     print(client_id)
 
     req_string = "/neuron/ore/write/req"
-    new_node = "mqtttest"  # Or any other string you want to use
+    new_node = node
     new_req_string = change_middle_string(req_string, new_node)
     req_string = "/neuron/ore/write/resp"
-    new_node = "mqtttest"  # Or any other string you want to use
+    new_node = node
     new_resp_string = change_middle_string(req_string, new_node)
 
     data = {
-        "node": "mqtttest",
+        "node": node,
         "params":{
             "client-id": client_id,
             "qos":0,
@@ -1249,14 +1247,16 @@ def setting_northapp(request):
             "write-resp-topic": new_resp_string,
             "offline-cache":False,
             "cache-sync-interval":100,
-            "host":"broker.emqx.io",
-            "port":1883,
+            "host": host,
+            "port": int(port),
             "username":"",
             "password":"",
             "ssl":False
         }
     }
-    
+    print(data)
+    print(data)
+    print(data)
 
     response = requests.post(url, headers=headers, json=data)
     # Print the response
@@ -1267,43 +1267,59 @@ def setting_northapp(request):
     if response.status_code == 400:
         return JsonResponse({"something": "wrong"})
     if response.status_code == 403:
-        refresh_token(request)
-        return setting_northapp(request)
+        return JsonResponse({"something": "wrong"})
 
     return JsonResponse({"good": "dfs"})
 
 @csrf_exempt
-def subscribe(request):
-    token = request.session.get('jwt_token')
+def subscribe(siteId, node, topic, request, token):
+    ### find all inverter has a siteId = 2
+
+    inverters = Inverter.objects.filter(site=siteId)
+
+    # 
+    driver_list = []
+    # Process the retrieved inverters
+    for inverter in inverters:
+        # Example action: Print inverter details
+        print("Inverter ID:", inverter.inverterID)
+        driver = "inv" + str(inverter.inverterID)
+        driver_list.append(driver)
+    group = []
+    for entry in driver_list:
+        group_template = {
+            "driver": entry,  # Assign entry to 'driver' key
+            "group": "defaultgroup",
+            "params": {
+                "topic": topic  # SAME AS DITTO
+            }
+        }
+        group.append(group_template)  
 
     headers = {
     'Content-Type': 'application/json',
     'Authorization': f'Bearer {token}'  # Using f-string to insert the token
     }
-    url = 'http://192.168.1.210:7000/api/v2/subscribe'
+    url = 'http://192.168.1.210:7000/api/v2/subscribes'
 
     data = {
-        "app": "mqtttest",
-        "driver": "modbus-tcp-node",
-        "group": "defaultgroup",
-        "params": {
-            "topic": "/neuron/mqtt/group-1"
-        }
+        "app": node,
+        "groups": group,
     }  
+    print(data)
+    try:
+        response = requests.post(url, headers=headers, json=data)
+        # Print the response
+        print(response.text)
+        print(response.status_code)
 
-    response = requests.post(url, headers=headers, json=data)
-    # Print the response
-    print(response.text)
-    print(response.status_code)
+        if response.status_code == 400:
+            return JsonResponse({"something": "wrong"})
+        if response.status_code == 403:
+            return JsonResponse({"good": "dfs"})
+    except Exception as e:
+        print(str(e))
 
-
-    if response.status_code == 400:
-        return JsonResponse({"something": "wrong"})
-    if response.status_code == 403:
-        refresh_token(request)
-        return setting_northapp(request)
-
-    return JsonResponse({"good": "dfs"})
     
 @csrf_exempt
 def get_devices(request, inverter_id=None):
@@ -1344,13 +1360,19 @@ def get_devices(request, inverter_id=None):
                 if response.status_code == 200:      
                              
                     data_dict = response.json()
-                    if data_dict["error"] == 0:
+                    if "error" in data_dict:
+                        # "error" key exists in data_dict
+                        print("Error exists:", data_dict["error"])
+                    else:
+                        # Nếu "error" tồn tại và có giá trị là 0, tiếp tục thêm dữ liệu
                         add_data = {
                             "host": data_dict["params"]["host"],
                             "port": data_dict["params"]["port"]
                         }
-                    
-                        data.update(add_data)                                           
+                        
+                        data.update(add_data)  
+                
+                                                              
 
                 if response.status_code == 400:
                     return JsonResponse({"something": "wrong"})
@@ -1538,7 +1560,7 @@ def get_devices(request, inverter_id=None):
             node = str(id)
             node = "inv" + node
             host = put_data.get("host")
-            port = put_data.get("port")
+            port = int(put_data.get("port"))
             print("host")
             print(host)
             print("node")
@@ -1613,7 +1635,7 @@ def get_devices(request, inverter_id=None):
 
                     # Save the record
                     inverter.save()       
-                    token = request.session.get('jwt_token')
+                    token = refresh_token(request)
 
                     temp = device_setting(request, node, token, host, port)
                     if temp == 1:
@@ -1774,6 +1796,86 @@ def get_tags(request, inverter_id=None):
         # Handle other request methods or return a default response
         return JsonResponse({"error": "Method not allowed"}, status=405)
 
+def connection_factory_ditto_neuron(id, siteId, brokeruri, port, uptopic, ):
+    origin_connection = {
+        "targetActorSelection": "/system/sharding/connection",
+        "headers": {
+            "aggregate": False
+        },
+        "piggybackCommand": {
+            "type": "connectivity.commands:createConnection",
+            "connection": {
+                "id": "mqtt-connection-source-1",
+                "connectionType": "mqtt",
+                "connectionStatus": "open",
+                "failoverEnabled": True,
+                "uri": "tcp://test.mosquitto.org:1883",
+                "sources": [
+                    {
+                        "addresses": [
+                            "my.inverters/#"
+                        ],
+                        "authorizationContext": [
+                            "nginx:ditto"
+                        ],
+                        "qos": 0,
+                        "filters": []
+                    }
+                ],
+                "mappingContext": {
+                    "mappingEngine": "JavaScript",
+                    "options": {
+                        "incomingScript": "function mapToDittoProtocolMsg(headers, textPayload, bytePayload, contentType) {const jsonString = String.fromCharCode.apply(null, new Uint8Array(bytePayload));const jsonData = JSON.parse(jsonString);const thingId = [\"my.inverter\", \"inv01\"];const value = {measurements: {properties: {capacity: jsonData.values.capacity,internalTemp: jsonData.values.internalTemp,inputPower: jsonData.values.inputPower,gridFrequency: jsonData.values.gridFrequency,powerFactor: jsonData.values.powerFactor,}}};thingId[0]= 'my.inverter';thingId[1]= jsonData.node;return Ditto.buildDittoProtocolMsg(thingId[0], thingId[1], 'things', 'twin', 'commands', 'modify', '/features', headers, value);}",
+                        "outgoingScript": "function mapFromDittoProtocolMsg(namespace, id, group, channel, criterion, action, path, dittoHeaders, value, status, extra) {return null;}",
+                        "loadBytebufferJS": "false",
+                        "loadLongJS": "false"
+                    }
+                },
+                "tags": [
+                    "site2"
+                ]
+            }
+        }
+    }    
+
+    site = "site" + str(siteId)
+    print(site)
+    print(brokeruri)
+    uri = f"tcp://{brokeruri}:{port}"
+    print(uri)
+
+    origin_connection["piggybackCommand"]["connection"]["id"] = id
+    origin_connection["piggybackCommand"]["connection"]["uri"] = uri
+    origin_connection["piggybackCommand"]["connection"]["sources"][0]["addresses"][0] = uptopic
+    origin_connection["piggybackCommand"]["connection"]["tags"][0] = site
+
+    return origin_connection
+
+def add_node(node, mytype, request, token):  
+
+    headers = {
+    'Content-Type': 'application/json',
+    'Authorization': f'Bearer {token}'  # Using f-string to insert the token
+    }
+
+    # Define the JSON data
+    data = {
+        "name": node,
+        "plugin": mytype,
+    }
+    url = 'http://192.168.1.210:7000/api/v2/node'
+    # Send the POST request
+    response = requests.post(url, headers=headers, json=data)
+
+    # Print the response
+    print(response.text)
+    print(response.status_code)
+    if response.status_code == 409:
+        return 409
+    
+    return 0
+
+
 @csrf_exempt
 def get_connection_ditto_neuron(request, connection_id=None):
     if request.method == 'GET':
@@ -1898,156 +2000,88 @@ def get_connection_ditto_neuron(request, connection_id=None):
             response["Access-Control-Expose-Headers"] = "X-Total-Count"
             response["X-Total-Count"] = len(result)
     elif request.method == "POST":
+        token = refresh_token(request)
+        body_str = request.body.decode('utf-8')
+            
+        # Parse the string as JSON
+        post_data = json.loads(body_str)
+        node = post_data.get("id")
+        host = post_data.get("host")
+        port = post_data.get("port")
+        siteId = post_data.get("siteId")
+        topic = post_data.get("topic")
         ### Create connection in Ditto
+        connection_data = connection_factory_ditto_neuron(node, siteId, host, port, topic)
+
+    
+        # Send to ditto
+        target_url = os.getenv("BASE_URL_CREATE_CONNECTION")
+        username = os.getenv("USERNAME_DEVOPS")
+        password = os.getenv("PASSWORD_DEVOPS")
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Basic "
+            + b64encode((username + ":" + password).encode()).decode("utf-8"),
+        }
+        connection_data_json = json.dumps(connection_data)
+        connection_data_json_beautified = json.dumps(connection_data, indent=4)
+
+        # Print the beautified JSON string
+        print(connection_data_json_beautified)
+
+        response = requests.post(target_url, headers=headers, json=connection_data)
+        print("Status code:", response.status_code)
+
+        print(response.text)
+        # response_data = response.json()
+        # if response_data['status'] == 409:
+        #     data = {'message': 'The Connection with this ID was already created. If you need to update it, remove it first before creating it again.'}
+        #     return JsonResponse(data, status=400)
+
         ### Create connection in Neuron
-        pass
+        add_node(node, "MQTT",request, token)
+        setting_northapp(node, host, port, request, token)
+        subscribe(siteId, node, topic, request, token)
+        return JsonResponse({"df": "df"})
     elif request.method == "PUT":
         pass
     elif request.method == "DELETE":
         pass
 
-        if request.method == 'GET':
-            target_url = os.getenv("BASE_URL_GET_ALL_CONNECTION")
-            username = os.getenv("USERNAME_DEVOPS")
-            password = os.getenv("PASSWORD_DEVOPS")
-            headers = {
-                "Content-Type": "application/json",
-                "Authorization": "Basic "
-                + b64encode((username + ":" + password).encode()).decode("utf-8"),
-            }
 
-            response = requests.get(target_url, headers=headers)
-
-            # Checking if the request was successful (status code 200)
-            if response.status_code == 200:
-                result = []
-                # Parsing the JSON response
-                data = response.json()
-
-                # Handle parameters
-                # Parse query parameters
-                start = int(request.GET.get("_start", 0))
-                end = int(request.GET.get("_end", 10))
-                sort_field = request.GET.get("_sort", "id")
-                site_id = request.GET.get("site_id")
-
-                if connection_id is not None:
-                    for item in data:
-                        if item.get("id") == connection_id:
-                            # Constructing dictionary for each item
-                            site = item.get("tags", [])[0]
-                            numeric_part = int(site[len("site") :])
-                            connection_data = {
-                                "id": connection_id,
-                                "uri": item.get("uri"),
-                                "source": item.get("sources", [{}])[0].get(
-                                        "addresses", []
-                                    )[0],
-                                "site_id": int(numeric_part),
-                            }
-                            return JsonResponse(connection_data)
-                    return JsonResponse({'error':'Not found'}, status=404)
-
-                # Checking if site_id is provided and valid
-                if site_id is not None:
-                    try:
-                        site_id = int(site_id)
-                        # Filtering inverters based on site_id
-                        if site_id != 0:
-                            for item in data:
-                                # # Extracting relevant data from each item
-                                site = item.get("tags", [])[0]
-
-                                numeric_part = int(site[len("site") :])
-
-                                if numeric_part == site_id:
-                                    print(f"numeric_part == clled")
-                                    connection_id = item.get("id")
-                                    uri = item.get("uri")
-                                    # Accessing nested structures safely with get() to avoid KeyError
-                                    source_address = item.get("sources", [{}])[0].get(
-                                        "addresses", []
-                                    )[0]
-                                    site = item.get("tags", [])[0]
-
-                                    # Constructing dictionary for each item
-                                    connection_data = {
-                                        "id": connection_id,
-                                        "uri": uri,
-                                        "source": source_address,
-                                        "site_id": int(numeric_part),
-                                    }
-                                    result.append(connection_data)
-                            print("result")
-                            print(result)
-                    except ValueError:
-                        return JsonResponse(
-                            {
-                                "error": "Invalid site_id. Please provide a valid integer value."
-                            },
-                            status=400,
-                        )
-                else:
-                    # Handling case where site_id is missing
-                    ####
-                    #### get all connections
-                    # Iterating over items in the JSON data
-                    for item in data:
-                        # Extracting relevant data from each item
-                        connection_id = item.get("id")
-                        uri = item.get("uri")
-                        # Accessing nested structures safely with get() to avoid KeyError
-                        source_address = item.get("sources", [{}])[0].get("addresses", [])[
-                            0
-                        ]
-                        site = item.get("tags", [])[0]
-                        numeric_part = site[len("site") :]
-
-                        # Constructing dictionary for each item
-                        connection_data = {
-                            "id": connection_id,
-                            "uri": uri,
-                            "source": source_address,
-                            "site_id": int(numeric_part),
-                        }
-                        result.append(connection_data)
-
-                # Handle sorting,
-                order = request.GET.get("_order", "ASC")
-                print(result)
-                result = handle_request(result, start, end, sort_field, order)
-
-                response = JsonResponse(result, safe=False)
-                response["Access-Control-Expose-Headers"] = "X-Total-Count"
-                response["X-Total-Count"] = len(result)
-                return response
-        elif request.method == 'POST':
-            body_str = request.body.decode('utf-8')
+#     """
+#    elif request.method == 'POST':
+#             body_str = request.body.decode('utf-8')
             
-            # Parse the string as JSON
-            post_data = json.loads(body_str)
+#             # Parse the string as JSON
+#             post_data = json.loads(body_str)
             
-            # Print the JSON data
-            print(post_data)
-            connection_data = connection_factory(post_data.get("id"), post_data.get("uri"), post_data.get("source"), post_data.get("siteId"))
-            print(json.dumps(connection_data, indent=4))
-            # Send to ditto
-            target_url = os.getenv("BASE_URL_CREATE_CONNECTION")
-            username = os.getenv("USERNAME_DEVOPS")
-            password = os.getenv("PASSWORD_DEVOPS")
-            headers = {
-                "Content-Type": "application/json",
-                "Authorization": "Basic "
-                + b64encode((username + ":" + password).encode()).decode("utf-8"),
-            }
+#             # Print the JSON data
+#             print(post_data)
+#             connection_data = connection_factory(post_data.get("id"), post_data.get("uri"), post_data.get("source"), post_data.get("siteId"))
+#             print(json.dumps(connection_data, indent=4))
+#             # Send to ditto
+#             target_url = os.getenv("BASE_URL_CREATE_CONNECTION")
+#             username = os.getenv("USERNAME_DEVOPS")
+#             password = os.getenv("PASSWORD_DEVOPS")
+#             headers = {
+#                 "Content-Type": "application/json",
+#                 "Authorization": "Basic "
+#                 + b64encode((username + ":" + password).encode()).decode("utf-8"),
+#             }
 
-            response = requests.post(target_url, headers=headers, json=connection_data)
+#             response = requests.post(target_url, headers=headers, json=connection_data)
 
-            print(response.text)
-            response_data = response.json()
-            if response_data['status'] == 409:
-                data = {'message': 'The Connection with this ID was already created. If you need to update it, remove it first before creating it again.'}
-                return JsonResponse(data, status=400)
-            data = {'message': 'Created a new object'}
-            return JsonResponse(data, status=201)
- 
+#             print(response.text)
+#             response_data = response.json()
+#             if response_data['status'] == 409:
+#                 data = {'message': 'The Connection with this ID was already created. If you need to update it, remove it first before creating it again.'}
+#                 return JsonResponse(data, status=400)
+#             data = {'message': 'Created a new object'}
+#             return JsonResponse(data, status=201)
+   
+   
+   
+   
+#    """
+   
