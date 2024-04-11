@@ -18,6 +18,8 @@ import { faCircle } from '@fortawesome/free-solid-svg-icons';
 import { BsAirplaneFill } from "react-icons/bs";
 import { IoLocationOutline } from "react-icons/io5";
 import { IoInformationCircleOutline } from "react-icons/io5";
+import Chart1 from '../assets/charts/Chart_Templatetotale';
+import Chart2 from '../assets/charts/Chart2';
 
 
 export default function SiteView() {
@@ -140,6 +142,10 @@ export default function SiteView() {
       </div>
 
       <div style={{ backgroundColor: '#043b3e', height: '50px', width: '100%', marginTop: '20px', display: 'flex', alignItems: 'center' }}>
+        &nbsp;
+        &nbsp;
+        &nbsp;
+
         <span style={{ color: '#9cafb0' }}>Capacity</span>
         <span style={{ color: 'white' }}>{placeholdervalue}</span>
         <span style={{ color: '#9cafb0' }}>Temperature</span>
@@ -147,24 +153,31 @@ export default function SiteView() {
         <span style={{ color: '#9cafb0' }}>Yield</span>
         <span style={{ color: '#9cafb0' }}>Production</span>
         <span style={{ color: '#9cafb0' }}>Power Ratio</span>
-        
+
         <span style={{ marginLeft: 'auto' }}>
 
-<Tooltip placement="rightTop"  tooltipColor="red" title="prompt text"  key="green" overlayInnerStyle={{ backgroundColor: "black"}} overlayStyle={{ border: "red"}}>
-<IoInformationCircleOutline/>
-      </Tooltip>
+          <Tooltip placement="rightTop" tooltipColor="red" title="prompt text" key="green" overlayInnerStyle={{ backgroundColor: "black" }} overlayStyle={{ border: "red" }}>
+            <IoInformationCircleOutline />
+          </Tooltip>
 
-          </span>
-        
-      
+        </span>
         &nbsp;
         &nbsp;
         &nbsp;
-
       </div>
-
-
       < MyChart2e rawData={eData}></MyChart2e>
+      <div style={{ display: 'flex', justifyContent: 'space-between', backgroundColor: '#0a4e5e', height: '300px' }}>
+        <div style={{ flex: 1, marginRight: '10px' }}>
+          <Chart1/>
+        </div>
+        <div style={{ flex: 1, marginLeft: '10px' }}>
+          <Chart2/>
+        </div>
+      </div>
+      &nbsp;
+      <div style={{ flex: '1 0 10px' }}>Inverter Ranking </div>
+
+
 
       <div> <DataTable /> </div>
     </MainviewLayout>
