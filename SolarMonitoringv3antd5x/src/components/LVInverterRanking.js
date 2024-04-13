@@ -110,11 +110,26 @@ const onChange = (pagination, filters, sorter, extra) => {
   console.log('params', pagination, filters, sorter, extra);
 };
 const InverterRanking = () => <div>
+  <style>
+      {`
+      div::-webkit-scrollbar {
+        width: 20px;
+        height: 6px;
+      }
+      div::-webkit-scrollbar-thumb {
+        background: red;
+      }
+      div:hover::-webkit-scrollbar-thumb {
+        background: #888;
+      }
+      `}
+    </style>
 <ConfigProvider
   theme={{
     components: {
       Table: {
-        cellFontSize:14,
+        borderColor: 'transparent',
+        cellFontSize: 14,
         cellPaddingBlock: 8,
         headerBg: "linear-gradient(to right, #05323e, #053e4d)",
         headerBorderRadius: 0,
@@ -122,9 +137,9 @@ const InverterRanking = () => <div>
         colorBgContainer: "linear-gradient(to right, #05323e, #053e4d)",
         colorText: "white",
         colorTextHeading: "grey",
-        stickyScrollBarBg: "white",
-        stickyScrollBarBorderRadius: 100
-            },
+        // stickyScrollBarBg: "rgba(255,255,255,0.7)",
+        // stickyScrollBarBorderRadius: 100,
+      },
     },
   }}
 >

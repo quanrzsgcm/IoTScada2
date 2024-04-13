@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DownOutlined } from '@ant-design/icons';
-import { Form, Radio, Space, Switch, Table, Checkbox } from 'antd';
-const data = [];
+import { Form, Radio, Space, Switch, Table, Checkbox, Input, Button } from 'antd';
+import Highlighter from 'react-highlight-words';
+import { SearchOutlined } from '@ant-design/icons';
+import '../assets/styles/customscrollbar2.css'
 
+const data = [];
 for (let i = 0; i < 10; i++) {
     const record = {
         key: i.toString(),
@@ -21,90 +24,147 @@ for (let i = 0; i < 10; i++) {
     };
     data.push(record);
 }
-
 console.log(data);
-
-
-
-
-
 
 const defaultTitle = () => 'Here is title';
 const defaultFooter = () => 'Here is footer';
 const LVDeviceList = () => {
-    
-const columns = [
-    {
-        title: 'Inverter Name',
-        dataIndex: 'name',
-    },
-    {
-        title: 'Label',
-        dataIndex: 'label',
-    },
-    {
-        title: 'Stage',
-        dataIndex: 'stage',
-        sorter: (a, b) => {
-            // Define numerical values for each stage
-            const stageOrder = {
-                Running: 1,
-                Init: 2,
-            };
+    const [searchText, setSearchText] = useState('');
+    const [searchedColumn, setSearchedColumn] = useState('');
 
-            // Get the numerical value of the stage for each row
-            const stageA = stageOrder[a.stage];
-            const stageB = stageOrder[b.stage];
-
-            // Compare the numerical values
-            return stageA - stageB;
+    const handleSearch = (selectedKeys, confirm, dataIndex) => {
+        confirm();
+        setSearchText(selectedKeys[0]);
+        setSearchedColumn(dataIndex);
+    };
+    const handleReset = (clearFilters) => {
+        clearFilters();
+        setSearchText('');
+    };
+    const columns = [
+        {
+            title: 'Inverter Name',
+            dataIndex: 'name',
+            width: 100,
+            fixed: 'left',
+            // Add filterDropdown and filterIcon for search box
+            filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) =>
+            (
+                <div style={{ padding: 8 }}>
+                    <Input
+                        id="search-input"
+                        placeholder={`Search Inverter Name`}
+                        value={selectedKeys[0]}
+                        // onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+                        onChange={(e) => {
+                            setSelectedKeys(e.target.value ? [e.target.value] : []);
+                        }}
+                        onPressEnter={() => handleSearch(selectedKeys, confirm, 'name')}
+                        style={{ width: 188, marginBottom: 8, display: 'block' }}
+                    />
+                    <Space>
+                        <Button
+                            type="primary"
+                            onClick={() => handleSearch(selectedKeys, confirm, 'name')}
+                            icon={<SearchOutlined />}
+                            size="small"
+                            style={{ width: 90 }}
+                        >
+                            Search
+                        </Button>
+                        <Button onClick={() => handleReset(clearFilters)} size="small" style={{ width: 90 }}>
+                            Reset
+                        </Button>
+                    </Space>
+                </div>
+            ),
+            filterIcon: (filtered) => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
+            onFilter: (value, record) => record.name.toLowerCase().includes(value.toLowerCase()),
+            onFilterDropdownVisibleChange: (visible) => {
+                if (visible) {
+                    setTimeout(() => document.getElementById('search-input').select(), 100);
+                }
+            },
+            render: (text) => searchedColumn === 'name' ? (
+                <Highlighter
+                    highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+                    searchWords={[searchText]}
+                    autoEscape
+                    textToHighlight={text.toString()}
+                />
+            ) : text,
         },
-    },
-    {
-        title: 'Stage start on',
-        dataIndex: 'stage_start_on',
-    },
-    {
-        title: 'Stage duration (h)',
-        dataIndex: 'stage_duration ',
-    },
-    {
-        title: 'Meter-read Total Energy',
-        dataIndex: 'meter_read_total_energy',
-    },
-    {
-        title: 'Active Power(kW)',
-        dataIndex: 'active_power',
-    },
-    {
-        title: 'Input Power(kW)',
-        dataIndex: 'input_power',
-    },
-    {
-        title: 'Efficiency',
-        dataIndex: 'efficiency',
-    },
-    {
-        title: 'Grid Freq. (Hz)',
-        dataIndex: 'grid_freq',
-    },
-    {
-        title: 'Efficiency',
-        dataIndex: 'efficiency',
-    },
-    {
-        title: 'Production Today (kWh)',
-        dataIndex: 'production_today',
-    },
-    {
-        title: 'Yield Today (h)',
-        dataIndex: 'yield_today',
-    },
+        {
+            title: 'Label',
+            dataIndex: 'label',
+            width: 100,
+            fixed: 'left',
+        },
+        {
+            title: 'Stage',
+            dataIndex: 'stage',
+            sorter: (a, b) => {
+                // Define numerical values for each stage
+                const stageOrder = {
+                    Running: 1,
+                    Init: 2,
+                };
 
-];
+                // Get the numerical value of the stage for each row
+                const stageA = stageOrder[a.stage];
+                const stageB = stageOrder[b.stage];
+
+                // Compare the numerical values
+                return stageA - stageB;
+            },
+        },
+        {
+            title: 'Stage start on',
+            dataIndex: 'stage_start_on',
+        },
+        {
+            title: 'Stage duration (h)',
+            dataIndex: 'stage_duration ',
+        },
+        {
+            title: 'Meter-read Total Energy',
+            dataIndex: 'meter_read_total_energy',
+            sorter: (a, b) => a.meter_read_total_energy - b.meter_read_total_energy,
+        },
+        {
+            title: 'Active Power(kW)',
+            dataIndex: 'active_power',
+            sorter: (a, b) => a.active_power - b.active_power,
+        },
+        {
+            title: 'Input Power(kW)',
+            dataIndex: 'input_power',
+            sorter: (a, b) => a.input_power - b.input_power,
+        },
+        {
+            title: 'Efficiency',
+            dataIndex: 'efficiency',
+            sorter: (a, b) => a.efficiency - b.efficiency,
+        },
+        {
+            title: 'Grid Freq. (Hz)',
+            dataIndex: 'grid_freq',
+            sorter: (a, b) => a.grid_freq - b.grid_freq,
+        },
+        {
+            title: 'Production Today (kWh)',
+            dataIndex: 'production_today',
+            sorter: (a, b) => a.production_today - b.production_today,
+        },
+        {
+            title: 'Yield Today (h)',
+            dataIndex: 'yield_today',
+            sorter: (a, b) => a.yield_today - b.yield_today,
+        },
+
+    ];
+
     const defaultCheckedList = columns.map((item) => item.dataIndex);
-    console.log("defaultCheckedList")
-    console.log(defaultCheckedList)
     const [checkedList, setCheckedList] = useState(defaultCheckedList);
     const options = columns.map(({ dataIndex, title }) => ({
         label: title,
@@ -114,6 +174,8 @@ const columns = [
         ...item,
         hidden: !checkedList.includes(item.dataIndex),
     }));
+
+
     const [bordered, setBordered] = useState(false);
     const [loading, setLoading] = useState(false);
     const [size, setSize] = useState('large');
@@ -128,169 +190,57 @@ const columns = [
     const [ellipsis, setEllipsis] = useState(false);
     const [yScroll, setYScroll] = useState(false);
     const [xScroll, setXScroll] = useState();
-    const handleBorderChange = (enable) => {
-        setBordered(enable);
-    };
-    const handleLoadingChange = (enable) => {
-        setLoading(enable);
-    };
-    const handleSizeChange = (e) => {
-        setSize(e.target.value);
-    };
-    const handleTableLayoutChange = (e) => {
-        setTableLayout(e.target.value);
-    };
+    
 
-    const handleEllipsisChange = (enable) => {
-        setEllipsis(enable);
-    };
-    const handleTitleChange = (enable) => {
-        setShowTitle(enable);
-    };
-    const handleHeaderChange = (enable) => {
-        setShowHeader(enable);
-    };
-    const handleFooterChange = (enable) => {
-        setShowFooter(enable);
-    };
-    const handleRowSelectionChange = (enable) => {
-        setRowSelection(enable ? {} : undefined);
-    };
-    const handleYScrollChange = (enable) => {
-        setYScroll(enable);
-    };
-    const handleXScrollChange = (e) => {
-        setXScroll(e.target.value);
-    };
-    const handleDataChange = (newHasData) => {
-        setHasData(newHasData);
-    };
-    const scroll = {};
-    if (yScroll) {
-        scroll.y = 240;
-    }
-    if (xScroll) {
-        scroll.x = '100vw';
-    }
-    const tableColumns = columns.map((item) => ({
-        ...item,
-        ellipsis,
-    }));
-    if (xScroll === 'fixed') {
-        tableColumns[0].fixed = true;
-        tableColumns[tableColumns.length - 1].fixed = 'right';
-    }
-    const tableProps = {
-        bordered,
-        loading,
-        size,
-        title: showTitle ? defaultTitle : undefined,
-        showHeader,
-        footer: showFooter ? defaultFooter : undefined,
-        rowSelection,
-        scroll,
-        tableLayout,
-    };
     return (
-        <>
-            <Checkbox.Group
-                value={checkedList}
-                options={options}
-                onChange={(value) => {
-                    setCheckedList(value);
-                }}
+        <>          
+            {/* <div style={{ display: 'flex', alignItems: 'center' }}>
+                {/* // i want to create another input, but it actually use filterDropdown to function */}
+            {/* <Input
+                    placeholder="Search Inverter Name"
+                    style={{ width: 200, marginRight: 8 }}
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    onPressEnter={() => handleSearch([searchText], () => {}, 'name')}
+                />
+                <Button type="primary" onClick={() => handleSearch([searchText], () => {}, 'name')}>
+                    Search
+                </Button>
+                <Button onClick={() => handleReset(() => {})}>Reset</Button>
+                <span> Action level: </span>
+                <Input placeholder="2" style={{width: 100, marginRight: 8 }} />
+                <Input placeholder="3" style={{width: 100, marginRight: 8 }}/>
+            </div> */}
+
+            <Input
+                id="search-input"
+                placeholder={`Search Inverter Name`}
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                onPressEnter={() => handleSearch(searchText, () => { }, 'name')}
+                style={{ width: 188, marginBottom: 8, display: 'block' }}
             />
-            <Form
-                layout="inline"
-                className="components-table-demo-control-bar"
-                style={{
-                    marginBottom: 16,
-                }}
-            >
-                <Form.Item label="Bordered">
-                    <Switch checked={bordered} onChange={handleBorderChange} />
-                </Form.Item>
-                <Form.Item label="loading">
-                    <Switch checked={loading} onChange={handleLoadingChange} />
-                </Form.Item>
-                <Form.Item label="Title">
-                    <Switch checked={showTitle} onChange={handleTitleChange} />
-                </Form.Item>
-                <Form.Item label="Column Header">
-                    <Switch checked={showHeader} onChange={handleHeaderChange} />
-                </Form.Item>
-                <Form.Item label="Footer">
-                    <Switch checked={showFooter} onChange={handleFooterChange} />
-                </Form.Item>
-
-
-                <Form.Item label="Checkbox">
-                    <Switch checked={!!rowSelection} onChange={handleRowSelectionChange} />
-                </Form.Item>
-                <Form.Item label="Fixed Header">
-                    <Switch checked={!!yScroll} onChange={handleYScrollChange} />
-                </Form.Item>
-                <Form.Item label="Has Data">
-                    <Switch checked={!!hasData} onChange={handleDataChange} />
-                </Form.Item>
-                <Form.Item label="Ellipsis">
-                    <Switch checked={!!ellipsis} onChange={handleEllipsisChange} />
-                </Form.Item>
-                <Form.Item label="Size">
-                    <Radio.Group value={size} onChange={handleSizeChange}>
-                        <Radio.Button value="large">Large</Radio.Button>
-                        <Radio.Button value="middle">Middle</Radio.Button>
-                        <Radio.Button value="small">Small</Radio.Button>
-                    </Radio.Group>
-                </Form.Item>
-                <Form.Item label="Table Scroll">
-                    <Radio.Group value={xScroll} onChange={handleXScrollChange}>
-                        <Radio.Button value={undefined}>Unset</Radio.Button>
-                        <Radio.Button value="scroll">Scroll</Radio.Button>
-                        <Radio.Button value="fixed">Fixed Columns</Radio.Button>
-                    </Radio.Group>
-                </Form.Item>
-                <Form.Item label="Table Layout">
-                    <Radio.Group value={tableLayout} onChange={handleTableLayoutChange}>
-                        <Radio.Button value={undefined}>Unset</Radio.Button>
-                        <Radio.Button value="fixed">Fixed</Radio.Button>
-                    </Radio.Group>
-                </Form.Item>
-                <Form.Item label="Pagination Top">
-                    <Radio.Group
-                        value={top}
-                        onChange={(e) => {
-                            setTop(e.target.value);
-                        }}
-                    >
-                        <Radio.Button value="topLeft">TopLeft</Radio.Button>
-                        <Radio.Button value="topCenter">TopCenter</Radio.Button>
-                        <Radio.Button value="topRight">TopRight</Radio.Button>
-                        <Radio.Button value="none">None</Radio.Button>
-                    </Radio.Group>
-                </Form.Item>
-                <Form.Item label="Pagination Bottom">
-                    <Radio.Group
-                        value={bottom}
-                        onChange={(e) => {
-                            setBottom(e.target.value);
-                        }}
-                    >
-                        <Radio.Button value="bottomLeft">BottomLeft</Radio.Button>
-                        <Radio.Button value="bottomCenter">BottomCenter</Radio.Button>
-                        <Radio.Button value="bottomRight">BottomRight</Radio.Button>
-                        <Radio.Button value="none">None</Radio.Button>
-                    </Radio.Group>
-                </Form.Item>
-            </Form>
-            <Table
-                {...tableProps}
+            <Space>
+                <Button
+                    type="primary"
+                    onClick={() => handleSearch(searchText, () => { }, 'name')}
+                    icon={<SearchOutlined />}
+                    size="small"
+                    style={{ width: 90 }}
+                >
+                    Search
+                </Button>
+                <Button onClick={() => handleReset(() => { })} size="small" style={{ width: 90 }}>
+                    Reset
+                </Button>
+            </Space>
+            <Table style={{ marginTop: '100px', width: '100%' }}
                 pagination={{
                     position: [top, bottom],
                 }}
-                columns={tableColumns}
+                columns={newColumns}
                 dataSource={hasData ? data : []}
-                scroll={scroll}
+                scroll={{ x: 'max-content' }}
             />
         </>
     );

@@ -6,6 +6,7 @@ import TypeOfDeviceTab from '../components/Tab';
 import PowerMeterDetails from '../components/PowerMeterDetails';
 import { Button } from 'antd';
 import LVDeviceList from '../components/LVDeviceList';
+import LVDeviceDetail from '../components/LVDeviceDetail';
 
 
 export default function DeviceList() {
@@ -13,7 +14,6 @@ export default function DeviceList() {
     document.title = "Device List";
   }, []);
   const [showTable, setshowTable] = useState(true);
-  const [showDetail, setShowDetail] = useState(false);
   const [selectedThing, setSelectedThing] = useState(null);
 
   const updateThing = (value) => {
@@ -21,22 +21,26 @@ export default function DeviceList() {
     console.log("from DL " + value);
   }
 
+  const [showDetail, setShowDetail] = useState(false);
+
   const toggle = () => {
-    setshowTable(!showTable);
-    setShowDetail(showTable);
-  }
+    setShowDetail(!showDetail);
+  };
 
   return (
     <MainviewLayout>
-      <div className='siteview'>Device List</div>
-      {/* <div> */}
-        {showDetail && <Button onClick={toggle}> Back to list </Button>}
-        
-        < LVDeviceList/>
-      {/* </div> */}
-      {/* <div> <TypeOfDeviceTab showState={showTable} selectedThing={selectedThing} updateThing={updateThing} toggleShow={toggle}/></div> */}
-      {/* <div> <PowerMeterDetails showState={showDetail} selectedThing={selectedThing} updateThing={updateThing}/></div> */}
+      <div>
+        {showDetail ? (
+          <Button onClick={toggle}>Back to List</Button>
+        ) : (
+          <Button onClick={toggle}>Show Detail</Button>
+        )}
+      </div>
+      {showDetail ? <LVDeviceDetail /> : <LVDeviceList />}
     </MainviewLayout>
   );
 }
 
+      {/* </div> */}
+      {/* <div> <TypeOfDeviceTab showState={showTable} selectedThing={selectedThing} updateThing={updateThing} toggleShow={toggle}/></div> */}
+      {/* <div> <PowerMeterDetails showState={showDetail} selectedThing={selectedThing} updateThing={updateThing}/></div> */}

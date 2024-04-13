@@ -1,0 +1,25 @@
+/* CSS */
+.ant-table-wrapper {
+    overflow-x: auto; /* Ensure horizontal scrollbar is visible */
+}
+
+/* Targeting the horizontal scrollbar */
+.ant-table-wrapper::-webkit-scrollbar {
+    height: 8px; /* Height of the scrollbar */
+}
+
+/* Track */
+.ant-table-wrapper::-webkit-scrollbar-track {
+    background: #f1f1f1; /* Color of the scrollbar track */
+}
+
+/* Handle */
+.ant-table-wrapper::-webkit-scrollbar-thumb {
+    background: #ff0202; /* Color of the scrollbar handle */
+    border-radius: 4px; /* Border radius of the scrollbar handle */
+}
+
+/* Handle on hover */
+.ant-table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #555; /* Color of the scrollbar handle on hover */
+}

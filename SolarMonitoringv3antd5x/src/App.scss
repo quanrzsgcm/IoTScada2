@@ -61,21 +61,44 @@ $sidebar-bg-color: #01333d;
 //   color: blue;
 // }
 
-/* Your existing CSS styles */
-
 /* Style the scrollbar track */
 ::-webkit-scrollbar {
-  width: 12px; /* width of the scrollbar */
+  width: 8px; /* width of the scrollbar */
 }
 
 /* Style the scrollbar thumb */
 ::-webkit-scrollbar-thumb {
   background-color: #4e8bfc; /* color of the thumb */
-  border-radius: 6px; /* roundness of the thumb */
+  border-radius: 2px; /* roundness of the thumb */
 }
 
 /* Style the scrollbar track when hovered */
 ::-webkit-scrollbar-track:hover {
-  background-color: #f4f4f4;
+  background-color: transparent;
+}
+
+.ant-table-wrapper {
+  overflow-x: auto; /* Ensure horizontal scrollbar is visible */
+}
+
+/* Targeting the horizontal scrollbar */
+.ant-table-wrapper::-webkit-scrollbar {
+  height: 8px; /* Height of the scrollbar */
+}
+
+/* Track */
+.ant-table-wrapper::-webkit-scrollbar-track {
+  background: #ff0000; /* Color of the scrollbar track */
+}
+
+/* Handle */
+.ant-table-wrapper::-webkit-scrollbar-thumb {
+  background: #f70606; /* Color of the scrollbar handle */
+  border-radius: 4px; /* Border radius of the scrollbar handle */
+}
+
+/* Handle on hover */
+.ant-table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #ff0000; /* Color of the scrollbar handle on hover */
 }
 
