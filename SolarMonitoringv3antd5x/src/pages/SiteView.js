@@ -10,17 +10,16 @@ import App from '../components/DropDownButtonTime';
 import { Button, Tooltip } from 'antd'
 import AuthContext from '../context/AuthContext';
 import MyChart2e from '../components/Chart_Templatetotale';
-import { FaHome } from 'react-icons/fa';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faHouseSignal } from '@fortawesome/free-solid-svg-icons';
 import { faSignal } from '@fortawesome/free-solid-svg-icons'
 import { faCircle } from '@fortawesome/free-solid-svg-icons';
-import { BsAirplaneFill } from "react-icons/bs";
 import { IoLocationOutline } from "react-icons/io5";
 import { IoInformationCircleOutline } from "react-icons/io5";
 import Chart1 from '../assets/charts/Chart_Templatetotale';
 import Chart2 from '../assets/charts/Chart2';
-
+import InverterRanking from '../components/LVInverterRanking';
+import { GiElectric } from "react-icons/gi";
+import { MdOutlineSolarPower } from "react-icons/md";
 
 export default function SiteView() {
   const [placeholdervalue, setPlaceholdervalue] = useState(149);
@@ -103,7 +102,8 @@ export default function SiteView() {
       <div className='flex-container'>
 
         <div style={{ flex: '0 0 250px', display: 'flex', alignItems: 'center', backgroundColor: '#1c80ba', height: '100px', padding: '50px' }}>
-          <FontAwesomeIcon icon={faSignal} /> &nbsp;&nbsp;&nbsp;
+          {/* <FontAwesomeIcon icon={faSignal} /> &nbsp;&nbsp;&nbsp; */}
+          <MdOutlineSolarPower  size={50}/> &nbsp;&nbsp;&nbsp;
           <div>
             <div className="formatted-text">Self-consumption</div>
             <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -141,18 +141,23 @@ export default function SiteView() {
         </div>
       </div>
 
-      <div style={{ backgroundColor: '#043b3e', height: '50px', width: '100%', marginTop: '20px', display: 'flex', alignItems: 'center' }}>
+      <div style={{ backgroundColor: '#043b3e', height: '40px', width: '100%', marginTop: '20px', display: 'flex', alignItems: 'center' }}>
         &nbsp;
         &nbsp;
         &nbsp;
 
-        <span style={{ color: '#9cafb0' }}>Capacity</span>
-        <span style={{ color: 'white' }}>{placeholdervalue}</span>
-        <span style={{ color: '#9cafb0' }}>Temperature</span>
-        <span style={{ color: '#9cafb0' }}>Irradiation </span>
-        <span style={{ color: '#9cafb0' }}>Yield</span>
-        <span style={{ color: '#9cafb0' }}>Production</span>
-        <span style={{ color: '#9cafb0' }}>Power Ratio</span>
+        <span style={{ color: '#9cafb0', marginRight: '5px'}}>Capacity</span>
+        <span style={{ color: 'white' , marginRight: '40px'}}>{placeholdervalue}</span>
+        <span style={{ color: '#9cafb0', marginRight: '5px' }}>Temperature</span>
+        <span style={{ color: 'white' , marginRight: '40px'}}>{placeholdervalue}</span>
+        <span style={{ color: '#9cafb0', marginRight: '5px' }}>Irradiation </span>
+        <span style={{ color: 'white' , marginRight: '40px'}}>{placeholdervalue}</span>
+        <span style={{ color: '#9cafb0', marginRight: '5px' }}>Yield</span>
+        <span style={{ color: 'white' , marginRight: '40px'}}>{placeholdervalue}</span>
+        <span style={{ color: '#9cafb0', marginRight: '5px' }}>Production</span>
+        <span style={{ color: 'white' , marginRight: '40px'}}>{placeholdervalue}</span>
+        <span style={{ color: '#9cafb0', marginRight: '5px' }}>Power Ratio</span>
+        <span style={{ color: 'white' , marginRight: '40px'}}>{placeholdervalue}</span>
 
         <span style={{ marginLeft: 'auto' }}>
 
@@ -166,20 +171,44 @@ export default function SiteView() {
         &nbsp;
       </div>
       < MyChart2e rawData={eData}></MyChart2e>
-      <div style={{ display: 'flex', justifyContent: 'space-between', backgroundColor: '#0a4e5e', height: '300px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', backgroundColor: '#0a4e5e', height: '300px' , }}>
         <div style={{ flex: 1, marginRight: '10px' }}>
-          <Chart1/>
+          <Chart1 />
         </div>
         <div style={{ flex: 1, marginLeft: '10px' }}>
-          <Chart2/>
+          <Chart2 />
         </div>
       </div>
-      &nbsp;
-      <div style={{ flex: '1 0 10px' }}>Inverter Ranking </div>
+      
+
+
+      <div style={{ display: 'flex' }}>
+        <div className="custom-scrollbar" style={{ flex: '1', width: '700px', marginRight: '20px', marginTop: '10px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' , verticalAlign:'center'}}>
+            <div>Inverter Ranking</div>
+            <div>
+            <a href="http://localhost:3000/site-monitor/devicelist" style={{  textDecoration: 'none', color: 'inherit', fontSize:'10px' }}>Details</a>
+            </div>
+          </div>
+      
 
 
 
-      <div> <DataTable /> </div>
+
+
+          <div> <InverterRanking /> </div>
+        </div>
+        <div style={{ width: '500px' }}>
+          {/* Content on the right side */}
+        </div>
+      </div>
+
+
+
+
+
+
+
     </MainviewLayout>
   );
 }

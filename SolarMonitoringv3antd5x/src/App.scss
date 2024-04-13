@@ -60,3 +60,22 @@ $sidebar-bg-color: #01333d;
 //   background: #0d0b0b;
 //   color: blue;
 // }
+
+/* Your existing CSS styles */
+
+/* Style the scrollbar track */
+::-webkit-scrollbar {
+  width: 12px; /* width of the scrollbar */
+}
+
+/* Style the scrollbar thumb */
+::-webkit-scrollbar-thumb {
+  background-color: #4e8bfc; /* color of the thumb */
+  border-radius: 6px; /* roundness of the thumb */
+}
+
+/* Style the scrollbar track when hovered */
+::-webkit-scrollbar-track:hover {
+  background-color: #f4f4f4;
+}
+

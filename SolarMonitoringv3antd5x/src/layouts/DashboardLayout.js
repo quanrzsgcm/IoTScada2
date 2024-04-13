@@ -1,11 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
 import { Outlet } from 'react-router-dom';
 import MyBreadcrumb from '../components/Breadcrumb';
+import AuthContext from '../context/AuthContext';
 
 export default function DashboardLayout({ children }) {
   const [toggled, setToggled] = useState(true);
+  const [userRole, setUserRole] = useState('');
+  const { user } = useContext(AuthContext);
+
+  useEffect(() => {
+    // Set userRole based on user.is_staff when user changes
+    if (user && user.is_staff === true) {
+      setUserRole('admin');
+    }
+  }, [user]);
+
   const handleToggleSidebar = (value) => {
     setToggled(!toggled);
     setCollapsed(!collapsed);
@@ -26,8 +37,9 @@ export default function DashboardLayout({ children }) {
           collapsed={collapsed}
           toggled={toggled}
           handleToggleSidebar={handleToggleSidebar}
+          userRole={userRole}
         />
-        <div className='w-100 h-100' style={{ overflow: 'auto' }}>        
+        <div className='w-100 h-100' style={{ overflow: 'auto' }}>
           <Outlet />
         </div>
       </div>

@@ -5,6 +5,11 @@ from .serializers import UserCreateSerializer, UserSerializer
 from .serializers import MyTokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from django.http import JsonResponse
+from django.forms.models import model_to_dict
+
 
 User = get_user_model()
 
@@ -74,3 +79,17 @@ class ChangeUserTimezoneView(APIView):
             return Response(serialized_user.data, status=status.HTTP_200_OK)
 
         return Response({'error': 'Invalid request. Provide a valid timezone.'}, status=status.HTTP_400_BAD_REQUEST)
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_profile(request):
+    user = request.user
+    user_data = {
+        'first_name': user.first_name,
+        'last_name': user.last_name,
+        'email': user.email,
+        'is_staff': user.is_staff,
+        'timezone': user.timezone,
+    }
+
+    return JsonResponse(user_data)

@@ -34,7 +34,8 @@ const Chart2 = () => {
             height: 200,
             toolbar: {
                 show: false
-            }
+            },
+            width: "100%" // Set the width of the chart component
         },
         plotOptions: {
             bar: {
@@ -87,6 +88,7 @@ const Chart2 = () => {
                 series={series}
                 type="line"
                 height={200}
+                width="100%" // Set the width of the chart component
             />
         </div>
     );

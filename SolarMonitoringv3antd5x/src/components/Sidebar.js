@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ProSidebar,
   Menu,
@@ -18,7 +18,9 @@ import {
 } from 'react-icons/fa';
 import { NavLink, useLocation } from 'react-router-dom';
 import '../assets/styles/Sidebar.scss';
-const Sidebar = ({ image, collapsed, rtl, toggled, handleToggleSidebar }) => {
+
+
+const Sidebar = ({ image, collapsed, rtl, toggled, handleToggleSidebar, userRole }) => {
   const [sidebarData, setSidebarData] = useState([
     // {
     //   title: 'Central Monitor',
@@ -61,6 +63,35 @@ const Sidebar = ({ image, collapsed, rtl, toggled, handleToggleSidebar }) => {
       ],
     },
   ]);
+
+
+  useEffect(() => {
+    if (userRole === 'admin') {
+      setSidebarData(prevData => [
+        ...prevData,
+        {
+          title: 'Admin Panel',
+          icon: <FaGem />,
+          subNav: [
+            {
+              title: 'Manage Users',
+              path: `/admin/manage-users`,
+            },
+            {
+              title: 'Manage Devices',
+              path: `/admin/manage-devices`,
+            },
+            {
+              title: 'Settings',
+              path: `/admin/settings`,
+            },
+          ],
+        }
+      ]);
+    }
+  }, [userRole]);
+
+
   const path = useLocation();
   return (
     <ProSidebar

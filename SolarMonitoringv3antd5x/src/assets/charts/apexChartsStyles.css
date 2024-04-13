@@ -1,4 +1,25 @@
-.apexcharts-tooltip {
+/* .apexcharts-tooltip {
     background-color: cyan;
     color: orange;
-  }
+  } */
+
+
+.arrow_box {
+  position: relative;
+  background: rgba(0, 0, 0, 0.9);
+  padding: 1px;
+  margin: 0px;
+}
+
+
+.arrow_box::after {
+  content: "";
+  position: absolute;
+  border-style: solid;
+  border-width: 10px 10px 0 10px; /* top right bottom left */
+  border-color: #3cff00 transparent transparent transparent;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+

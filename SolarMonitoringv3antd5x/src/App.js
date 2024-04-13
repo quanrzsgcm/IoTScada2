@@ -51,6 +51,10 @@ return (
         <Route path='/site-monitor/sitekpi' element={<SiteKPI />} />
         <Route path='/site-monitor/addnewdevice' element={<PmForm />} />
         <Route path='/site-monitor/devicelist' element={<DeviceList />} />
+        <Route path='/admin/manage-users' element={<DeviceList />} />
+        <Route path='/admin/manage-devices' element={<DeviceList />} />
+        
+        
       </Route>
       <Route path="/login" element={<SignIn />} />
     </Routes>

@@ -159,7 +159,8 @@ const Chart1 = () => {
             height: 300,
             toolbar: {
                 show: false
-            }
+            },
+            width: '100%'
         },
         plotOptions: {
             bar: {
@@ -236,9 +237,9 @@ const Chart1 = () => {
             custom: function ({ series, seriesIndex, dataPointIndex, w }) {
                 const xAxisValue = options.xaxis.categories[dataPointIndex];
 
-                return (
-                    '<div class="arrow_box" style="background-color: rgba(0, 0, 0, 0.9);">' +
-                    '<span style="color: white;">' + xAxisValue + '</span>' +
+                return (                 
+                    '<div class="arrow_box" style="background: rgba(0, 0, 0, 0.9);">' +
+                    '<span style="color: white;">' + ' ' + xAxisValue + '</span>' +
                     '<br>' +
                     '<span style="color: #5f8e95;">' + 'Production: ' + '</span>' +
                     '<span style="color: white;">' + series[0][dataPointIndex] + '</span>' +
@@ -246,10 +247,9 @@ const Chart1 = () => {
                     '<br>' +
                     '<span style="color: #5f8e95;">Irradiation: </span>' +
                     '<span style="color: white;">' + series[1][dataPointIndex] + '</span>' +
-                    '<span style="color: white;">' + ' Wh/m&sup2;' + '</span>' +
+                    '<span style="color: white;">' + ' Wh/m&sup2;' + '</span>' +            
                     '</div>'
                 )
-
             }
 
         },
@@ -275,6 +275,7 @@ const Chart1 = () => {
                 series={series}
                 type="bar"
                 height={300}
+                width="100%" // Set the width of the chart component
             />
         </div>
     );

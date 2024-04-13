@@ -5,6 +5,7 @@ import App from '../components/testcustom';
 import TypeOfDeviceTab from '../components/Tab';
 import PowerMeterDetails from '../components/PowerMeterDetails';
 import { Button } from 'antd';
+import LVDeviceList from '../components/LVDeviceList';
 
 
 export default function DeviceList() {
@@ -30,9 +31,11 @@ export default function DeviceList() {
       <div className='siteview'>Device List</div>
       {/* <div> */}
         {showDetail && <Button onClick={toggle}> Back to list </Button>}
+        
+        < LVDeviceList/>
       {/* </div> */}
-      <div> <TypeOfDeviceTab showState={showTable} selectedThing={selectedThing} updateThing={updateThing} toggleShow={toggle}/></div>
-      <div> <PowerMeterDetails showState={showDetail} selectedThing={selectedThing} updateThing={updateThing}/></div>
+      {/* <div> <TypeOfDeviceTab showState={showTable} selectedThing={selectedThing} updateThing={updateThing} toggleShow={toggle}/></div> */}
+      {/* <div> <PowerMeterDetails showState={showDetail} selectedThing={selectedThing} updateThing={updateThing}/></div> */}
     </MainviewLayout>
   );
 }
