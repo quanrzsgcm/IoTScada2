@@ -101,9 +101,11 @@ export default function SiteView() {
       {/* <div style={{ height: '200px', display: 'flex' }}> */}
       <div className='flex-container'>
 
+        {dateString && <p>Selected Date: {dateString}</p>}
+
         <div style={{ flex: '0 0 250px', display: 'flex', alignItems: 'center', backgroundColor: '#1c80ba', height: '100px', padding: '50px' }}>
           {/* <FontAwesomeIcon icon={faSignal} /> &nbsp;&nbsp;&nbsp; */}
-          <MdOutlineSolarPower  size={50}/> &nbsp;&nbsp;&nbsp;
+          <MdOutlineSolarPower size={50} /> &nbsp;&nbsp;&nbsp;
           <div>
             <div className="formatted-text">Self-consumption</div>
             <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -146,18 +148,18 @@ export default function SiteView() {
         &nbsp;
         &nbsp;
 
-        <span style={{ color: '#9cafb0', marginRight: '5px'}}>Capacity</span>
-        <span style={{ color: 'white' , marginRight: '40px'}}>{placeholdervalue}</span>
+        <span style={{ color: '#9cafb0', marginRight: '5px' }}>Capacity</span>
+        <span style={{ color: 'white', marginRight: '40px' }}>{placeholdervalue}</span>
         <span style={{ color: '#9cafb0', marginRight: '5px' }}>Temperature</span>
-        <span style={{ color: 'white' , marginRight: '40px'}}>{placeholdervalue}</span>
+        <span style={{ color: 'white', marginRight: '40px' }}>{placeholdervalue}</span>
         <span style={{ color: '#9cafb0', marginRight: '5px' }}>Irradiation </span>
-        <span style={{ color: 'white' , marginRight: '40px'}}>{placeholdervalue}</span>
+        <span style={{ color: 'white', marginRight: '40px' }}>{placeholdervalue}</span>
         <span style={{ color: '#9cafb0', marginRight: '5px' }}>Yield</span>
-        <span style={{ color: 'white' , marginRight: '40px'}}>{placeholdervalue}</span>
+        <span style={{ color: 'white', marginRight: '40px' }}>{placeholdervalue}</span>
         <span style={{ color: '#9cafb0', marginRight: '5px' }}>Production</span>
-        <span style={{ color: 'white' , marginRight: '40px'}}>{placeholdervalue}</span>
+        <span style={{ color: 'white', marginRight: '40px' }}>{placeholdervalue}</span>
         <span style={{ color: '#9cafb0', marginRight: '5px' }}>Power Ratio</span>
-        <span style={{ color: 'white' , marginRight: '40px'}}>{placeholdervalue}</span>
+        <span style={{ color: 'white', marginRight: '40px' }}>{placeholdervalue}</span>
 
         <span style={{ marginLeft: 'auto' }}>
 
@@ -171,7 +173,7 @@ export default function SiteView() {
         &nbsp;
       </div>
       < MyChart2e rawData={eData}></MyChart2e>
-      <div style={{ display: 'flex', justifyContent: 'space-between', backgroundColor: '#0a4e5e', height: '300px' , }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', backgroundColor: '#0a4e5e', height: '300px', }}>
         <div style={{ flex: 1, marginRight: '10px' }}>
           <Chart1 />
         </div>
@@ -179,18 +181,18 @@ export default function SiteView() {
           <Chart2 />
         </div>
       </div>
-      
+
 
 
       <div style={{ display: 'flex' }}>
         <div className="custom-scrollbar" style={{ flex: '1', width: '700px', marginRight: '20px', marginTop: '10px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' , verticalAlign:'center'}}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', verticalAlign: 'center' }}>
             <div>Inverter Ranking</div>
             <div>
-            <a href="http://localhost:3000/site-monitor/devicelist" style={{  textDecoration: 'none', color: 'inherit', fontSize:'10px' }}>Details</a>
+              <a href="http://localhost:3000/site-monitor/devicelist" style={{ textDecoration: 'none', color: 'inherit', fontSize: '10px' }}>Details</a>
             </div>
           </div>
-      
+
 
 
 
@@ -201,13 +203,8 @@ export default function SiteView() {
         <div style={{ width: '500px' }}>
           {/* Content on the right side */}
         </div>
+
       </div>
-
-
-
-
-
-
 
     </MainviewLayout>
   );

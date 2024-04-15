@@ -6,7 +6,7 @@ import { SearchOutlined } from '@ant-design/icons';
 import '../assets/styles/customscrollbar2.css'
 
 const data = [];
-for (let i = 0; i < 10; i++) {
+for (let i = 0; i < 100; i++) {
     const record = {
         key: i.toString(),
         name: `Inverter ${i + 1}`,
@@ -240,7 +240,7 @@ const LVDeviceList = () => {
                 }}
                 columns={newColumns}
                 dataSource={hasData ? data : []}
-                scroll={{ x: 'max-content' }}
+                scroll={{ x: 'max-content',}}
             />
         </>
     );

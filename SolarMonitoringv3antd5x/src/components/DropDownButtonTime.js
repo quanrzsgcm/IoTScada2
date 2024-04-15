@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { DownOutlined, UserOutlined } from '@ant-design/icons';
+import { CalendarOutlined } from '@ant-design/icons';
 import { Button, Dropdown, message, Space, Tooltip, ConfigProvider } from 'antd';
 import { DatePicker } from 'antd';
+import dayjs from 'dayjs';
 import '../assets/styles/SiteView.scss'; // Import SCSS file
 //test
 import App2 from './droptest';
@@ -10,17 +12,17 @@ import moment from 'moment'
 
 const App = ({ setDateString, uppersetSelectedLabel }) => {
     const [selectedLabel, setSelectedLabel] = useState('Day');
+    
     const handleButtonClick = (e) => {
         console.log('click left button', e);
     };
+
     const handleMenuClick = (e) => {
         const selectedItem = items.find(item => item.key === e.key);
         if (selectedItem) {
             setSelectedLabel(selectedItem.label);
             uppersetSelectedLabel(selectedItem.label);
         }
-
-
         //   setSelectedLabel(e.label);
     };
     const items = [
@@ -53,14 +55,14 @@ const App = ({ setDateString, uppersetSelectedLabel }) => {
     return (
         <Space wrap>
             {/* <Dropdown  menu={menuProps} style={{ backgroundColor: 'lightblue'}}> */}
-            <Dropdown menu={menuProps} type="primary" className="custom-dropdown">
+            {/* <Dropdown menu={menuProps} type="primary" className="custom-dropdown">
                 <Button style={{ backgroundColor: '#043b3e', color: 'white' }}>
                     <Space>
                         {selectedLabel}
 
                     </Space>
                 </Button>
-            </Dropdown>
+            </Dropdown> */}
             <App2 value={selectedLabel} setValue={setSelectedLabel} />
             <MyDatePicker unitsOfTime={selectedLabel} setDateString={setDateString} />
         </Space>
@@ -70,6 +72,8 @@ export default App;
 
 const MyDatePicker = ({ unitsOfTime, setDateString }) => {
     const [m_unitsOfTime, setunitsOfTime] = useState(unitsOfTime);
+    const defaultValue = dayjs(); // Create a dayjs object representing the current date and time
+
     const now = moment();
 
     useEffect(() => {
@@ -83,6 +87,26 @@ const MyDatePicker = ({ unitsOfTime, setDateString }) => {
         setDateString(JSON.parse(JSON.stringify(now)));
     }, [])
 
+    const suffixIcon = <CalendarOutlined style={{ color: 'white' }} />; // Create the icon element
+
+    // useEffect(() => {
+    //     // Remove ant-picker-suffix element and add icon
+    //     const pickerInput = document.querySelector('.ant-picker-input');
+    //     if (pickerInput) {
+    //         const suffixElement = pickerInput.querySelector('.ant-picker-suffix');
+    //         if (suffixElement) {
+    //             suffixElement.innerHTML = ''; // Remove existing content
+    
+    //             // Create and append new icon with styling
+    //             const iconElement = document.createElement('span');
+    //             iconElement.className = 'ant-picker-suffix';
+    //             iconElement.innerHTML = '<CalendarOutlined style="color: white;" />'; // Icon with white color
+    //             suffixElement.appendChild(iconElement);
+    //         }
+    //     }
+    // }, []);
+    
+
     const renderDatePicker = () => {
         switch (m_unitsOfTime) {
             case 'Day':
@@ -92,26 +116,31 @@ const MyDatePicker = ({ unitsOfTime, setDateString }) => {
                         components: {
                           DatePicker: {
                             activeBg: "#043b3e",
+                            borderRadius: '0px',
                             colorBgContainer: "#043b3e",
                             colorBgElevated: "rgba(0, 0, 0, 0.95)",
                             colorText: "white",
                             colorTextHeading: "grey",
-                            colorIcon: "#009bc4"
-
-
+                            colorIcon: "#009bc4",
+                            defaultBorderColor: 'red',
+                            colorBorder: '#009bc4',
+                            defaultGhostColor: 'red',
+                            colorTextDisabled: 'rgb(77,91,94)',
+                            
+                            // controlHeight: '40px'
                           }
                         }
                       }}
                     >
-                      <DatePicker onChange={onChange} allowClear={false}/>
+                      <DatePicker onChange={onChange} allowClear={false} defaultValue={defaultValue} style={{ height: '34px', width: '200px' }} suffixIcon={suffixIcon}/>
                     </ConfigProvider>
                   );
             case 'Week':
-                return <DatePicker onChange={onChange} picker="week" style={{ backgroundColor: 'red' }} />;
+                return <DatePicker onChange={onChange} picker="week" style={{ backgroundColor: 'red' }} defaultValue={defaultValue}/>;
             case 'Month':
-                return <DatePicker onChange={onChange} picker="month" style={{ backgroundColor: '#043b3e' }} cellHeight={1000}/>;
+                return <DatePicker onChange={onChange} picker="month" style={{ backgroundColor: '#043b3e' }} cellHeight={1000} defaultValue={defaultValue}/>;
             case 'Year':
-                return <DatePicker onChange={onChange} picker="year" style={{ backgroundColor: '#043b3e' }} />;
+                return <DatePicker onChange={onChange} picker="year" style={{ backgroundColor: '#043b3e' }} defaultValue={defaultValue} />;
             default:
                 return null;
         }
