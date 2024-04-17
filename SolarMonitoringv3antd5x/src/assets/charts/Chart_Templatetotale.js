@@ -1,8 +1,28 @@
-import React from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import Chart from 'react-apexcharts';
 import './apexChartsStyles.css';
 
+// x =< 10 show all x
+
 const Chart1 = () => {
+    const chartRef = useRef(null);
+    const [chartWidth, setChartWidth] = useState('100%');
+
+    useEffect(() => {
+        const updateChartWidth = () => {
+            if (chartRef.current && chartRef.current.parentElement) {
+                const parentWidth = chartRef.current.parentElement.offsetWidth;
+                setChartWidth(`${parentWidth}px`);
+            }
+        };
+
+        updateChartWidth();
+        window.addEventListener('resize', updateChartWidth);
+
+        return () => {
+            window.removeEventListener('resize', updateChartWidth);
+        };
+    }, []);
     // Sample data
     const rawData = [
         // { Period: '0:00', 'Production (kWh)': 0, 'Irradiation (Wh/㎡)': 0 },
@@ -138,11 +158,6 @@ const Chart1 = () => {
         }
     ];
 
-
-
-
-
-
     if (!rawData || rawData.length === 0) {
         return <div>No data</div>;
     }
@@ -172,12 +187,47 @@ const Chart1 = () => {
         dataLabels: {
             enabled: false
         },
+        grid: {
+            show: true,
+            borderColor: 'rgb(25,85,108)',
+            strokeDashArray: 0,
+            position: 'back',
+            xaxis: {
+                lines: {
+                    show: false
+                }
+            },   
+            yaxis: {
+                lines: {
+                    show: true
+                }
+            },
+           
+        },
         xaxis: {
             categories: period,
             labels: {
                 style: {
                     colors: '#5f8e95' // Change to the desired color (e.g., red)
-                }
+                },
+                formatter: function(value, timestamp, opts) {
+                    let splitTime = value.split(':');
+                    // Parse the hour part into an integer
+                    let hour = parseInt(splitTime[0]);
+
+                    // Define the interval at which you want to show labels
+                    const interval = 2; // Show label for every 2rd index (0, 3, 6, 9, ...)
+                    
+                    // Show label for the first and every `interval` index
+                    if (hour % interval === 0) {
+                        return value;
+                    } else {
+                        return ''; // Return an empty string for labels you want to hide
+                    }
+                },
+            },
+            axisTicks: {
+                show: false,
             }
         },
         yaxis: [
@@ -218,7 +268,22 @@ const Chart1 = () => {
                 decimalsInFloat: 0,
             }
         ],
-        colors: ['#eba134', '#66DA26'], // Customize colors for Production and Irradiation
+        colors: ['rgb(0,217,254)', 'rgb(253,201,24)'], // Customize colors for Production and Irradiation
+        fill: {
+            type: 'gradient',
+            gradient: {
+            //   shade: 'light',
+            type: 'vertical',
+              shadeIntensity: 0.1,
+              gradientToColors: undefined, // optional, if not defined - uses the shades of same color in series
+              inverseColors: false,
+              opacityFrom: 1,
+              opacityTo: 0.9,
+              stops: [0, 100],
+              colorStops: []
+            }
+        },
+
         legend: {
             position: 'bottom',
             horizontalAlign: 'center',
@@ -236,6 +301,29 @@ const Chart1 = () => {
 
             custom: function ({ series, seriesIndex, dataPointIndex, w }) {
                 const xAxisValue = options.xaxis.categories[dataPointIndex];
+                if (series[0][dataPointIndex] === undefined){
+                    return (                 
+                        '<div class="arrow_box" style="background: rgba(0, 0, 0, 0.9);">' +
+                        '<span style="color: white;">' + ' ' + xAxisValue + '</span>' +
+                        '<br>' +               
+                        '<span style="color: #5f8e95;">Irradiation: </span>' +
+                        '<span style="color: white;">' + series[1][dataPointIndex] + '</span>' +
+                        '<span style="color: white;">' + ' Wh/m&sup2;' + '</span>' +            
+                        '</div>'
+                    )
+                }
+                else if (series[1][dataPointIndex] === undefined){
+                    return (                 
+                        '<div class="arrow_box" style="background: rgba(0, 0, 0, 0.9);">' +
+                        '<span style="color: white;">' + ' ' + xAxisValue + '</span>' +
+                        '<br>' +
+                        '<span style="color: #5f8e95;">' + 'Production: ' + '</span>' +
+                        '<span style="color: white;">' + series[0][dataPointIndex] + '</span>' +
+                        '<span style="color: white;">' + ' kWh' + '</span>' +                           
+                        '</div>'
+                    )
+                }
+
 
                 return (                 
                     '<div class="arrow_box" style="background: rgba(0, 0, 0, 0.9);">' +
@@ -269,16 +357,15 @@ const Chart1 = () => {
     ];
 
     return (
-        <div>
+        <div ref={chartRef}>
             <Chart
                 options={options}
                 series={series}
                 type="bar"
                 height={300}
-                width="100%" // Set the width of the chart component
+                width={chartWidth} // Set the width dynamically
             />
         </div>
     );
 };
-
 export default Chart1;

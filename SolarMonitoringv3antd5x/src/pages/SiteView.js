@@ -178,14 +178,14 @@ export default function SiteView() {
           <Chart1 />
         </div>
         <div style={{ flex: 1, marginLeft: '10px' }}>
-          <Chart2 />
+          <Chart1 />
         </div>
       </div>
 
 
 
       <div style={{ display: 'flex' }}>
-        <div className="custom-scrollbar" style={{ flex: '1', width: '700px', marginRight: '20px', marginTop: '10px' }}>
+        <div className="custom-scrollbar" style={{ flex: '1', width: '700px', marginRight: '20px', marginTop: '10px' }}> 
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', verticalAlign: 'center' }}>
             <div>Inverter Ranking</div>
             <div>
@@ -200,8 +200,9 @@ export default function SiteView() {
 
           <div> <InverterRanking /> </div>
         </div>
-        <div style={{ width: '500px' }}>
-          {/* Content on the right side */}
+        <div style={{ width: '500px' }}> 
+
+          
         </div>
 
       </div>

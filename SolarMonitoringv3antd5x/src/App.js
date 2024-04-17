@@ -13,6 +13,7 @@ import PmForm from './components/PMForm';
 import HomePage from './pages/HomePage'
 import Header from './components/Header'
 import { AuthProvider } from './context/AuthContext'
+import DeviceListAdmin from './pages/DLadmin';
 
 
 function App() {
@@ -52,7 +53,7 @@ return (
         <Route path='/site-monitor/addnewdevice' element={<PmForm />} />
         <Route path='/site-monitor/devicelist' element={<DeviceList />} />
         <Route path='/admin/manage-users' element={<DeviceList />} />
-        <Route path='/admin/manage-devices' element={<DeviceList />} />
+        <Route path='/admin/manage-devices' element={<DeviceListAdmin />} />
         
         
       </Route>

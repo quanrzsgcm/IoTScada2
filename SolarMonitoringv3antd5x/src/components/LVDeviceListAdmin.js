@@ -1,43 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { DownOutlined } from '@ant-design/icons';
-import { Form, Radio, Space, Switch, Table, Checkbox, Input, Button, Tooltip, ConfigProvider, Dropdown } from 'antd';
+import { Form, Radio, Space, Switch, Table, Checkbox, Input, Button } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
 import '../assets/styles/customscrollbar2.css'
-import DeviceStateRadio from './devicestateradiobutton';
-import { InfoCircleOutlined, UserOutlined } from '@ant-design/icons';
-import CheckboxDropdown from './ActionLevel';
-
-const datastate = [
-    { name: 'inverter 1', stage: 'noCom' },
-    { name: 'inverter 2', stage: 'nonoperative' },
-    { name: 'inverter 3', stage: 'FullCapability' }
-];
-
-const inverterState = ['noCom', 'connectionfail', 'nonoperative', 'FullCapability'];
-
-// Initialize an object to store the counts for each stage
-const stageCounts = {};
-
-// Initialize counts for each stage to 0
-inverterState.forEach(stage => {
-    stageCounts[stage] = 0;
-});
-
-// Iterate over the data array and count the number of inverters in each stage
-datastate.forEach(inverter => {
-    const stage = inverter.stage;
-    if (stageCounts.hasOwnProperty(stage)) {
-        stageCounts[stage]++;
-    }
-});
-
-console.log(stageCounts);
-
-
-
-
-
 
 const data = [];
 for (let i = 0; i < 100; i++) {
@@ -224,56 +190,27 @@ const LVDeviceList = () => {
     const [ellipsis, setEllipsis] = useState(false);
     const [yScroll, setYScroll] = useState(false);
     const [xScroll, setXScroll] = useState();
-
+    
 
     return (
-        <>
-            <div style={{ width: '100%', height: '45px', border: '1px solid #000', display: 'flex' }}>
-                <div style={{ flex: '9', borderRight: '1px solid #000', display: 'flex', alignItems: 'center' }}>
-                    <DeviceStateRadio />
-                </div>
-                <div style={{ flex: '1' }}>
-                    {/* Content for the second div (takes 1/10 of the parent's width) */}
-                </div>
-            </div>
-            <div style={{ width: '100%', height: '45px', border: '1px solid #000', display: 'flex' }}>
-                <div style={{ flex: '9', borderRight: '1px solid #000', display: 'flex', alignItems: 'center' }}>
-                    <ConfigProvider
-                        theme={{
-                            components: {
-                                Input: {
-                                    colorBgContainer: 'rgb(6,73,77)',
-                                    colorBorder: 'rgb(3,151,184)',
-                                    colorText: 'white',
-                                    colorTextPlaceholder: 'rgb(104,146,136)',
-                                    borderRadius: 0,
-                                },
-                            },
-                        }}
-                    >
-                        <Input
-                            style={{ width: 300 }}
-                            placeholder="Search by interver name"
-
-                            suffix={
-                                <Tooltip title="Extra information">
-                                    <SearchOutlined
-                                        style={{
-                                            color: 'rgb(3,151,184)',
-                                        }}
-                                    />
-                                </Tooltip>
-                            }
-                        />
-                    </ConfigProvider>
-                    <span>Action Level:</span>
-                    <CheckboxDropdown/>
-
-                </div>
-                <div style={{ flex: '1' }}>
-                    {/* Content for the second div (takes 1/10 of the parent's width) */}
-                </div>
-            </div>
+        <>          
+            {/* <div style={{ display: 'flex', alignItems: 'center' }}>
+                {/* // i want to create another input, but it actually use filterDropdown to function */}
+            {/* <Input
+                    placeholder="Search Inverter Name"
+                    style={{ width: 200, marginRight: 8 }}
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    onPressEnter={() => handleSearch([searchText], () => {}, 'name')}
+                />
+                <Button type="primary" onClick={() => handleSearch([searchText], () => {}, 'name')}>
+                    Search
+                </Button>
+                <Button onClick={() => handleReset(() => {})}>Reset</Button>
+                <span> Action level: </span>
+                <Input placeholder="2" style={{width: 100, marginRight: 8 }} />
+                <Input placeholder="3" style={{width: 100, marginRight: 8 }}/>
+            </div> */}
 
             <Input
                 id="search-input"
@@ -303,7 +240,7 @@ const LVDeviceList = () => {
                 }}
                 columns={newColumns}
                 dataSource={hasData ? data : []}
-                scroll={{ x: 'max-content', }}
+                scroll={{ x: 'max-content',}}
             />
         </>
     );

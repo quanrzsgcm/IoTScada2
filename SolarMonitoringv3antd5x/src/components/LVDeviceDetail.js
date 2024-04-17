@@ -28,8 +28,6 @@ const LVDeviceDetail = ({ deviceid }) => {
         textColor = 'red';
     }
 
-
-
     const [isRotated, setIsRotated] = useState(false);
     const placeholder = 5.55
 
@@ -127,10 +125,10 @@ const LVDeviceDetail = ({ deviceid }) => {
                 </div>
             </div>
 
-
             <div style={{
                 display: 'flex', height: '185px', // Set the height of the flex container
-                // border: '1px solid #ccc', // Just for visualization
+                width: '100%',
+                border: '1px solid #ccc', // Just for visualization
                 marginTop: '10px'
             }}>
                 <div style={{
@@ -179,7 +177,7 @@ const LVDeviceDetail = ({ deviceid }) => {
                         </div>
                     </div>
 
-                    <div style={{ marginLeft: '10px', width: '800px', borderBottom: '1px solid rgb(53,110,116)' }}></div> {/* Vertical line */}
+                    <div style={{ marginLeft: '10px', width: '600px', borderBottom: '1px solid rgb(53,110,116)' }}></div> {/* Vertical line */}
 
                     <div style={{
                         display: 'flex',
@@ -211,7 +209,7 @@ const LVDeviceDetail = ({ deviceid }) => {
                         </div>
                     </div>
 
-                    <div style={{ marginLeft: '10px', width: '800px', borderBottom: '1px solid rgb(53,110,116)' }}></div> {/* Vertical line */}
+                    <div style={{ marginLeft: '10px', width: '600px', borderBottom: '1px solid rgb(53,110,116)' }}></div> {/* Vertical line */}
 
                     <div style={{
                         display: 'flex',
@@ -292,7 +290,7 @@ const LVDeviceDetail = ({ deviceid }) => {
                         </div>
                     </div>
 
-                    <div style={{ marginLeft: '10px', width: '800px', borderBottom: '1px solid rgb(53,110,116)' }}></div> {/* Vertical line */}
+                    <div style={{ marginLeft: '10px', width: '600px', borderBottom: '1px solid rgb(53,110,116)' }}></div> {/* Vertical line */}
 
                     <div style={{
                         display: 'flex',
@@ -324,7 +322,7 @@ const LVDeviceDetail = ({ deviceid }) => {
                         </div>
                     </div>
 
-                    <div style={{ marginLeft: '10px', width: '800px', borderBottom: '1px solid rgb(53,110,116)' }}></div> {/* Vertical line */}
+                    <div style={{ marginLeft: '10px', width: '600px', borderBottom: '1px solid rgb(53,110,116)' }}></div> {/* Vertical line */}
 
                     <div style={{
                         display: 'flex',
@@ -358,6 +356,8 @@ const LVDeviceDetail = ({ deviceid }) => {
 
                 </div>
             </div>
+
+
             <div style={{
                 height: '45px', // specify your desired height
                 width: '100%',
