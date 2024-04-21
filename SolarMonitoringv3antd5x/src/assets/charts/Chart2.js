@@ -8,24 +8,9 @@ import { useRef, useEffect, useState } from 'react';
 // x =< 10 show all x
 
 const Chart1 = () => {
-    const chartRef = useRef(null);
     const [chartWidth, setChartWidth] = useState('100%');
 
-    useEffect(() => {
-        const updateChartWidth = () => {
-            if (chartRef.current && chartRef.current.parentElement) {
-                const parentWidth = chartRef.current.parentElement.offsetWidth;
-                setChartWidth(`${parentWidth}px`);
-            }
-        };
 
-        updateChartWidth();
-        window.addEventListener('resize', updateChartWidth);
-
-        return () => {
-            window.removeEventListener('resize', updateChartWidth);
-        };
-    }, []);
     // Sample data
   
     if (!rawData || rawData.length === 0) {
@@ -78,7 +63,7 @@ const Chart1 = () => {
             categories: period,
             labels: {
                 style: {
-                    colors: '#5f8e95' // Change to the desired color (e.g., red)
+                    colors: '#5f8e95'
                 },
                 // formatter: function(value, timestamp, opts) {
                 //     let splitTime = value.split(':');
@@ -228,7 +213,7 @@ const Chart1 = () => {
     ];
 
     return (
-        <div ref={chartRef}>
+        <div>
             <Chart
                 options={options}
                 series={series}

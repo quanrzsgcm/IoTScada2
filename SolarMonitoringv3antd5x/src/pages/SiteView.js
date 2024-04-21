@@ -16,7 +16,7 @@ import { faCircle } from '@fortawesome/free-solid-svg-icons';
 import { IoLocationOutline } from "react-icons/io5";
 import { IoInformationCircleOutline } from "react-icons/io5";
 import Chart1 from '../assets/charts/Chart_Templatetotale';
-import Chart2 from '../assets/charts/Chart2';
+import Chart2 from '../assets/charts/Chart2new';
 import InverterRanking from '../components/LVInverterRanking';
 import { GiElectric } from "react-icons/gi";
 import { MdOutlineSolarPower } from "react-icons/md";
@@ -32,7 +32,7 @@ export default function SiteView() {
         production: null,
         powerratio: null,
     });
-   
+
 
     useEffect(() => {
         // Function to fetch data from the API
@@ -44,39 +44,39 @@ export default function SiteView() {
                     'Authorization': 'Bearer ' + String(authTokens.access)
                 },
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                // Update the state with the fetched data
-                console.log('Fetched data:', data);
-                setRealTimeSiteData({
-                    capacity: data.features.measurements.properties.capacity,
-                    temp: data.features.measurements.properties.temp,
-                    irradiation: data.features.measurements.properties.irradiation,
-                    yield: data.features.measurements.properties.yield,
-                    production: data.features.measurements.properties.production,
-                    powerratio: data.features.measurements.properties.powerratio,
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Update the state with the fetched data
+                    console.log('Fetched data:', data);
+                    setRealTimeSiteData({
+                        capacity: data.features.measurements.properties.capacity,
+                        temp: data.features.measurements.properties.temp,
+                        irradiation: data.features.measurements.properties.irradiation,
+                        yield: data.features.measurements.properties.yield,
+                        production: data.features.measurements.properties.production,
+                        powerratio: data.features.measurements.properties.powerratio,
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
                 });
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-            });
         };
-    
+
         // Call fetchData initially
         fetchData();
-    
+
         // Set interval to call fetchData every 10 seconds
         const interval = setInterval(fetchData, 15000);
-    
+
         // Cleanup function to clear the interval when the component unmounts
         return () => clearInterval(interval);
     }, []); // Empty dependency array means this effect runs once after the initial render
-    
+
 
 
     const [numberOfInverter, setnumberOfInverter] = useState(12);
@@ -199,14 +199,14 @@ export default function SiteView() {
                 </div>
             </div>
 
-            <div style={{ 
-    background: 'linear-gradient(to right, rgb(2,62,62), rgb(13,35,62))', 
-    height: '40px', 
-    width: '100%', 
-    marginTop: '20px', 
-    display: 'flex', 
-    alignItems: 'center' 
-}}>
+            <div style={{
+                background: 'linear-gradient(to right, rgb(2,62,62), rgb(13,35,62))',
+                height: '40px',
+                width: '100%',
+                marginTop: '20px',
+                display: 'flex',
+                alignItems: 'center'
+            }}>
                 &nbsp;
                 &nbsp;
                 &nbsp;
@@ -237,25 +237,21 @@ export default function SiteView() {
                 &nbsp;
                 &nbsp;
             </div>
-            <div style={{ 
-    display: 'flex', 
-    justifyContent: 'space-between', 
-    background: 'linear-gradient(to bottom right, rgb(2,82,82), rgb(29,53,72))',
-    height: '350px',
-    border: '2px solid black', // Border color for the parent div,
-    overflow: 'hidden', // Prevents content from overflowing
-}}>
-    <div style={{ flex: 1, marginRight: '10px', border: '2px solid red', overflow: 'hidden', }}> {/* Border color for the first child div */}
-        <Chart1 />
-    </div>
-    <div style={{ flex: 1, marginLeft: '10px', border: '2px solid blue', overflow: 'hidden',}}> {/* Border color for the second child div */}
-        <Chart1 />
-    </div>
-</div>
-
-
-
-
+            <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                background: 'linear-gradient(to bottom right, rgb(2,82,82), rgb(29,53,72))',
+                height: '350px',
+                border: '2px solid black', // Border color for the parent div,
+                overflow: 'hidden', // Prevents content from overflowing
+            }}>
+                <div style={{ flex: 1, marginRight: '10px', border: '2px solid red', overflow: 'hidden', }}> {/* Border color for the first child div */}
+                    <Chart1 />
+                </div>
+                <div style={{ flex: 1, marginLeft: '10px', border: '2px solid blue', overflow: 'hidden', }}> {/* Border color for the second child div */}
+                    <Chart2 />
+                </div>
+            </div>
 
             <div style={{ display: 'flex' }}>
                 <div className="custom-scrollbar" style={{ flex: '1', width: '700px', marginRight: '20px', marginTop: '10px' }}>
@@ -265,9 +261,6 @@ export default function SiteView() {
                             <a href="http://localhost:3000/site-monitor/devicelist" style={{ textDecoration: 'none', color: 'inherit', fontSize: '10px' }}>Details</a>
                         </div>
                     </div>
-
-
-
 
 
 
