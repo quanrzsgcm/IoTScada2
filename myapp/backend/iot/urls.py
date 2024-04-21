@@ -9,4 +9,6 @@ urlpatterns = [
     path('my-api/energy/', views.calculate_daily_energy, name='calculate_daily_energy'),
     path('my-api/main-energy/', views.handle_energy_request, name='handle_energy_request'),
     path('my-api/total-energy/', views.handle_total_energy_request, name='handle_total_energy_request'),
+    path('my-api/realtimesitedata/', views.realtimesitedata, name='realtimesitedata'),
+    
 ]

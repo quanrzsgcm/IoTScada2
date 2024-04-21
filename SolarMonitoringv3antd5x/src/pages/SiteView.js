@@ -20,193 +20,266 @@ import Chart2 from '../assets/charts/Chart2';
 import InverterRanking from '../components/LVInverterRanking';
 import { GiElectric } from "react-icons/gi";
 import { MdOutlineSolarPower } from "react-icons/md";
+import App3 from '../assets/charts/test';
 
 export default function SiteView() {
-  const [placeholdervalue, setPlaceholdervalue] = useState(149);
-  const [numberOfInverter, setnumberOfInverter] = useState(12);
-  const [dateString, setDateString] = useState(null);
-  const [selectedLabel, setSelectedLabel] = useState('Day');
-  const [eData, seteData] = useState(null);
-  const { authTokens, logoutUser } = useContext(AuthContext);
+    const [placeholdervalue, setPlaceholdervalue] = useState(149);
+    const [realtimesitedata, setRealTimeSiteData] = useState({
+        capacity: null,
+        temp: null,
+        irradiation: null,
+        yield: null,
+        production: null,
+        powerratio: null,
+    });
+   
 
-  useEffect(() => {
-    document.title = "Site View";
-  }, []);
-  const fetcheData = (dateString) => {
-    // const startTime = '2023-10-27 10:46:30+07';  // example format
-    // const endTime = '2023-10-27 11:16:08+07'; 
-    let t_unitoftime = ""
-    if (selectedLabel === "Day") {
-      t_unitoftime = "Week";
+    useEffect(() => {
+        // Function to fetch data from the API
+        const fetchData = () => {
+            fetch('http://192.168.1.209:8000/api2/my-api/realtimesitedata?siteId=1', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + String(authTokens.access)
+                },
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Update the state with the fetched data
+                console.log('Fetched data:', data);
+                setRealTimeSiteData({
+                    capacity: data.features.measurements.properties.capacity,
+                    temp: data.features.measurements.properties.temp,
+                    irradiation: data.features.measurements.properties.irradiation,
+                    yield: data.features.measurements.properties.yield,
+                    production: data.features.measurements.properties.production,
+                    powerratio: data.features.measurements.properties.powerratio,
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+        };
+    
+        // Call fetchData initially
+        fetchData();
+    
+        // Set interval to call fetchData every 10 seconds
+        const interval = setInterval(fetchData, 15000);
+    
+        // Cleanup function to clear the interval when the component unmounts
+        return () => clearInterval(interval);
+    }, []); // Empty dependency array means this effect runs once after the initial render
+    
+
+
+    const [numberOfInverter, setnumberOfInverter] = useState(12);
+    const [dateString, setDateString] = useState(null);
+    const [selectedLabel, setSelectedLabel] = useState('Day');
+    const [eData, seteData] = useState(null);
+    const { authTokens, logoutUser } = useContext(AuthContext);
+
+    useEffect(() => {
+        document.title = "Site View";
+    }, []);
+    const fetcheData = (dateString) => {
+        // const startTime = '2023-10-27 10:46:30+07';  // example format
+        // const endTime = '2023-10-27 11:16:08+07'; 
+        let t_unitoftime = ""
+        if (selectedLabel === "Day") {
+            t_unitoftime = "Week";
+        }
+        else { t_unitoftime = selectedLabel }
+
+        const requestData = {
+            unitoftime: t_unitoftime,
+            dateString: dateString,
+        };
+        console.log('requestData');
+        console.log(requestData);
+
+        // Get method 
+        // const url = `http://127.0.0.1:8000/api2/my-api/?start_time=${encodeURIComponent(startTime)}&end_time=${encodeURIComponent(endTime)}`;
+        // post method, the body store json data
+
+        // const url = process.env.REACT_APP_API_URL_2;
+        const url = `http://127.0.0.1:8000/api2/my-api/total-energy/`
+
+        console.log(url);
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + String(authTokens.access)
+            },
+            body: JSON.stringify(requestData)
+        })
+            .then(response => {
+                return response.json();
+            })
+            .then(data => {
+                const jsonElement = JSON.stringify(data, null, 2);
+                console.log(jsonElement);
+                // it looks like this
+                // {
+                //     "meter_id": "pm08",
+                //     "timestamp": "2024-01-02T10:40:00+07:00",
+                //     "power": "26.00",
+                //     "voltage": "51.00",
+                //     "current": "39.00"
+                //   },
+                seteData(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
     }
-    else { t_unitoftime = selectedLabel }
+    const [showInfo, setShowInfo] = useState(false);
 
-    const requestData = {
-      unitoftime: t_unitoftime,
-      dateString: dateString,
+    const handleMouseEnter = () => {
+        setShowInfo(true);
+        console.log("true")
     };
-    console.log('requestData');
-    console.log(requestData);
 
-    // Get method 
-    // const url = `http://127.0.0.1:8000/api2/my-api/?start_time=${encodeURIComponent(startTime)}&end_time=${encodeURIComponent(endTime)}`;
-    // post method, the body store json data
+    const handleMouseLeave = () => {
+        setShowInfo(false);
+    };
 
-    // const url = process.env.REACT_APP_API_URL_2;
-    const url = `http://127.0.0.1:8000/api2/my-api/total-energy/`
+    return (
+        <MainviewLayout>
+            {/* <div style={{ height: '200px', display: 'flex' }}> */}
+            <div className='flex-container'>
 
-    console.log(url);
+                {dateString && <p>Selected Date: {dateString}</p>}
 
-    fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + String(authTokens.access)
-      },
-      body: JSON.stringify(requestData)
-    })
-      .then(response => {
-        return response.json();
-      })
-      .then(data => {
-        const jsonElement = JSON.stringify(data, null, 2);
-        console.log(jsonElement);
-        // it looks like this
-        // {
-        //     "meter_id": "pm08",
-        //     "timestamp": "2024-01-02T10:40:00+07:00",
-        //     "power": "26.00",
-        //     "voltage": "51.00",
-        //     "current": "39.00"
-        //   },
-        seteData(data);
-      })
-      .catch(error => {
-        console.error('Error:', error);
-      });
-  }
-  const [showInfo, setShowInfo] = useState(false);
+                <div style={{ flex: '0 0 250px', display: 'flex', alignItems: 'center', backgroundColor: '#1c80ba', height: '100px', padding: '50px' }}>
+                    {/* <FontAwesomeIcon icon={faSignal} /> &nbsp;&nbsp;&nbsp; */}
+                    <MdOutlineSolarPower size={50} /> &nbsp;&nbsp;&nbsp;
+                    <div>
+                        <div className="formatted-text">Self-consumption</div>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <FontAwesomeIcon icon={faCircle} style={{ color: 'green', fontSize: '10px', marginRight: '5px' }} />
+                            Normal
+                        </div>
+                    </div>
+                </div>
 
-  const handleMouseEnter = () => {
-    setShowInfo(true);
-    console.log("true")
-  };
+                <div className="vertical-line"></div> {/* Vertical line */}
 
-  const handleMouseLeave = () => {
-    setShowInfo(false);
-  };
 
-  return (
-    <MainviewLayout>
-      {/* <div style={{ height: '200px', display: 'flex' }}> */}
-      <div className='flex-container'>
+                <div style={{ flex: '1 0 10px', marginLeft: '10px' }}>Inverters ({numberOfInverter})
+                    <div >Info Not Available 0  &nbsp;&nbsp;&nbsp;
+                        Partial Capability 0  &nbsp;&nbsp;&nbsp;
+                        Non-Operative 0 </div>
+                </div>
 
-        {dateString && <p>Selected Date: {dateString}</p>}
+                <div className="vertical-line"></div> {/* Vertical line */}
 
-        <div style={{ flex: '0 0 250px', display: 'flex', alignItems: 'center', backgroundColor: '#1c80ba', height: '100px', padding: '50px' }}>
-          {/* <FontAwesomeIcon icon={faSignal} /> &nbsp;&nbsp;&nbsp; */}
-          <MdOutlineSolarPower size={50} /> &nbsp;&nbsp;&nbsp;
-          <div>
-            <div className="formatted-text">Self-consumption</div>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <FontAwesomeIcon icon={faCircle} style={{ color: 'green', fontSize: '10px', marginRight: '5px' }} />
-              Normal
+                <div style={{ flex: '1 0 10px' }}>Alarm ({numberOfInverter}) <div>
+                    Fault 0
+                    Warning 0
+                </div>
+                </div>
             </div>
-          </div>
-        </div>
-
-        <div className="vertical-line"></div> {/* Vertical line */}
 
 
-        <div style={{ flex: '1 0 10px', marginLeft: '10px' }}>Inverters ({numberOfInverter})
-          <div >Info Not Available 0  &nbsp;&nbsp;&nbsp;
-            Partial Capability 0  &nbsp;&nbsp;&nbsp;
-            Non-Operative 0 </div>
-        </div>
-
-        <div className="vertical-line"></div> {/* Vertical line */}
-
-        <div style={{ flex: '1 0 10px' }}>Alarm ({numberOfInverter}) <div>
-          Fault 0
-          Warning 0
-        </div>
-        </div>
-      </div>
-
-
-      <div style={{ display: "flex", alignItems: "center" }}>
-        <App setDateString={setDateString} uppersetSelectedLabel={setSelectedLabel} />
-        <Button onClick={() => { fetcheData(dateString); }}> Get Data </Button>
-        <div style={{ marginLeft: 'auto', display: "flex", alignItems: "center" }}>
-          <IoLocationOutline color="#9fbbc4" style={{ marginRight: '8px' }} />
-          <span>Location placeholder</span>
-        </div>
-      </div>
-
-      <div style={{ backgroundColor: '#043b3e', height: '40px', width: '100%', marginTop: '20px', display: 'flex', alignItems: 'center' }}>
-        &nbsp;
-        &nbsp;
-        &nbsp;
-
-        <span style={{ color: '#9cafb0', marginRight: '5px' }}>Capacity</span>
-        <span style={{ color: 'white', marginRight: '40px' }}>{placeholdervalue}</span>
-        <span style={{ color: '#9cafb0', marginRight: '5px' }}>Temperature</span>
-        <span style={{ color: 'white', marginRight: '40px' }}>{placeholdervalue}</span>
-        <span style={{ color: '#9cafb0', marginRight: '5px' }}>Irradiation </span>
-        <span style={{ color: 'white', marginRight: '40px' }}>{placeholdervalue}</span>
-        <span style={{ color: '#9cafb0', marginRight: '5px' }}>Yield</span>
-        <span style={{ color: 'white', marginRight: '40px' }}>{placeholdervalue}</span>
-        <span style={{ color: '#9cafb0', marginRight: '5px' }}>Production</span>
-        <span style={{ color: 'white', marginRight: '40px' }}>{placeholdervalue}</span>
-        <span style={{ color: '#9cafb0', marginRight: '5px' }}>Power Ratio</span>
-        <span style={{ color: 'white', marginRight: '40px' }}>{placeholdervalue}</span>
-
-        <span style={{ marginLeft: 'auto' }}>
-
-          <Tooltip placement="rightTop" tooltipColor="red" title="prompt text" key="green" overlayInnerStyle={{ backgroundColor: "black" }} overlayStyle={{ border: "red" }}>
-            <IoInformationCircleOutline />
-          </Tooltip>
-
-        </span>
-        &nbsp;
-        &nbsp;
-        &nbsp;
-      </div>
-      < MyChart2e rawData={eData}></MyChart2e>
-      <div style={{ display: 'flex', justifyContent: 'space-between', backgroundColor: '#0a4e5e', height: '300px', }}>
-        <div style={{ flex: 1, marginRight: '10px' }}>
-          <Chart1 />
-        </div>
-        <div style={{ flex: 1, marginLeft: '10px' }}>
-          <Chart1 />
-        </div>
-      </div>
-
-
-
-      <div style={{ display: 'flex' }}>
-        <div className="custom-scrollbar" style={{ flex: '1', width: '700px', marginRight: '20px', marginTop: '10px' }}> 
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', verticalAlign: 'center' }}>
-            <div>Inverter Ranking</div>
-            <div>
-              <a href="http://localhost:3000/site-monitor/devicelist" style={{ textDecoration: 'none', color: 'inherit', fontSize: '10px' }}>Details</a>
+            <div style={{ display: "flex", alignItems: "center" }}>
+                <App setDateString={setDateString} uppersetSelectedLabel={setSelectedLabel} />
+                <Button onClick={() => { fetcheData(dateString); }}> Get Data </Button>
+                <div style={{ marginLeft: 'auto', display: "flex", alignItems: "center" }}>
+                    <IoLocationOutline color="#9fbbc4" style={{ marginRight: '8px' }} />
+                    <span>Location placeholder</span>
+                </div>
             </div>
-          </div>
+
+            <div style={{ 
+    background: 'linear-gradient(to right, rgb(2,62,62), rgb(13,35,62))', 
+    height: '40px', 
+    width: '100%', 
+    marginTop: '20px', 
+    display: 'flex', 
+    alignItems: 'center' 
+}}>
+                &nbsp;
+                &nbsp;
+                &nbsp;
+
+
+
+                <span style={{ color: '#9cafb0', marginRight: '5px' }}>Capacity</span>
+                <span style={{ color: 'white', marginRight: '40px' }}>{realtimesitedata.capacity}</span>
+                <span style={{ color: '#9cafb0', marginRight: '5px' }}>Temperature</span>
+                <span style={{ color: 'white', marginRight: '40px' }}>{realtimesitedata.temp}</span>
+                <span style={{ color: '#9cafb0', marginRight: '5px' }}>Irradiation </span>
+                <span style={{ color: 'white', marginRight: '40px' }}>{realtimesitedata.irradiation}</span>
+                <span style={{ color: '#9cafb0', marginRight: '5px' }}>Yield</span>
+                <span style={{ color: 'white', marginRight: '40px' }}>{realtimesitedata.yield}</span>
+                <span style={{ color: '#9cafb0', marginRight: '5px' }}>Production</span>
+                <span style={{ color: 'white', marginRight: '40px' }}>{realtimesitedata.production}</span>
+                <span style={{ color: '#9cafb0', marginRight: '5px' }}>Power Ratio</span>
+                <span style={{ color: 'white', marginRight: '40px' }}>{realtimesitedata.powerratio}</span>
+
+                <span style={{ marginLeft: 'auto' }}>
+
+                    <Tooltip placement="rightTop" tooltipColor="red" title="prompt text" key="green" overlayInnerStyle={{ backgroundColor: "black" }} overlayStyle={{ border: "red" }}>
+                        <IoInformationCircleOutline />
+                    </Tooltip>
+
+                </span>
+                &nbsp;
+                &nbsp;
+                &nbsp;
+            </div>
+            <div style={{ 
+    display: 'flex', 
+    justifyContent: 'space-between', 
+    background: 'linear-gradient(to bottom right, rgb(2,82,82), rgb(29,53,72))',
+    height: '350px',
+    border: '2px solid black', // Border color for the parent div,
+    overflow: 'hidden', // Prevents content from overflowing
+}}>
+    <div style={{ flex: 1, marginRight: '10px', border: '2px solid red', overflow: 'hidden', }}> {/* Border color for the first child div */}
+        <Chart1 />
+    </div>
+    <div style={{ flex: 1, marginLeft: '10px', border: '2px solid blue', overflow: 'hidden',}}> {/* Border color for the second child div */}
+        <Chart1 />
+    </div>
+</div>
+
+
+
+
+
+            <div style={{ display: 'flex' }}>
+                <div className="custom-scrollbar" style={{ flex: '1', width: '700px', marginRight: '20px', marginTop: '10px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', verticalAlign: 'center' }}>
+                        <div>Inverter Ranking</div>
+                        <div>
+                            <a href="http://localhost:3000/site-monitor/devicelist" style={{ textDecoration: 'none', color: 'inherit', fontSize: '10px' }}>Details</a>
+                        </div>
+                    </div>
 
 
 
 
 
 
-          <div> <InverterRanking /> </div>
-        </div>
-        <div style={{ width: '500px' }}> 
+                    <div> <InverterRanking /> </div>
+                </div>
+                <div style={{ width: '500px' }}>
 
-          
-        </div>
 
-      </div>
+                </div>
 
-    </MainviewLayout>
-  );
+            </div>
+
+        </MainviewLayout>
+    );
 }

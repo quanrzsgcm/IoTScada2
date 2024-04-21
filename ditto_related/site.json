@@ -1,0 +1,29 @@
+{
+    "policyId": "my.test:policy",
+
+    "attributes": {
+        "location": "Binh Chanh district",
+        "sitename": "LUFFU"
+    },
+    "features": {
+        "measurements": {
+            "properties": {
+                "capacity": 0,
+                "temp": 0,
+                "irradiation ": 0,
+                "irradiance ": 0,
+                "yield": 0,
+                "production": 0,
+                "activepower": 0,
+                "powerratio": 0
+            }
+        },
+        "runningStatus" : {
+            "properties" : {
+                "selfconsumption" : "normal"
+            }
+        }
+    }
+
+}
+

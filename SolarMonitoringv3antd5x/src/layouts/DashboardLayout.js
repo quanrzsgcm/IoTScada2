@@ -4,9 +4,12 @@ import Topbar from '../components/Topbar';
 import { Outlet } from 'react-router-dom';
 import MyBreadcrumb from '../components/Breadcrumb';
 import AuthContext from '../context/AuthContext';
+import { useToggled, ToggledProvider } from '../context/ToggledContext'; // assuming you've created this context
+
 
 export default function DashboardLayout({ children }) {
-  const [toggled, setToggled] = useState(true);
+
+  const { toggled, setToggled } = useToggled(); // Using useContext to get toggled state
   const [userRole, setUserRole] = useState('');
   const { user } = useContext(AuthContext);
 

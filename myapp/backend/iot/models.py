@@ -15,14 +15,15 @@ class SiteMeasurements(models.Model):
     siteMeasurementID = models.AutoField(primary_key=True)
     site = models.ForeignKey(Site, on_delete=models.CASCADE)  # ForeignKey reference to Site model
     timestamp = models.DateTimeField()
-    temperature = models.DecimalField(max_digits=5, decimal_places=2)
     production = models.DecimalField(max_digits=10, decimal_places=2)
     revenue = models.DecimalField(max_digits=10, decimal_places=2)
-    irradiation = models.DecimalField(max_digits=5, decimal_places=2)
+    irradiation = models.DecimalField(max_digits=10, decimal_places=2)
     activePower = models.DecimalField(max_digits=10, decimal_places=2)
+    m_yield = models.DecimalField(max_digits=10, decimal_places=2, null=True)  # Nullable field
 
     def __str__(self):
         return f"Measurement at {self.timestamp} for Site {self.site.siteName}"
+    
 class Inverter(models.Model):
     inverterID = models.AutoField(primary_key=True)
     site = models.ForeignKey(Site, on_delete=models.CASCADE)  # ForeignKey reference to Site model

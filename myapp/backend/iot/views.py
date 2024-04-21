@@ -1061,3 +1061,36 @@ def get_total_energy(unitoftime, startTime, endTime, meter_id):
         return result
 
     return result
+
+
+
+
+
+@csrf_exempt
+def realtimesitedata(request):
+    site_id = request.GET.get('siteId')
+    if site_id:
+        # Retrieve the base URL from the environment
+        target_url = os.getenv("BASE_URL_GET_ALL_THING")    
+
+        tempurl = "/my.site:site" + site_id
+        target_url = target_url + tempurl    
+        print("Target URL:", target_url)
+
+        username = os.getenv("USERNAME")
+        password = os.getenv("PASSWORD")
+
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': 'Basic ' + b64encode((username + ':' + password).encode()).decode('utf-8'),
+        }
+
+        # Forward the request to the target URL with authentication headers
+        response = requests.get(target_url, headers=headers)
+
+        data = response.json()
+        print(data)
+
+        return JsonResponse(data, safe=False)
+    else:
+        return JsonResponse({'error': 'siteId parameter is missing'}, status=400)

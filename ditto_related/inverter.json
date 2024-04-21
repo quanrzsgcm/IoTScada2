@@ -13,14 +13,28 @@
                 "internal temp": 0,
                 "input power": 0,
                 "grid frequency": 0,
-                "power factor": 0
+                "power factor": 0,
+                "YieldToday": 0,
+                "Meter-readTotalEnergy": 0,
+                "ActivePower": 0,
+                "InputPower": 0,
+                "Efficiency": 0,
+                "GridFreq.": 0,
+                "ProductionToday": 0
             }
         },
         "runningStatus" : {
             "properties" : {
-                "running" : true,
-                "fanSpeed" : 0
+                "stage" : true,
+                "stagestarton" : "",
+                "StageDuration": 0
             }
-        }
+
+        },
+        "label" : {
+            "properties" : {
+                "labels" : ["pa,ta"]
+            }
+        }        
     }
 }

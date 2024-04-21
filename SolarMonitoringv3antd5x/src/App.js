@@ -13,6 +13,7 @@ import PmForm from './components/PMForm';
 import HomePage from './pages/HomePage'
 import Header from './components/Header'
 import { AuthProvider } from './context/AuthContext'
+import { ToggledProvider } from './context/ToggledContext';
 import DeviceListAdmin from './pages/DLadmin';
 
 
@@ -45,6 +46,7 @@ function App() {
 return (
   <BrowserRouter>
   <AuthProvider>
+  <ToggledProvider>
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route element={<DashboardLayout />}>
@@ -59,6 +61,7 @@ return (
       </Route>
       <Route path="/login" element={<SignIn />} />
     </Routes>
+    </ToggledProvider>
   </AuthProvider>
 </BrowserRouter>
 

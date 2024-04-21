@@ -1,0 +1,66 @@
+.even-row {
+    background-color: #0c3e52;
+    /* Light gray background for even rows */
+}
+
+.odd-row {
+    background-color: #0c3746;
+    /* Gradient background for odd rows */
+}
+
+.ant-table-thead {
+    background: linear-gradient(to right, rgb(3, 56, 63), rgb(2, 56, 100)) !important;
+  }
+
+
+
+th.ant-table-cell.ant-table-cell-fix-left:first-child {
+  /* Your custom styles for the first th here */
+  /* For example: */
+  background: linear-gradient(to right, rgb(3, 56, 62), rgb(3, 56, 66))
+}
+
+
+th.ant-table-cell.custom-column.ant-table-cell-fix-left.ant-table-cell-fix-left-last {
+  background: linear-gradient(to right, rgb(3, 56, 66), rgb(3, 56, 68))
+}
+
+
+
+
+.ant-table-thead .ant-table-tbody {
+    scrollbar-width: auto;
+    scrollbar-color: auto;
+}
+
+// custom scrollbar
+.ant-table-tbody::-webkit-scrollbar {
+    width: 4px;
+}
+
+.ant-table-tbody::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+.ant-table-tbody::-webkit-scrollbar-thumb {
+    border-radius: 6px;
+    background-color: rgb(113, 137, 151);
+}
+
+.custom-column {
+  color: #ffffff; /* Example text color */
+}
+
+
+
+
+
+/* 
+  
+  /* .ant-table::-webkit-scrollbar-thumb {
+    background-color: blue !important
+  }
+  
+  .ant-table::-webkit-scrollbar {
+    height: 8px;
+  } */

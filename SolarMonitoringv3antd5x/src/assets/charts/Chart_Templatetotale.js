@@ -1,6 +1,9 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useContext, useEffect, useState } from 'react';
 import Chart from 'react-apexcharts';
 import './apexChartsStyles.css';
+import { ToggledProvider, useToggled } from '../../context/ToggledContext';
+import HomeIcon from './charticons/homeabc.png'
+
 
 // x =< 10 show all x
 
@@ -8,21 +11,17 @@ const Chart1 = () => {
     const chartRef = useRef(null);
     const [chartWidth, setChartWidth] = useState('100%');
 
+    const { toggled, setToggled } = useToggled()
+
     useEffect(() => {
-        const updateChartWidth = () => {
-            if (chartRef.current && chartRef.current.parentElement) {
-                const parentWidth = chartRef.current.parentElement.offsetWidth;
-                setChartWidth(`${parentWidth}px`);
-            }
-        };
+        console.log("Toggled state changed:", toggled);
+        if (toggled) {
+            setChartWidth('110%');
+        } else {
+            setChartWidth('110%');
+        }
+    }, [toggled]);
 
-        updateChartWidth();
-        window.addEventListener('resize', updateChartWidth);
-
-        return () => {
-            window.removeEventListener('resize', updateChartWidth);
-        };
-    }, []);
     // Sample data
     const rawData = [
         // { Period: '0:00', 'Production (kWh)': 0, 'Irradiation (Wh/㎡)': 0 },
@@ -175,7 +174,67 @@ const Chart1 = () => {
             toolbar: {
                 show: false
             },
-            width: '100%'
+            // width: chartWidth,
+            fontFamily: 'Arial, Helvetica, sans-serif',
+            offsetX: -40,
+            offsetY: 40,
+            toolbar: {
+                show: true,
+                offsetX: -100,
+                offsetY: 15,
+                tools: {
+                    download: true,
+                    selection: true,
+                    zoom: true,
+                    zoomin: true,
+                    zoomout: true,
+                    pan: true,
+                    reset: true | '<img src="/static/icons/reset.png" width="20">',
+                    customIcons: [{
+                        // <img width="50" height="50" src="https://img.icons8.com/ios/50/export.png" alt="export"/>
+                        icon: '<img width="16" height="16" src="https://img.icons8.com/ios/50/export.png" alt="export"/>',
+                        index: 0,
+                        title: 'tooltip of the icon',
+                        class: 'custom-icon',
+                        click: async function (chart, options, e) {
+                            // Get the PNG data URI of the chart
+                            const base64 = await chart.dataURI();
+                        
+                            // Create a temporary anchor element to trigger the download
+                            const downloadLink = document.createElement("a");
+                            downloadLink.href = base64.imgURI;
+                            downloadLink.download = "chart.png";
+                        
+                            // Add the anchor element to the document
+                            document.body.appendChild(downloadLink);
+                        
+                            // Simulate a click event to initiate the download
+                            downloadLink.click();
+                        
+                            // Remove the anchor element from the document
+                            document.body.removeChild(downloadLink);
+                        }
+                        
+                    }]
+                },
+                export: {
+                    csv: {
+                        filename: undefined,
+                        columnDelimiter: ',',
+                        headerCategory: 'category',
+                        headerValue: 'value',
+                        dateFormatter(timestamp) {
+                            return new Date(timestamp).toDateString()
+                        }
+                    },
+                    svg: {
+                        filename: undefined,
+                    },
+                    png: {
+                        filename: 'abcd',
+                    }
+                },
+            },
         },
         plotOptions: {
             bar: {
@@ -196,13 +255,13 @@ const Chart1 = () => {
                 lines: {
                     show: false
                 }
-            },   
+            },
             yaxis: {
                 lines: {
                     show: true
                 }
             },
-           
+
         },
         xaxis: {
             categories: period,
@@ -210,14 +269,14 @@ const Chart1 = () => {
                 style: {
                     colors: '#5f8e95' // Change to the desired color (e.g., red)
                 },
-                formatter: function(value, timestamp, opts) {
+                formatter: function (value, timestamp, opts) {
                     let splitTime = value.split(':');
                     // Parse the hour part into an integer
                     let hour = parseInt(splitTime[0]);
 
                     // Define the interval at which you want to show labels
                     const interval = 2; // Show label for every 2rd index (0, 3, 6, 9, ...)
-                    
+
                     // Show label for the first and every `interval` index
                     if (hour % interval === 0) {
                         return value;
@@ -241,7 +300,7 @@ const Chart1 = () => {
                         fontWeight: 700,
                     },
                     offsetX: 50, // Set the left offset for the y-axis title
-                    offsetY: -110, // Set the left offset for the y-axis title
+                    offsetY: -125, // Set the left offset for the y-axis title
 
                 },
                 labels: {
@@ -258,11 +317,23 @@ const Chart1 = () => {
             {
                 opposite: true,
                 title: {
-                    text: 'Irradiation (Wh/㎡)'
+                    text: 'Wh/㎡',
+                    rotate: 0,
+                    style: {
+                        color: "#5f8e95",
+                        fontSize: '12px',
+                        fontWeight: 700,
+                    },
+                    offsetX: -50, // Set the left offset for the y-axis title
+                    offsetY: -125, // Set the left offset for the y-axis title
+
                 },
                 labels: {
                     style: {
-                        colors: '#5f8e95'
+                        colors: '#5f8e95',
+                        fontSize: '12px',
+                        fontFamily: 'Arial, Helvetica, sans-serif',
+                        fontWeight: 700,
                     }
                 },
                 decimalsInFloat: 0,
@@ -272,15 +343,15 @@ const Chart1 = () => {
         fill: {
             type: 'gradient',
             gradient: {
-            //   shade: 'light',
-            type: 'vertical',
-              shadeIntensity: 0.1,
-              gradientToColors: undefined, // optional, if not defined - uses the shades of same color in series
-              inverseColors: false,
-              opacityFrom: 1,
-              opacityTo: 0.9,
-              stops: [0, 100],
-              colorStops: []
+                //   shade: 'light',
+                type: 'vertical',
+                shadeIntensity: 0.1,
+                gradientToColors: undefined, // optional, if not defined - uses the shades of same color in series
+                inverseColors: false,
+                opacityFrom: 1,
+                opacityTo: 0.9,
+                stops: [0, 100],
+                colorStops: []
             }
         },
 
@@ -300,47 +371,56 @@ const Chart1 = () => {
             intersect: false,
 
             custom: function ({ series, seriesIndex, dataPointIndex, w }) {
-                const xAxisValue = options.xaxis.categories[dataPointIndex];
-                if (series[0][dataPointIndex] === undefined){
-                    return (                 
-                        '<div class="arrow_box" style="background: rgba(0, 0, 0, 0.9);">' +
-                        '<span style="color: white;">' + ' ' + xAxisValue + '</span>' +
-                        '<br>' +               
-                        '<span style="color: #5f8e95;">Irradiation: </span>' +
-                        '<span style="color: white;">' + series[1][dataPointIndex] + '</span>' +
-                        '<span style="color: white;">' + ' Wh/m&sup2;' + '</span>' +            
-                        '</div>'
-                    )
-                }
-                else if (series[1][dataPointIndex] === undefined){
-                    return (                 
-                        '<div class="arrow_box" style="background: rgba(0, 0, 0, 0.9);">' +
-                        '<span style="color: white;">' + ' ' + xAxisValue + '</span>' +
-                        '<br>' +
-                        '<span style="color: #5f8e95;">' + 'Production: ' + '</span>' +
-                        '<span style="color: white;">' + series[0][dataPointIndex] + '</span>' +
-                        '<span style="color: white;">' + ' kWh' + '</span>' +                           
-                        '</div>'
-                    )
-                }
+
+                return '<ul>' +
+                    '<li><b>Price</b>: ' + series[1][dataPointIndex] + '</li>' +
+                    '<li><b>Number</b>: ' + series[1][dataPointIndex] + '</li>' +
+                    '<li><b>Product</b>: \'' + series[1][dataPointIndex] + '\'</li>' +
+                    '<li><b>Info</b>: \'' + series[1][dataPointIndex] + '\'</li>' +
+                    '<li><b>Site</b>: \'' + series[1][dataPointIndex] + '\'</li>' +
+                    '</ul>';
+                // const xAxisValue = options.xaxis.categories[dataPointIndex];
+                // if (series[0][dataPointIndex] === undefined) {
+                //     return (
+                //         '<div class="arrow_box" style="background: rgba(0, 0, 0, 0.9);">' +
+                //         '<span style="color: white;">' + ' ' + xAxisValue + '</span>' +
+                //         '<br>' +
+                //         '<span style="color: #5f8e95;">Irradiation: </span>' +
+                //         '<span style="color: white;">' + series[1][dataPointIndex] + '</span>' +
+                //         '<span style="color: white;">' + ' Wh/m&sup2;' + '</span>' +
+                //         '</div>'
+                //     )
+                // }
+                // else if (series[1][dataPointIndex] === undefined) {
+                //     return (
+                //         '<div class="arrow_box" style="background: rgba(0, 0, 0, 0.9);">' +
+                //         '<span style="color: white;">' + ' ' + xAxisValue + '</span>' +
+                //         '<br>' +
+                //         '<span style="color: #5f8e95;">' + 'Production: ' + '</span>' +
+                //         '<span style="color: white;">' + series[0][dataPointIndex] + '</span>' +
+                //         '<span style="color: white;">' + ' kWh' + '</span>' +
+                //         '</div>'
+                //     )
+                // }
 
 
-                return (                 
-                    '<div class="arrow_box" style="background: rgba(0, 0, 0, 0.9);">' +
-                    '<span style="color: white;">' + ' ' + xAxisValue + '</span>' +
-                    '<br>' +
-                    '<span style="color: #5f8e95;">' + 'Production: ' + '</span>' +
-                    '<span style="color: white;">' + series[0][dataPointIndex] + '</span>' +
-                    '<span style="color: white;">' + ' kWh' + '</span>' +
-                    '<br>' +
-                    '<span style="color: #5f8e95;">Irradiation: </span>' +
-                    '<span style="color: white;">' + series[1][dataPointIndex] + '</span>' +
-                    '<span style="color: white;">' + ' Wh/m&sup2;' + '</span>' +            
-                    '</div>'
-                )
+                // return (
+                //     '<div class="arrow_box" style="background: rgba(0, 0, 0, 0.9);">' +
+                //     '<span style="color: white;">' + ' ' + xAxisValue + '</span>' +
+                //     '<br>' +
+                //     '<span style="color: #5f8e95;">' + 'Production: ' + '</span>' +
+                //     '<span style="color: white;">' + series[0][dataPointIndex] + '</span>' +
+                //     '<span style="color: white;">' + ' kWh' + '</span>' +
+                //     '<br>' +
+                //     '<span style="color: #5f8e95;">Irradiation: </span>' +
+                //     '<span style="color: white;">' + series[1][dataPointIndex] + '</span>' +
+                //     '<span style="color: white;">' + ' Wh/m&sup2;' + '</span>' +
+                //     '</div>'
+                // )
             }
 
         },
+
 
     };
 
@@ -356,16 +436,28 @@ const Chart1 = () => {
         }
     ];
 
+    // const handleWidthChange = (width) => {
+    //     console.log('handleWidthChange called');
+    //     setChartWidth(width);
+    //     console.log('called')
+    // };
+
     return (
-        <div ref={chartRef}>
-            <Chart
-                options={options}
-                series={series}
-                type="bar"
-                height={300}
-                width={chartWidth} // Set the width dynamically
-            />
-        </div>
+        <Chart
+            options={options}
+            series={series}
+            type="bar"
+            height={300}
+            width={chartWidth} // Set the width dynamically
+        />
+        //         {/* <div style={{ marginBottom: '100px' }}>
+        //             <button onClick={() => handleWidthChange('100%')}>Set Width to 100%</button>
+        //             <button onClick={() => handleWidthChange('120%')}>Set Width to 120%</button>
+        //             <button
+        //     type="button"
+        //     onClick={() => {console.log("clocked")}}
+        //   >Blue</button>
+        //         </div> */}
     );
-};
+}
 export default Chart1;

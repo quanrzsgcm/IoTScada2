@@ -1,6 +1,6 @@
 import React from 'react';
 import { Table, ConfigProvider } from 'antd';
-import '../assets/styles/customscrollbar.css'
+import '../assets/styles/customscrollbar.scss'
 
 const columns = [
   {
@@ -14,7 +14,6 @@ const columns = [
     dataIndex: 'chinese',
     sorter: {
       compare: (a, b) => a.chinese - b.chinese,
-      multiple: 3,
     },
   },
   {
@@ -22,7 +21,6 @@ const columns = [
     dataIndex: 'math',
     sorter: {
       compare: (a, b) => a.math - b.math,
-      multiple: 2,
     },
   },
   {
@@ -30,7 +28,6 @@ const columns = [
     dataIndex: 'english',
     sorter: {
       compare: (a, b) => a.english - b.english,
-      multiple: 1,
     },
   },
 ];
@@ -109,34 +106,26 @@ const data = [
 const onChange = (pagination, filters, sorter, extra) => {
   console.log('params', pagination, filters, sorter, extra);
 };
-const InverterRanking = () => <div>
-  <style>
-      {`
-      div::-webkit-scrollbar {
-        width: 20px;
-        height: 6px;
-      }
-      div::-webkit-scrollbar-thumb {
-        background: red;
-      }
-      div:hover::-webkit-scrollbar-thumb {
-        background: #888;
-      }
-      `}
-    </style>
+
+
+
+const InverterRanking = () => <div>  
 <ConfigProvider
   theme={{
     components: {
       Table: {
         borderColor: 'transparent',
+        bodySortBg: 'transparent',
         cellFontSize: 14,
         cellPaddingBlock: 8,
-        headerBg: "linear-gradient(to right, #05323e, #053e4d)",
+        // headerBg: "linear-gradient(to right, #05323e, #053e4d)",
         headerBorderRadius: 0,
         headerSplitColor: "rgba(0,0,0,0)",
-        colorBgContainer: "linear-gradient(to right, #05323e, #053e4d)",
+        colorBgContainer: "transparent",
         colorText: "white",
-        colorTextHeading: "grey",
+        colorTextHeading: "rgb(154,175,157)",
+        headerSortHoverBg: "linear-gradient(to right, #05323e, #053e4d)",
+        headerSortActiveBg: "linear-gradient(to right, #05323e, #053e4d)",
         // stickyScrollBarBg: "rgba(255,255,255,0.7)",
         // stickyScrollBarBorderRadius: 100,
       },
@@ -147,7 +136,7 @@ const InverterRanking = () => <div>
   <Table 
     columns={columns} 
     dataSource={data} 
-    onChange={onChange} 
+    onChange={onChange}   
     rowClassName={(record, index) => {
       if (index % 2 === 0) {
         return 'even-row'; // Apply a class for even rows

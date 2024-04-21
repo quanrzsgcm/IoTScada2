@@ -1,0 +1,49 @@
+
+.even-row {
+  background-color: #0c3e52;
+  /* Light gray background for even rows */
+}
+
+.odd-row {
+  background-color: #0c3746;
+  /* Gradient background for odd rows */
+}
+
+
+.ant-table-header {
+  background: linear-gradient(to right, rgb(3, 56, 63), rgb(2, 56, 100)) !important;
+}
+
+.ant-table-body {
+  scrollbar-width: auto;
+  scrollbar-color: auto;
+}
+
+// custom scrollbar
+.ant-table-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.ant-table-body::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+.ant-table-body::-webkit-scrollbar-thumb {
+  border-radius: 6px;
+  background-color: rgb(113,137,151);
+}
+
+
+
+
+
+
+/* 
+
+/* .ant-table::-webkit-scrollbar-thumb {
+  background-color: blue !important
+}
+
+.ant-table::-webkit-scrollbar {
+  height: 8px;
+} */

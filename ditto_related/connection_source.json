@@ -6,15 +6,15 @@
     "piggybackCommand": {
         "type": "connectivity.commands:createConnection",
         "connection": {
-            "id": "mqtt-connection-source-5",
+            "id": "nami",
             "connectionType": "mqtt",
             "connectionStatus": "open",
             "failoverEnabled": true,
-            "uri": "tcp://test.mosquitto.org:1883",
+            "uri": "tcp://broker.emqx.io:1883",
             "sources": [
                 {
                     "addresses": [
-                        "my.inverters/#"
+                        "/neuron/site1mqtt"
                     ],
                     "authorizationContext": [
                         "nginx:ditto"

@@ -29,12 +29,12 @@ const CheckboxDropdown = ({ }) => {
     if (index === -1) {
       // Key is not present, add it
       setSelectedOptions([...selectedOptions, checkedValues]);
-  } else {
-    // Key is present, remove it
-    const updatedOptions = [...selectedOptions];
-    updatedOptions.splice(index, 1);
-    setSelectedOptions(updatedOptions);
-}
+    } else {
+      // Key is present, remove it
+      const updatedOptions = [...selectedOptions];
+      updatedOptions.splice(index, 1);
+      setSelectedOptions(updatedOptions);
+    }
   };
 
   const handleMenuClick = (e) => {
@@ -45,7 +45,7 @@ const CheckboxDropdown = ({ }) => {
   const menuProps = {
     items: sourceitems.map(sourceitems => ({
       ...sourceitems,
-      icon: selectedOptions.includes(sourceitems.key) ? <MdOutlineCheckBox style={{ fontSize: '20px', color: 'blue' }} /> : <MdOutlineCheckBoxOutlineBlank style={{ fontSize: '20px', color: 'blue' }} />
+      icon: selectedOptions.includes(sourceitems.key) ? <MdOutlineCheckBox style={{ fontSize: '20px', color: 'rgb(0,204,255)' }} /> : <MdOutlineCheckBoxOutlineBlank style={{ fontSize: '20px', color: 'rgb(0,204,255)' }} />
     })),
     onClick: handleMenuClick,
   };
@@ -60,23 +60,41 @@ const CheckboxDropdown = ({ }) => {
             defaultBg: '#043b3e',
             defaultBorderColor: '#009bc4',
             borderRadius: '0px',
-            defaultHoverBg: '#043b3e'
+            defaultHoverBg: '#043b3e',
+            colorText: 'rgb(117,117,117)',
+            defaultHoverBorderColor: 'rgb(0,204,255)',
+            defaultHoverColor: 'rgb(0,204,255)'
           },
           Dropdown: {
             colorBgElevated: "black",
             controlItemBgHover: 'rgb(2,36,46)',
             controlItemBgActive: 'red',
-            colorText: 'white'
+            colorText: 'white',
+            borderRadiusLG: 0,
+            colorPrimary: 'red',
+            colorPrimaryBorder: 'red',
+            colorSplit: 'red',
           },
         },
       }}  >
 
-      <Dropdown menu={menuProps} trigger={['click']} >
-        <Button >
-          <Space>
-            Select
-            <DownOutlined color="red" />
-          </Space>
+      <Dropdown menu={menuProps} trigger={['click']} overlayStyle={{
+        width: '160px',
+        border: '1px solid rgb(0,204,255)',
+        // Add any additional styles as needed
+      }} >
+        <Button style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          width: '160px', 
+          textAlign: 'left',
+        }}>
+       
+          <span>Select</span>
+          <span style={{ marginLeft: 'auto' }}><DownOutlined color="red" /></span>
+            
+       
         </Button>
       </Dropdown>
 
