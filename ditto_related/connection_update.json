@@ -1,0 +1,34 @@
+{
+    "id": "robinsendback",
+    "name": null,
+    "connectionType": "mqtt",
+    "connectionStatus": "open",
+    "uri": "tcp://broker.emqx.io:1883",
+    "sources": [],
+    "targets": [
+        {
+            "address": "chondaitopicnaodo",
+            "topics": [
+                "_/_/things/twin/events",
+                "_/_/things/live/messages"
+            ],
+            "qos": 0,
+            "authorizationContext": ["nginx:ditto"],
+            "headerMapping": {}
+        }
+    ],
+    "clientCount": 1,
+    "failoverEnabled": true,
+    "validateCertificates": true,
+    "processorPoolSize": 1,
+    "mappingDefinitions": {
+        "javascript": {
+            "mappingEngine": "JavaScript",
+            "options": {
+                "loadBytebufferJS": "false",
+                "loadLongJS": "false"
+            }
+        }
+    },
+    "tags": ["site1"]
+}

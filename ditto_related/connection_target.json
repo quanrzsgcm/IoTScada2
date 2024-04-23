@@ -1,0 +1,41 @@
+{
+    "targetActorSelection": "/system/sharding/connection",
+    "headers": {
+        "aggregate": false
+    },
+    "piggybackCommand": {
+        "type": "connectivity.commands:createConnection",
+        "connection": {
+            "id": "robinsendback",
+            "connectionType": "mqtt",
+            "connectionStatus": "open",
+            "failoverEnabled": true,
+            "uri": "tcp://broker.emqx.io:1883",
+            "sources": [],
+            "targets": [
+                {
+                  "address": "chondaitopicnaodo",
+                  "topics": [
+                    "_/_/things/twin/events",
+                    "_/_/things/live/messages"
+                  ],
+                  "qos": 0,
+                  "authorizationContext": [
+                    "nginx:ditto"
+                  ],
+                  "headerMapping": {}
+                }
+              ],
+            "mappingContext": {
+                "mappingEngine": "JavaScript",
+                "options": {
+                    "loadBytebufferJS": "false",
+                    "loadLongJS": "false"
+                }
+            },
+            "tags": [
+                "site1"
+            ]
+        }
+    }
+}

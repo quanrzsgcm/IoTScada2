@@ -1,4 +1,5 @@
 {
+    "policyId": "my.test:policy",
     "attributes": {
         "manufacturer": "Empty",
         "model": "Empty",
@@ -9,31 +10,26 @@
     "features": {
         "measurements": {
             "properties": {
-                "capacity": 0,
-                "internal temp": 0,
-                "input power": 0,
-                "grid frequency": 0,
-                "power factor": 0,
-                "YieldToday": 0,
-                "Meter-readTotalEnergy": 0,
-                "ActivePower": 0,
-                "InputPower": 0,
-                "Efficiency": 0,
-                "GridFreq.": 0,
-                "ProductionToday": 0
+                "meterReadTotalEnergy": 0,
+                "activePower": 0,
+                "inputPower": 0,
+                "efficiency": 0,
+                "internalTemp": 0,
+                "gridFrequency": 0,
+                "productionToday": 0,
+                "yieldToday": 0
             }
         },
-        "runningStatus" : {
+        "runningstatus" : {
             "properties" : {
-                "stage" : true,
+                "stage" : "Empty",
                 "stagestarton" : "",
                 "StageDuration": 0
             }
-
         },
         "label" : {
             "properties" : {
-                "labels" : ["pa,ta"]
+                "labels" : [] 
             }
         }        
     }

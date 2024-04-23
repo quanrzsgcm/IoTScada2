@@ -151,15 +151,23 @@ export default function SiteView() {
     const handleMouseLeave = () => {
         setShowInfo(false);
     };
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+
+    console.log("Screen Width: ", screenWidth);
+    console.log("Screen Height: ", screenHeight);
 
     return (
         <MainviewLayout>
             {/* <div style={{ height: '200px', display: 'flex' }}> */}
-            <div className='flex-container'>
-
-                {dateString && <p>Selected Date: {dateString}</p>}
-
-                <div style={{ flex: '0 0 250px', display: 'flex', alignItems: 'center', backgroundColor: '#1c80ba', height: '100px', padding: '50px' }}>
+            <div style={{
+                display: 'flex',
+                height: '110px',
+                alignItems: 'center',
+                background: 'linear-gradient(to right, rgb(5, 78, 78), rgb(18, 57, 90))', // Adjusted gradient syntax,
+                marginTop: '10px'
+            }}>
+                <div style={{ flex: '0 0 250px', display: 'flex', alignItems: 'center', background: 'linear-gradient(to right, rgb(5, 78, 78), rgb(18, 57, 90))', height: '110px', padding: '50px' }}>
                     {/* <FontAwesomeIcon icon={faSignal} /> &nbsp;&nbsp;&nbsp; */}
                     <MdOutlineSolarPower size={50} /> &nbsp;&nbsp;&nbsp;
                     <div>
@@ -174,23 +182,21 @@ export default function SiteView() {
                 <div className="vertical-line"></div> {/* Vertical line */}
 
 
-                <div style={{ flex: '1 0 10px', marginLeft: '10px' }}>Inverters ({numberOfInverter})
-                    <div >Info Not Available 0  &nbsp;&nbsp;&nbsp;
-                        Partial Capability 0  &nbsp;&nbsp;&nbsp;
-                        Non-Operative 0 </div>
+                <div style={{ flex: '1 0 10px', marginLeft: '50px', marginTop: '0px' }}>
+                    Inverters ({numberOfInverter})
+                    <div style={{ marginTop: '15px' }}>Info Not Available 0 &nbsp;&nbsp;&nbsp; Partial Capability 0 &nbsp;&nbsp;&nbsp; Non-Operative 0 </div>
                 </div>
+
 
                 <div className="vertical-line"></div> {/* Vertical line */}
 
-                <div style={{ flex: '1 0 10px' }}>Alarm ({numberOfInverter}) <div>
-                    Fault 0
-                    Warning 0
-                </div>
+                <div style={{ flex: '1 0 10px', marginLeft: '50px', marginTop: '0px' }}>Alarm ({numberOfInverter})
+                    <div style={{ marginTop: '15px' }}>Info Not Available 0 &nbsp;&nbsp;&nbsp; Partial Capability 0 &nbsp;&nbsp;&nbsp; Non-Operative 0 </div>
                 </div>
             </div>
 
 
-            <div style={{ display: "flex", alignItems: "center" }}>
+            <div style={{ display: "flex", alignItems: "center", marginTop: '10px'}}>
                 <App setDateString={setDateString} uppersetSelectedLabel={setSelectedLabel} />
                 <Button onClick={() => { fetcheData(dateString); }}> Get Data </Button>
                 <div style={{ marginLeft: 'auto', display: "flex", alignItems: "center" }}>

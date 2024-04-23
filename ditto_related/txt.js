@@ -66,19 +66,35 @@ function mapToDittoProtocolMsg(headers, textPayload, bytePayload, contentType) {
 function mapToDittoProtocolMsg(headers, textPayload, bytePayload, contentType) {
     const jsonString = String.fromCharCode.apply(null, new Uint8Array(bytePayload));
     const jsonData = JSON.parse(jsonString);
-    const thingId = ["my.site", "placeholder"];
+    const thingId = ["my.inverter", "placeholder"];
     const value = {
+        
         measurements: {
             properties: {
-                capacity: jsonData.values.capacity,
-                internalTemp: jsonData.values.internalTemp,
+                meterReadTotalEnergy: jsonData.values.powerFactor,
+                activePower: jsonData.values.activePower,
                 inputPower: jsonData.values.inputPower,
+                efficiency: jsonData.values.efficiency,
+                internalTemp: jsonData.values.internalTemp,
                 gridFrequency: jsonData.values.gridFrequency,
-                powerFactor: jsonData.values.powerFactor,
+                productionToday: jsonData.values.productionToday,
+                yieldToday: jsonData.values.yieldToday,
+            }
+        },
+        runningstatus: {
+            properties: {
+                stage: "Empty",
+                stagestarton: null,
+                StageDuration: 0
+            }
+        },
+        label: {
+            properties: {
+                labels: []
             }
         }
     };
-    thingId[0] = 'my.site';
+    thingId[0] = 'my.inverter';
     thingId[1] = jsonData.node;
     return Ditto.buildDittoProtocolMsg(
         thingId[0], 
@@ -90,5 +106,24 @@ function mapToDittoProtocolMsg(headers, textPayload, bytePayload, contentType) {
         '/features', 
         headers, 
         value
+    );
+}
+
+
+function mapFromDittoProtocolMsg(namespace, id, group, channel, criterion, action, path, dittoHeaders, value, status, extra) {
+    // Create text data
+    let textPayload = '{"temperature": ' + value.measurements.properties.activePower + ', "thingId": "' + namespace + ':' + id + '"}';
+
+    // In this case we data only in text format
+    let bytePayload = null;
+    // Set message content type
+    let contentType = 'text/plain; charset=UTF-8';
+
+    // Return mapped message
+    return  Ditto.buildExternalMsg(
+        dittoHeaders,
+        textPayload,
+        bytePayload,
+        contentType
     );
 }

@@ -608,7 +608,7 @@ const LVDeviceList = () => {
 
 
                 </div>
-                <div style={{ flex: '1' }}>
+                <div style={{ flex: '1', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
                 <ExportCSVButton data={data} />
                 </div>
             </div>

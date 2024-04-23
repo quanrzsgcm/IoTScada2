@@ -9,7 +9,7 @@ import rawData from '../../sampledata/chart2data'
 const Chart2 = () => {
     const [chartWidth, setChartWidth] = useState('100%');
 
-    const { toggled, setToggled } = useToggled()
+    const { toggled, setToggled } = useToggled();
 
     useEffect(() => {
         console.log("Toggled state changed chart2:", toggled);

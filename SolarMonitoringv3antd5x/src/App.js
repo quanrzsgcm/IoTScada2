@@ -56,8 +56,6 @@ return (
         <Route path='/site-monitor/devicelist' element={<DeviceList />} />
         <Route path='/admin/manage-users' element={<DeviceList />} />
         <Route path='/admin/manage-devices' element={<DeviceListAdmin />} />
-        
-        
       </Route>
       <Route path="/login" element={<SignIn />} />
     </Routes>

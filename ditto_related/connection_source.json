@@ -6,7 +6,7 @@
     "piggybackCommand": {
         "type": "connectivity.commands:createConnection",
         "connection": {
-            "id": "nami",
+            "id": "robin",
             "connectionType": "mqtt",
             "connectionStatus": "open",
             "failoverEnabled": true,
@@ -14,7 +14,7 @@
             "sources": [
                 {
                     "addresses": [
-                        "/neuron/site1mqtt"
+                        "/neuron/invertersite1"
                     ],
                     "authorizationContext": [
                         "nginx:ditto"
@@ -33,7 +33,7 @@
                 }
             },
             "tags": [
-                "site2"
+                "site1"
             ]
         }
     }

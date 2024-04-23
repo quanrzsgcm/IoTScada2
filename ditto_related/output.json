@@ -1,0 +1,140 @@
+[
+    {
+        "id": "nami",
+        "name": null,
+        "connectionType": "mqtt",
+        "connectionStatus": "open",
+        "uri": "tcp://broker.emqx.io:1883",
+        "sources": [
+            {
+                "addresses": [
+                    "/neuron/site1mqtt"
+                ],
+                "consumerCount": 1,
+                "qos": 0,
+                "authorizationContext": [
+                    "nginx:ditto"
+                ],
+                "headerMapping": {},
+                "payloadMapping": [
+                    "javascript"
+                ],
+                "replyTarget": {
+                    "address": "{{header:reply-to}}",
+                    "headerMapping": {},
+                    "expectedResponseTypes": [
+                        "response",
+                        "error"
+                    ],
+                    "enabled": true
+                }
+            }
+        ],
+        "targets": [],
+        "clientCount": 1,
+        "failoverEnabled": true,
+        "validateCertificates": true,
+        "processorPoolSize": 1,
+        "mappingDefinitions": {
+            "javascript": {
+                "mappingEngine": "JavaScript",
+                "options": {
+                    "incomingScript": "function mapToDittoProtocolMsg(headers, textPayload, bytePayload, contentType) {\r\n    const jsonString = String.fromCharCode.apply(null, new Uint8Array(bytePayload));\r\n    const jsonData = JSON.parse(jsonString);\r\n    const thingId = [\"my.site\", \"placeholder\"];\r\n    const value = {\r\n        measurements: {\r\n            properties: {\r\n                capacity: jsonData.values.capacity, \r\n                temp: jsonData.values.temp,\r\n                irradiation: jsonData.values.irradiation, // timeseries sum\r\n                yield: jsonData.values.yield, // timeseries sum\r\n                production: jsonData.values.production, // timeseries sum\r\n                powerratio: jsonData.values.powerratio, // timeseries sum\r\n            }\r\n        }\r\n    };\r\n    thingId[0] = 'my.site';\r\n    thingId[1] = jsonData.node;\r\n    return Ditto.buildDittoProtocolMsg(\r\n        thingId[0], \r\n        thingId[1], \r\n        'things', \r\n        'twin', \r\n        'commands', \r\n        'modify', \r\n        '/features', \r\n        headers, \r\n        value\r\n    );\r\n}\r\n",
+                    "loadBytebufferJS": "false",
+                    "loadLongJS": "false"
+                }
+            }
+        },
+        "tags": [
+            "site2"
+        ]
+    },
+    {
+        "id": "robin",
+        "name": null,
+        "connectionType": "mqtt",
+        "connectionStatus": "open",
+        "uri": "tcp://broker.emqx.io:1883",
+        "sources": [
+            {
+                "addresses": [
+                    "/neuron/invertersite1"
+                ],
+                "consumerCount": 1,
+                "qos": 0,
+                "authorizationContext": [
+                    "nginx:ditto"
+                ],
+                "headerMapping": {},
+                "payloadMapping": [
+                    "javascript"
+                ],
+                "replyTarget": {
+                    "address": "{{header:reply-to}}",
+                    "headerMapping": {},
+                    "expectedResponseTypes": [
+                        "response",
+                        "error"
+                    ],
+                    "enabled": true
+                }
+            }
+        ],
+        "targets": [],
+        "clientCount": 1,
+        "failoverEnabled": true,
+        "validateCertificates": true,
+        "processorPoolSize": 1,
+        "mappingDefinitions": {
+            "javascript": {
+                "mappingEngine": "JavaScript",
+                "options": {
+                    "incomingScript": "function mapToDittoProtocolMsg(headers, textPayload, bytePayload, contentType) {\r\n    const jsonString = String.fromCharCode.apply(null, new Uint8Array(bytePayload));\r\n    const jsonData = JSON.parse(jsonString);\r\n    const thingId = [\"my.inverter\", \"placeholder\"];\r\n    const value = {        \r\n        measurements: {\r\n            properties: {\r\n                meterReadTotalEnergy: jsonData.values.meterReadTotalEnergy || null,\r\n                activePower: jsonData.values.activePower || null,\r\n                inputPower: jsonData.values.inputPower || null,\r\n                efficiency: jsonData.values.efficiency || null,\r\n                internalTemp: jsonData.values.internalTemp || null,\r\n                gridFrequency: jsonData.values.gridFrequency || null,\r\n                productionToday: jsonData.values.productionToday || null,\r\n                yieldToday: jsonData.values.yieldToday || null,\r\n            }\r\n        },\r\n        runningstatus: {\r\n            properties: {\r\n                stage: jsonData.values.stage || null,\r\n                stagestarton: null,\r\n                StageDuration: 0\r\n            }\r\n        },\r\n        label: {\r\n            properties: {\r\n                labels: []\r\n            }\r\n        }\r\n    };\r\n    thingId[0] = 'my.inverter';\r\n    thingId[1] = jsonData.node;\r\n    return Ditto.buildDittoProtocolMsg(\r\n        thingId[0], \r\n        thingId[1], \r\n        'things', \r\n        'twin', \r\n        'commands', \r\n        'modify', \r\n        '/features', \r\n        headers, \r\n        value\r\n    );\r\n}",
+                    "loadBytebufferJS": "false",
+                    "loadLongJS": "false"
+                }
+            }
+        },
+        "tags": [
+            "site1"
+        ]
+    },
+    {
+        "id": "robinsendback",
+        "name": null,
+        "connectionType": "mqtt",
+        "connectionStatus": "open",
+        "uri": "tcp://broker.emqx.io:1883",
+        "sources": [],
+        "targets": [
+            {
+                "address": "chondaitopicnaodo",
+                "topics": [
+                    "_/_/things/twin/events",
+                    "_/_/things/live/messages"
+                ],
+                "qos": 0,
+                "authorizationContext": [
+                    "nginx:ditto"
+                ],
+                "headerMapping": {}
+            }
+        ],
+        "clientCount": 1,
+        "failoverEnabled": true,
+        "validateCertificates": true,
+        "processorPoolSize": 1,
+        "mappingDefinitions": {
+            "javascript": {
+                "mappingEngine": "JavaScript",
+                "options": {
+                    "loadBytebufferJS": "false",
+                    "loadLongJS": "false"
+                }
+            }
+        },
+        "tags": [
+            "site1"
+        ]
+    }
+]

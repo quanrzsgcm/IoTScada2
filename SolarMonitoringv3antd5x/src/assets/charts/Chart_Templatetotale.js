@@ -409,7 +409,6 @@ const svgMarkup = `<svg fill="rgb(161,171,182)" width="16px" height="16px" viewB
                     )
                 }
 
-
                 return (
                     '<div class="arrow_box" style="background: rgba(0, 0, 0, 0.9);">' +
                     '<span style="color: white;">' + ' ' + xAxisValue + '</span>' +
