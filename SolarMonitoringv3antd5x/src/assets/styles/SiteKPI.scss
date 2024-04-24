@@ -1,18 +1,22 @@
 .grid-container {
     display: grid;
-    grid-template-columns: auto auto auto auto;
+    grid-template-columns: 24% 24% 24% 23%; 
+    grid-template-rows: 31% 31% 31% ;
     background-color: transparent;
     padding: 1px;
     height: 100%; /* Set height to 100% of viewport height */
     width: 100%; /* Set width to 100% of viewport width */
+    gap: 20px
 }
 
 .grid-item {
-    background-color: rgba(255, 255, 255, 0.8);
-    border: 1px solid rgba(0, 0, 0, 0.8);
+    background-color: rgba(11, 36, 55, 0.5);
+    // border: 1px solid rgba(0, 0, 0, 0.8);
     padding: 0px;
     font-size: 30px;
     text-align: center;
+    height: 100%; /* Set height to 100% */
+    overflow: hidden;
 }
 
 .item-span1 {
@@ -39,6 +43,14 @@
 
 .nested-div {
     height: 50px; /* Set the height as needed */
-    background-color: red; /* Set the background color */
+    background: linear-gradient(to right, rgb(12, 53, 71), rgb(12, 30, 57));
+    display: flex; /* Use flexbox */
+  align-items: center; /* Center items vertically */
+}
+
+.title {
+    color: #fff; /* Set color to white */
+    font-family: Arial, sans-serif; /* Set font family */
+    font-size: 16px; /* Set font size */
+    margin-left: 25px;
   }
-  
