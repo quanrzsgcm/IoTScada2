@@ -1,9 +1,10 @@
 {
     "policyId": "my.test:policy",
     "attributes": {
-        "manufacturer": "Empty",
-        "model": "Empty",
-        "serial number": "Empty",
+        "name": "FULUH_Canteen 1_Inverter 2",
+        "manufacturer": "HUAWEI",
+        "model": "SUN2000_100KTL_M1",
+        "serialNumber": "--",
         "location": "Empty",
         "site": "Empty"
     },
@@ -13,6 +14,9 @@
                 "meterReadTotalEnergy": 0,
                 "activePower": 0,
                 "inputPower": 0,
+                "reactivePower": 0,
+                "apparentPower": 0,
+                "powerFactor": 0,
                 "efficiency": 0,
                 "internalTemp": 0,
                 "gridFrequency": 0,
@@ -23,14 +27,14 @@
         "runningstatus" : {
             "properties" : {
                 "stage" : "Empty",
-                "stagestarton" : "",
-                "StageDuration": 0
+                "stageStartOn" : "",
+                "StageDurationMinute": 0
             }
         },
         "label" : {
             "properties" : {
                 "labels" : [] 
             }
-        }        
+        }
     }
 }

@@ -110,7 +110,9 @@ const RadialBarChart = () => {
     };
 
     return (
-<div style={{ height: 'calc(100% - 50px)', border: '1px solid red', overflow: 'hidden' }}>
+<div style={{ height: 'calc(100% - 50px)', 
+// border: '1px solid red', 
+overflow: 'hidden' }}>
     <Chart options={options} series={series} type="radialBar" height="170%"  />
 </div>
 

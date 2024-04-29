@@ -14,49 +14,83 @@ const data = {
 
 const SiteMetric = () => {
   return (
-    <div style={{  border: '1px solid green', overflow: 'hidden', height: `calc(100% - 50px)` }}>
+    <div style={{ 
+      // border: '1px solid green', 
+      overflow: 'hidden', height: `calc(100% - 50px)` }}>
 
-<div style={{ display: 'flex', flexDirection: 'row', border: '1px solid green', overflow: 'hidden', height: `calc(100%/4)`, justifyContent: 'flex-start' }}>
-  <div style={{ border: '1px solid red', flex: 4, display: 'flex', alignItems: 'center' }}>
+<div style={{ display: 'flex', flexDirection: 'row', 
+// border: '1px solid green', 
+overflow: 'hidden', height: `calc(100%/4)`, justifyContent: 'flex-start' }}>
+  <div style={{ 
+    // border: '1px solid red', 
+    flex: 4, display: 'flex', alignItems: 'center' }}>
     <span style={{color: "white", fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginLeft: '10px'}}>Production</span>
   </div>
-  <div style={{ border: '1px solid yellow', flex: 2 }}><GiElectric style={{ fill: 'blue' }} />
+  <div style={{ 
+    // border: '1px solid yellow', 
+    flex: 2 }}><GiElectric style={{ fill: 'blue' }} />
 </div>
-  <div style={{ border: '1px solid black', flex: 4, display: 'flex', alignItems: 'center' }}>
+  <div style={{ 
+    // border: '1px solid black',
+     flex: 4, display: 'flex', alignItems: 'center' }}>
     <span style={{color: "white", fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginLeft: '10px'}}>{data.production} MWh</span>
   </div>
 </div>
 
-<div style={{ display: 'flex', flexDirection: 'row', border: '1px solid green', overflow: 'hidden', height: `calc(100%/4)`, justifyContent: 'flex-start' }}>
-  <div style={{ border: '1px solid red', flex: 4, display: 'flex', alignItems: 'center' }}>
+<div style={{ display: 'flex', flexDirection: 'row', 
+// border: '1px solid green', 
+overflow: 'hidden', height: `calc(100%/4)`, justifyContent: 'flex-start' }}>
+  <div style={{ 
+    // border: '1px solid red', 
+    flex: 4, display: 'flex', alignItems: 'center' }}>
     <span style={{color: "white", fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginLeft: '10px'}}>Yield</span>
   </div>
-  <div style={{ border: '1px solid yellow', flex: 2 }}><TiTime  style={{ fill: 'green' }} />
+  <div style={{ 
+    // border: '1px solid yellow', 
+    flex: 2 }}><TiTime  style={{ fill: 'green' }} />
 </div>
-  <div style={{ border: '1px solid black', flex: 4, display: 'flex', alignItems: 'center' }}>
+  <div style={{ 
+    // border: '1px solid black', 
+    flex: 4, display: 'flex', alignItems: 'center' }}>
     <span style={{color: "white", fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginLeft: '10px'}}>{data.yield} h</span>
   </div>
 </div>
 
-<div style={{ display: 'flex', flexDirection: 'row', border: '1px solid green', overflow: 'hidden', height: `calc(100%/4)`, justifyContent: 'flex-start' }}>
-  <div style={{ border: '1px solid red', flex: 4, display: 'flex', alignItems: 'center' }}>
+<div style={{ display: 'flex', flexDirection: 'row', 
+// border: '1px solid green', 
+overflow: 'hidden', height: `calc(100%/4)`, justifyContent: 'flex-start' }}>
+  <div style={{ 
+    // border: '1px solid red', 
+    flex: 4, display: 'flex', alignItems: 'center' }}>
     <span style={{color: "white", fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginLeft: '10px'}}>Revenue</span>
   </div>
-  <div style={{ border: '1px solid yellow', flex: 2 }}><FaCoins  style={{ fill: 'orange' }} />
+  <div style={{ 
+    // border: '1px solid yellow',
+     flex: 2 }}><FaCoins  style={{ fill: 'orange' }} />
 </div>
-  <div style={{ border: '1px solid black', flex: 4, display: 'flex', alignItems: 'center' }}>
+  <div style={{ 
+    // border: '1px solid black',
+     flex: 4, display: 'flex', alignItems: 'center' }}>
     <span style={{color: "white", fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginLeft: '10px'}}>{data.revenue} VND</span>
   </div>
 </div>
 
-<div style={{ display: 'flex', flexDirection: 'row', border: '1px solid green', overflow: 'hidden', height: `calc(100%/4)`, justifyContent: 'flex-start' }}>
-  <div style={{ border: '1px solid red', flex: 4, display: 'flex', alignItems: 'center' }}>
+<div style={{ display: 'flex', flexDirection: 'row', 
+// border: '1px solid green', 
+overflow: 'hidden', height: `calc(100%/4)`, justifyContent: 'flex-start' }}>
+  <div style={{ 
+    // border: '1px solid red', 
+    flex: 4, display: 'flex', alignItems: 'center' }}>
     <span style={{color: "white", fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginLeft: '10px'}}>CO<sub style={{ fontSize: 'smaller' }}>2</sub>
     <span style={{ marginLeft: '5px' }}>Reduction</span></span>
   </div>
-  <div style={{ border: '1px solid yellow', flex: 2 }}><BsTreeFill   style={{ fill: 'green' }} />
+  <div style={{ 
+    // border: '1px solid yellow',
+     flex: 2 }}><BsTreeFill   style={{ fill: 'green' }} />
 </div>
-  <div style={{ border: '1px solid black', flex: 4, display: 'flex', alignItems: 'center' }}>
+  <div style={{ 
+    // border: '1px solid black',
+     flex: 4, display: 'flex', alignItems: 'center' }}>
     <span style={{color: "white", fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginLeft: '10px'}}>{data.co2reduction} t</span>
   </div>
 </div>

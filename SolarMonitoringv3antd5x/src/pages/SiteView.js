@@ -248,13 +248,17 @@ export default function SiteView() {
                 justifyContent: 'space-between',
                 background: 'linear-gradient(to bottom right, rgb(2,82,82), rgb(29,53,72))',
                 height: '350px',
-                border: '2px solid black', // Border color for the parent div,
+                // border: '2px solid black', // Border color for the parent div,
                 overflow: 'hidden', // Prevents content from overflowing
             }}>
-                <div style={{ flex: 1, marginRight: '10px', border: '2px solid red', overflow: 'hidden', }}> {/* Border color for the first child div */}
+                <div style={{  flex: '0 0 50%' , marginRight: '0px', 
+                // border: '2px solid red',
+                 overflow: 'hidden' }}> {/* Border color for the first child div */}
                     <Chart1 />
                 </div>
-                <div style={{ flex: 1, marginLeft: '10px', border: '2px solid blue', overflow: 'hidden', }}> {/* Border color for the second child div */}
+                <div style={{ flex: '0 0 50%' ,marginLeft: '0px', 
+                // border: '2px solid blue', 
+                overflow: 'hidden' }}> {/* Border color for the second child div */}
                     <Chart2 />
                 </div>
             </div>

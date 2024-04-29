@@ -6,6 +6,8 @@ curl -X PUT 'http://localhost:8080/api/2/things/my.inverter:inv02' -u 'ditto:dit
 
 curl -X PUT 'http://localhost:8080/api/2/things/my.power:pm02' -u 'ditto:ditto' -H 'Content-Type: application/json' -d @pm.json
 
+curl -X 'DELETE' 'http://localhost:8080/api/2/things/testid' -H 'accept: */*' -u 'ditto:ditto'
+
 CREATE CONNECTION
 curl -X POST 'http://localhost:8080/devops/piggyback/connectivity?timeout=10' -u 'devops:foobar' -H 'Content-Type: application/json' -d @connection_source.json
 curl -X POST 'http://localhost:8080/devops/piggyback/connectivity?timeout=10' -u 'devops:foobar' -H 'Content-Type: application/json' -d @connection_target.json
@@ -20,7 +22,15 @@ UPDATE CONNECTION
 curl -X 'PUT' -u 'devops:foobar' 'http://localhost:8080/api/2/connections/robinsendback' -H 'Accept: application/json' -H 'Content-Type: application/json' -d @connection_update.json | python -m json.tool
 
 GET ALL THINGS
-curl -X GET 'http://localhost:8080/api/2/things/' -u 'ditto:ditto' -H 'Content-Type: application/json' | python -m json.tool
+curl -X GET 'http://localhost:8080/api/2/things?fields=thingId/' -u 'ditto:ditto' -H 'Content-Type: application/json' | python -m json.tool
+curl -X GET 'http://localhost:8080/api/2/things/my.inverter:inv01' -u 'ditto:ditto' -H 'Content-Type: application/json' | python -m json.tool
 
+GET ALL THINGS WITH namespaces 
+curl -X 'GET' 'http://localhost:8080/api/2/search/things?namespaces=my.inverter'  -H 'accept: application/json'   -H 'Authorization: Basic ZGl0dG86ZGl0dG8=' | python -m json.tool
+COUNT ALL THINGS WITH namespaces 
+curl -X 'GET' 'http://localhost:8080/api/2/search/things/count?namespaces=my.inverter' -H 'accept: application/json' -H 'Authorization: Basic ZGl0dG86ZGl0dG8='
+
+curl -X 'GET' 'http://localhost:8080/api/2/search/things?namespaces=my.inverter&fields=thingId&option=size(200)' -H 'accept: application/json' -H 'Authorization: Basic ZGl0dG86ZGl0dG8=' | python -m json.tool
+                                                                                                &option=cursor%28LOREMIPSUM%29
 DELETE THINGS
 curl -X 'DELETE' 'http://localhost:8080/api/2/things/my.inverter:inv11' -u 'ditto:ditto'

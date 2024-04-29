@@ -39,11 +39,18 @@ class InverterMeasurement(models.Model):
     measurementID = models.AutoField(primary_key=True)
     inverter = models.ForeignKey(Inverter, on_delete=models.CASCADE)  # ForeignKey reference to Inverter model
     timestamp = models.DateTimeField()
-    capacity = models.DecimalField(max_digits=10, decimal_places=2)
-    internalTemp = models.DecimalField(max_digits=5, decimal_places=2)
-    inputPower = models.DecimalField(max_digits=10, decimal_places=2)
-    gridFrequency = models.DecimalField(max_digits=5, decimal_places=2)
-    powerFactor = models.DecimalField(max_digits=5, decimal_places=2)
+    meterReadTotalEnergy = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    activePower = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    inputPower = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    efficiency = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    internalTemp = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    gridFrequency = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    productionToday = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    yieldToday = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    reactivePower = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    apparentPower = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    powerFactor = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    stage = models.CharField(max_length=20, null=True, blank=True)
 
     def __str__(self):
         return f"Measurement at {self.timestamp} for Inverter {self.inverter.model}"

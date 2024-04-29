@@ -65,10 +65,12 @@ const Chart2 = () => {
     // Construct chart options
     const options = {
         chart: {
+            redrawOnParentResize: true,
             type: 'line',
             height: 300,
             // width: chartWidth,
             fontFamily: 'Arial, Helvetica, sans-serif',
+            // offsetX: 0,
             offsetX: -40,
             offsetY: 40,
             toolbar: {
@@ -336,22 +338,14 @@ const Chart2 = () => {
     //     console.log('called')
     // };
 
-    return (
+    return (    
         <Chart
             options={options}
             series={series}
             type="line"
             height={300}
-            width={chartWidth} // Set the width dynamically
-        />
-        //         {/* <div style={{ marginBottom: '100px' }}>
-        //             <button onClick={() => handleWidthChange('100%')}>Set Width to 100%</button>
-        //             <button onClick={() => handleWidthChange('120%')}>Set Width to 120%</button>
-        //             <button
-        //     type="button"
-        //     onClick={() => {console.log("clocked")}}
-        //   >Blue</button>
-        //         </div> */}
+            width= '100%' // Set the width dynamically
+            />  
     );
 }
 export default Chart2;

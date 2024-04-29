@@ -29,14 +29,7 @@ export default function DeviceList() {
 
   return (
     <MainviewLayout>
-      <div>
-        {showDetail ? (
-          <Button onClick={toggle}>Back to List</Button>
-        ) : (
-          <Button onClick={toggle}>Show Detail</Button>
-        )}
-      </div>
-      {showDetail ? <LVDeviceDetail /> : <LVDeviceList />}
+      {selectedThing ? <LVDeviceDetail selectedThing={selectedThing} setSelectedThing={setSelectedThing}/> : <LVDeviceList setSelectedThing={setSelectedThing}/>}
     </MainviewLayout>
   );
 }
