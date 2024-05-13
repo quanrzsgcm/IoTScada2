@@ -25,12 +25,12 @@ import App3 from '../assets/charts/test';
 export default function SiteView() {
     const [placeholdervalue, setPlaceholdervalue] = useState(149);
     const [realtimesitedata, setRealTimeSiteData] = useState({
-        capacity: null,
-        temp: null,
-        irradiation: null,
-        yield: null,
-        production: null,
-        powerratio: null,
+        capacity: 11.9,
+        temp: 45,
+        irradiation: 67.8,
+        yield: 120,
+        production: 45,
+        powerratio: 99,
     });
 
 
@@ -190,7 +190,7 @@ export default function SiteView() {
 
                 <div className="vertical-line"></div> {/* Vertical line */}
 
-                <div style={{ flex: '1 0 10px', marginLeft: '50px', marginTop: '0px' }}>Alarm ({numberOfInverter})
+                <div style={{ flex: '1 0 10px', marginLeft: '50px', marginTop: '0px' }}>Alarm ({0})
                     <div style={{ marginTop: '15px' }}>Info Not Available 0 &nbsp;&nbsp;&nbsp; Partial Capability 0 &nbsp;&nbsp;&nbsp; Non-Operative 0 </div>
                 </div>
             </div>
@@ -198,7 +198,7 @@ export default function SiteView() {
 
             <div style={{ display: "flex", alignItems: "center", marginTop: '10px'}}>
                 <App setDateString={setDateString} uppersetSelectedLabel={setSelectedLabel} />
-                <Button onClick={() => { fetcheData(dateString); }}> Get Data </Button>
+                {/* <Button onClick={() => { fetcheData(dateString); }}> Get Data </Button> */}
                 <div style={{ marginLeft: 'auto', display: "flex", alignItems: "center" }}>
                     <IoLocationOutline color="#9fbbc4" style={{ marginRight: '8px' }} />
                     <span>Location placeholder</span>
@@ -246,18 +246,18 @@ export default function SiteView() {
             <div style={{
                 display: 'flex',
                 justifyContent: 'space-between',
-                background: 'linear-gradient(to bottom right, rgb(2,82,82), rgb(29,53,72))',
+                background: 'linear-gradient(to right, rgb(2,82,82) 0%, rgb(13,72,103) 25%, rgb(14,70,104) 50%, rgb(8,62,88) 75%, rgb(21,51,81) 100%)',
                 height: '350px',
                 // border: '2px solid black', // Border color for the parent div,
                 overflow: 'hidden', // Prevents content from overflowing
             }}>
                 <div style={{  flex: '0 0 50%' , marginRight: '0px', 
-                // border: '2px solid red',
+                border: '2px solid red',
                  overflow: 'hidden' }}> {/* Border color for the first child div */}
                     <Chart1 />
                 </div>
                 <div style={{ flex: '0 0 50%' ,marginLeft: '0px', 
-                // border: '2px solid blue', 
+                border: '2px solid blue', 
                 overflow: 'hidden' }}> {/* Border color for the second child div */}
                     <Chart2 />
                 </div>

@@ -1,24 +1,146 @@
 import React, { useContext, useEffect, useState } from 'react';
 import Chart from 'react-apexcharts';
+import ApexCharts from 'apexcharts'
 import './apexChartsStyles.css';
 import { ToggledProvider, useToggled } from '../../context/ToggledContext';
-import rawData from '../../sampledata/chart2data'
 
-// x =< 10 show all x
-
-const Chart2 = () => {
+const Chart1 = () => {
     const [chartWidth, setChartWidth] = useState('110%');
 
-    const { toggled, setToggled } = useToggled();
+    const { toggled, setToggled } = useToggled()
 
     // useEffect(() => {
-    //     console.log("Toggled state changed chart2:", toggled);
+    //     console.log("Toggled state changed:", toggled);
     //     if (toggled) {
-    //         setChartWidth('100%');
+    //         setChartWidth('110%');
     //     } else {
     //         setChartWidth('110%');
     //     }
     // }, [toggled]);
+
+    // Sample data
+    const rawData = [
+        {
+            "Period": "0:00",
+            "Production (kWh)": 555,
+            "Irradiation (Wh/㎡)": 555,
+        },
+        {
+            "Period": "1:00",
+            "Production (kWh)": 0,
+            "Irradiation (Wh/㎡)": 0
+        },
+        {
+            "Period": "2:00",
+            "Production (kWh)": 0,
+            "Irradiation (Wh/㎡)": 0
+        },
+        {
+            "Period": "3:00",
+            "Production (kWh)": 0,
+            "Irradiation (Wh/㎡)": 0
+        },
+        {
+            "Period": "4:00",
+            "Production (kWh)": 0,
+            "Irradiation (Wh/㎡)": 0
+        },
+        {
+            "Period": "5:00",
+            "Production (kWh)": 3.75,
+            "Irradiation (Wh/㎡)": 3.49
+        },
+        {
+            "Period": "6:00",
+            "Production (kWh)": 66.75,
+            "Irradiation (Wh/㎡)": 72.69
+        },
+        {
+            "Period": "7:00",
+            "Production (kWh)": 256.88,
+            "Irradiation (Wh/㎡)": 250.96
+        },
+        {
+            "Period": "8:00",
+            "Production (kWh)": 486.63,
+            "Irradiation (Wh/㎡)": 477.86
+        },
+        {
+            "Period": "9:00",
+            "Production (kWh)": 687.31,
+            "Irradiation (Wh/㎡)": 688.44
+        },
+        {
+            "Period": "10:00",
+            "Production (kWh)": 739.22,
+            "Irradiation (Wh/㎡)": 831.39
+        },
+        {
+            "Period": "11:00",
+            "Production (kWh)": 761.84,
+            "Irradiation (Wh/㎡)": 834.8
+        },
+        {
+            "Period": "12:00",
+            "Production (kWh)": 826,
+            "Irradiation (Wh/㎡)": 913.28
+        },
+        {
+            "Period": "13:00",
+            "Production (kWh)": 730.09,
+            "Irradiation (Wh/㎡)": 834.39
+        },
+        {
+            "Period": "14:00",
+            "Production (kWh)": 608.5,
+            "Irradiation (Wh/㎡)": 675.93
+        },
+        {
+            "Period": "15:00",
+            "Production (kWh)": 435.34,
+            "Irradiation (Wh/㎡)": 495.3
+        },
+        {
+            "Period": "16:00",
+            "Production (kWh)": 213.59,
+            "Irradiation (Wh/㎡)": 250.36
+        },
+        {
+            "Period": "17:00",
+            "Production (kWh)": 46.5,
+            "Irradiation (Wh/㎡)": 55.62
+        },
+        {
+            "Period": "18:00",
+            "Production (kWh)": 0,
+            "Irradiation (Wh/㎡)": 0.63
+        },
+        {
+            "Period": "19:00",
+            "Production (kWh)": 0,
+            "Irradiation (Wh/㎡)": 0
+        },
+        {
+            "Period": "20:00",
+            "Production (kWh)": 0,
+            "Irradiation (Wh/㎡)": 0
+        },
+        {
+            "Period": "21:00",
+            "Production (kWh)": 0,
+            "Irradiation (Wh/㎡)": 0
+        },
+        {
+            "Period": "22:00",
+            "Production (kWh)": 0,
+            "Irradiation (Wh/㎡)": 0
+        },
+        {
+            "Period": "23:00",
+            "Production (kWh)": 423,
+            "Irradiation (Wh/㎡)": 23,
+        }
+    ];
 
     const ExportCSV = () => {
         // Construct CSV content
@@ -42,15 +164,15 @@ const Chart2 = () => {
         URL.revokeObjectURL(anchor.href);
     }
 
+
     if (!rawData || rawData.length === 0) {
         return <div>No data</div>;
     }
 
     // Extract data from rawData
-    const period = rawData.map(item => item.period);
-    const activePower = rawData.map(item => parseFloat(item['activePower']));
-    const irradiance = rawData.map(item => parseFloat(item['irradiance']));
-
+    const period = rawData.map(item => item.Period);
+    const production = rawData.map(item => parseFloat(item['Production (kWh)']));
+    const irradiation = rawData.map(item => parseFloat(item['Irradiation (Wh/㎡)']));
     const svgIcon = `
 <svg width="16px" height="16px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
   <path d="M12.5535 16.5061C12.4114 16.6615 12.2106 16.75 12 16.75C11.7894 16.75 11.5886 16.6615 11.4465 16.5061L7.44648 12.1311C7.16698 11.8254 7.18822 11.351 7.49392 11.0715C7.79963 10.792 8.27402 10.8132 8.55352 11.1189L11.25 14.0682V3C11.25 2.58579 11.5858 2.25 12 2.25C12.4142 2.25 12.75 2.58579 12.75 3V14.0682L15.4465 11.1189C15.726 10.8132 16.2004 10.792 16.5061 11.0715C16.8118 11.351 16.833 11.8254 16.5535 12.1311L12.5535 16.5061Z" fill="rgb(161,171,182)"/>
@@ -59,28 +181,47 @@ const Chart2 = () => {
 `;
     const svgMarkup = `<svg fill="rgb(161,171,182)" width="16px" height="16px" viewBox="0 0 24 24" id="export-2" xmlns="http://www.w3.org/2000/svg" class="icon line"><polyline id="primary" points="15 3 21 3 21 9" style="fill: none; stroke: rgb(161,171,182); stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.5;"></polyline><path id="primary-2" data-name="primary" d="M21,13v7a1,1,0,0,1-1,1H4a1,1,0,0,1-1-1V4A1,1,0,0,1,4,3h7" style="fill: none; stroke: rgb(161,171,182); stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.5;"></path><line id="primary-3" data-name="primary" x1="11" y1="13" x2="21" y2="3" style="fill: none; stroke: rgb(161,171,182); stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.5;"></line></svg>`;
 
+
+    const visitedObjects = new Set();
+    const visitedObject2s = new Set();
     // Construct chart options
     const options = {
         chart: {
-            type: 'line',
+            id: 'kpichart1',
+            events: {
+                legendClick: function(chartContext, seriesIndex, config) {
+                // x =< 10 show all x
+                const chart = ApexCharts.getChartByID('kpichart1')
+                console.log(chart)
+                chart.updateOptions({
+                    series: [
+                        {
+                            name: 'Production',
+                            data: (() => {
+                                const newProduction = new Array(production.length).fill(0);
+                                return newProduction;
+                            })()
+                        },
+                        {
+                            name: 'Irradiation',
+                            data: irradiation
+                        }
+                    ]
+                  })                
+                }
+              },
+            type: 'bar',
             height: 300,
             // width: chartWidth,
             fontFamily: 'Arial, Helvetica, sans-serif',
-            // offsetX: 0,
             offsetX: -40,
-            offsetY: 40,
+            offsetY: 0,
             toolbar: {
                 show: true,
                 offsetX: -100,
                 offsetY: 15,
                 tools: {
                     download: false,
-                    selection: false,
-                    zoom: false,
-                    zoomin: false,
-                    zoomout: false,
-                    pan: false,
-                    reset: false,
                     customIcons: [{
                         // <img width="50" height="50" src="https://img.icons8.com/ios/50/export.png" alt="export"/>            
                         icon: svgIcon,
@@ -120,13 +261,13 @@ const Chart2 = () => {
                 },
             },
         },
-        // plotOptions: {
-        //     bar: {
-        //         horizontal: false,
-        //         columnWidth: '50%',
-        //         endingShape: 'flat'
-        //     },
-        // },
+        plotOptions: {
+            bar: {
+                horizontal: false,
+                columnWidth: '50%',
+                endingShape: 'flat'
+            },
+        },
         dataLabels: {
             enabled: false
         },
@@ -148,34 +289,25 @@ const Chart2 = () => {
 
         },
         xaxis: {
-            type: 'category',
             categories: period,
             labels: {
                 style: {
-                    colors: '#5f8e95'
+                    colors: '#5f8e95' // Change to the desired color (e.g., red)
                 },
-                rotate: 0,
                 formatter: function (value, timestamp, opts) {
-                    // console.log(options.xaxis.categories.length);
-                    // console.log(period.length);
+                    // console.log(value);
+                    let splitTime = value.split(':');
+                    // Parse the hour part into an integer
+                    let hour = parseInt(splitTime[0]);
 
-                    if (value) {
-                        // Split the string into hours and minutes
-                        const [hourStr, minuteStr] = value.split(":");
+                    // Define the interval at which you want to show labels
+                    const interval = 2; // Show label for every 2rd index (0, 3, 6, 9, ...)
 
-                        // Convert hours and minutes to integers
-                        const hour = parseInt(hourStr);
-                        const minute = parseInt(minuteStr);
-
-                        // Calculate total minutes
-                        const totalMinutes = hour * 60 + minute;
-
-                        // Check if total minutes modulo 90 is not equal to 0
-                        if (totalMinutes % 90 !== 0) {
-                            return '';
-                        } else {
-                            return value;
-                        }
+                    // Show label for the first and every `interval` index
+                    if (hour % interval === 0) {
+                        return value;
+                    } else {
+                        return ''; // Return an empty string for labels you want to hide
                     }
                 },
             },
@@ -186,7 +318,7 @@ const Chart2 = () => {
         yaxis: [
             {
                 title: {
-                    text: 'kW',
+                    text: 'kWh',
                     rotate: 0,
                     style: {
                         color: "#5f8e95",
@@ -211,7 +343,7 @@ const Chart2 = () => {
             {
                 opposite: true,
                 title: {
-                    text: 'W/㎡',
+                    text: 'Wh/㎡',
                     rotate: 0,
                     style: {
                         color: "#5f8e95",
@@ -250,11 +382,14 @@ const Chart2 = () => {
         },
 
         legend: {
-            position: 'bottom',
+            position: 'top',
             horizontalAlign: 'center',
             labels: {
                 colors: '#fff'
-            }
+            },
+            onItemClick: {
+                toggleDataSeries: false,
+            },
         },
         tooltip: {
             style: {
@@ -264,67 +399,60 @@ const Chart2 = () => {
             shared: true,
             intersect: false,
 
-            // custom: function ({ series, seriesIndex, dataPointIndex, w }) {            
-            //     const xAxisValue = options.xaxis.categories[dataPointIndex];
-            //     if (series[0][dataPointIndex] === undefined) {
-            //         return (
-            //             '<div class="arrow_box" style="background: rgba(0, 0, 0, 0.9);">' +
-            //             '<span style="color: white;">' + ' ' + xAxisValue + '</span>' +
-            //             '<br>' +
-            //             '<span style="color: #5f8e95;">Irradiation: </span>' +
-            //             '<span style="color: white;">' + series[1][dataPointIndex] + '</span>' +
-            //             '<span style="color: white;">' + ' Wh/m&sup2;' + '</span>' +
-            //             '</div>'
-            //         )
-            //     }
-            //     else if (series[1][dataPointIndex] === undefined) {
-            //         return (
-            //             '<div class="arrow_box" style="background: rgba(0, 0, 0, 0.9);">' +
-            //             '<span style="color: white;">' + ' ' + xAxisValue + '</span>' +
-            //             '<br>' +
-            //             '<span style="color: #5f8e95;">' + 'Production: ' + '</span>' +
-            //             '<span style="color: white;">' + series[0][dataPointIndex] + '</span>' +
-            //             '<span style="color: white;">' + ' kWh' + '</span>' +
-            //             '</div>'
-            //         )
-            //     }
+            custom: function ({ series, seriesIndex, dataPointIndex, w }) {
+                const xAxisValue = options.xaxis.categories[dataPointIndex];
+                if (series[0][dataPointIndex] === undefined) {
+                    return (
+                        '<div class="arrow_box" style="background: rgba(0, 0, 0, 0.9);">' +
+                        '<span style="color: white;">' + ' ' + xAxisValue + '</span>' +
+                        '<br>' +
+                        '<span style="color: #5f8e95;">Irradiation: </span>' +
+                        '<span style="color: white;">' + series[1][dataPointIndex] + '</span>' +
+                        '<span style="color: white;">' + ' Wh/m&sup2;' + '</span>' +
+                        '</div>'
+                    )
+                }
+                else if (series[1][dataPointIndex] === undefined) {
+                    return (
+                        '<div class="arrow_box" style="background: rgba(0, 0, 0, 0.9);">' +
+                        '<span style="color: white;">' + ' ' + xAxisValue + '</span>' +
+                        '<br>' +
+                        '<span style="color: #5f8e95;">' + 'Production: ' + '</span>' +
+                        '<span style="color: white;">' + series[0][dataPointIndex] + '</span>' +
+                        '<span style="color: white;">' + ' kWh' + '</span>' +
+                        '</div>'
+                    )
+                }
 
+                return (
+                    '<div class="arrow_box" style="background: rgba(0, 0, 0, 0.9);">' +
+                    '<span style="color: white;">' + ' ' + xAxisValue + '</span>' +
+                    '<br>' +
+                    '<span style="color: #5f8e95;">' + 'Production: ' + '</span>' +
+                    '<span style="color: white;">' + series[0][dataPointIndex] + '</span>' +
+                    '<span style="color: white;">' + ' kWh' + '</span>' +
+                    '<br>' +
+                    '<span style="color: #5f8e95;">Irradiation: </span>' +
+                    '<span style="color: white;">' + series[1][dataPointIndex] + '</span>' +
+                    '<span style="color: white;">' + ' Wh/m&sup2;' + '</span>' +
+                    '</div>'
+                )
+            }
 
-            //     return (
-            //         '<div class="arrow_box" style="background: rgba(0, 0, 0, 0.9);">' +
-            //         '<span style="color: white;">' + ' ' + xAxisValue + '</span>' +
-            //         '<br>' +
-            //         '<span style="color: #5f8e95;">' + 'Production: ' + '</span>' +
-            //         '<span style="color: white;">' + series[0][dataPointIndex] + '</span>' +
-            //         '<span style="color: white;">' + ' kWh' + '</span>' +
-            //         '<br>' +
-            //         '<span style="color: #5f8e95;">Irradiation: </span>' +
-            //         '<span style="color: white;">' + series[1][dataPointIndex] + '</span>' +
-            //         '<span style="color: white;">' + ' Wh/m&sup2;' + '</span>' +
-            //         '</div>'
-            //     )
         },
-        stroke: {
-            show: true,
-            curve: 'straight',
-            lineCap: 'butt',
-            colors: undefined,
-            width: 1.5,
-            dashArray: 0,
-        }
 
-    }
 
+    };
 
     // Construct chart series
     const series = [
         {
-            name: 'Site Active Power',
-            data: activePower
+            name: 'Production',
+            data: production
         },
         {
-            name: 'Irradiance',
-            data: irradiance
+            name: 'Irradiation',
+            data: irradiation
         }
     ];
 
@@ -334,14 +462,17 @@ const Chart2 = () => {
     //     console.log('called')
     // };
 
-    return (    
-        <Chart
-            options={options}
-            series={series}
-            type="line"
-            height={300}
-            width={chartWidth} // Set the width dynamically
-            />  
-    );
-}
-export default Chart2;
+    return (
+        <div className="mixed-chart">
+            <Chart
+                options={options}
+                series={series}
+                type="bar"
+                height='100%'
+                width={chartWidth} // Set the width dynamically
+            />
+            </div>
+        );
+    }
+export default Chart1;
+

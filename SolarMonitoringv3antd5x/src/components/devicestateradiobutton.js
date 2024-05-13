@@ -6,7 +6,7 @@ const DeviceStateRadio = ({ data, value, setValue }) => {
         "noCom": 1,
         "connectionfail": 0,
         "nonoperative": 1,
-        "FullCapability": 1
+        "FullCapability": 12
     };
     const totalSum = Object.values(inverterState).reduce((acc, curr) => acc + curr, 0);
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Loop from 2 to 101 (100 iterations)
-for ((i=1; i<=100; i++)); do
+for ((i=1; i<=10; i++)); do
     # Replace {iterationno} with current iterator value
     url="http://localhost:8080/api/2/things/my.inverter:inv${i}"
 

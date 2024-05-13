@@ -3,7 +3,11 @@
     color: orange;
   } */
 
-
+.mixed-chart {
+  border: 1px solid blue;
+  height: calc(100% - 50px);
+  overflow: hidden;
+}
 .arrow_box {
   position: relative;
   background: rgba(0, 0, 0, 0.9);

@@ -40,6 +40,8 @@ class Command(BaseCommand):
                             powerFactor=value.get("powerFactor"),
                             stage=value.get("stage")
                         )
+                elif thing == 'my.site':
+                    print("site site")
             except Exception as e:
                 print("Error processing message:", e)
 
