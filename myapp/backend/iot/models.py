@@ -19,12 +19,12 @@ class SiteMeasurements(models.Model):
     temp = models.DecimalField(max_digits=10, decimal_places=2, null=True)
     irradiation = models.DecimalField(max_digits=10, decimal_places=2, null=True)
     irradiance = models.DecimalField(max_digits=10, decimal_places=2, null=True)
-    m_yield = models.DecimalField(max_digits=10, decimal_places=2, null=True)  # Nullable field
+    m_yield = models.DecimalField(max_digits=10, decimal_places=2, null=True)
     irradiance = models.DecimalField(max_digits=10, decimal_places=2, null=True)
     production = models.DecimalField(max_digits=10, decimal_places=2, null=True)
     powerratio = models.DecimalField(max_digits=10, decimal_places=2, null=True)
     revenue = models.DecimalField(max_digits=10, decimal_places=2, null=True)
-    activePower = models.DecimalField(max_digits=10, decimal_places=2, null=True)
+    activepower = models.DecimalField(max_digits=10, decimal_places=2, null=True)
 
     def __str__(self):
         return f"Measurement at {self.timestamp} for Site {self.site.siteName}"

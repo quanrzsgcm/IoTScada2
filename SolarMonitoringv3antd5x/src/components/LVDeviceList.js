@@ -367,65 +367,62 @@ const defaultFooter = () => 'Here is footer';
 
 const LVDeviceList = ({setSelectedThing}) => {
 
-    const [fetchedData, setFetchedData] = useState(data); // Initialize state variable with null
+    const [fetchedData, setFetchedData] = useState(null); // Initialize state variable with null
 
     // Test fetching directly into Ditto (in production must fetch via Backend)
     const username = "ditto";
     const password = "ditto";
 
     const basicAuth = btoa(`${username}:${password}`);
-    console.log(basicAuth)
-    console.log("renreder")
 
+    useEffect(() => {
+        // Function to fetch data from the API
+        const fetchData = () => {
+            fetch('http://localhost:8080/api/2/search/things?namespaces=my.inverter&option=size(5)', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Basic ${btoa(`${username}:${password}`)}`,
+                },
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Fetched data:', data);
 
-    // useEffect(() => {
-    //     // Function to fetch data from the API
-    //     const fetchData = () => {
-    //         fetch('http://localhost:8080/api/2/search/things?namespaces=my.inverter&option=size(5)', {
-    //             method: 'GET',
-    //             headers: {
-    //                 'Content-Type': 'application/json',
-    //                 'Authorization': `Basic ${btoa(`${username}:${password}`)}`,
-    //             },
-    //         })
-    //             .then(response => {
-    //                 if (!response.ok) {
-    //                     throw new Error('Network response was not ok');
-    //                 }
-    //                 return response.json();
-    //             })
-    //             .then(data => {
-    //                 console.log('Fetched data:', data);
+                    const flattenedData = data.items.map(item => {
+                        return {
+                            thingId: item.thingId,
+                            name: item.attributes.name,
+                            labels: item.features.label.properties.labels,
+                            stage: item.features.runningstatus.properties.stage,
+                            stageStartOn: item.features.runningstatus.properties.stageStartOn
+                        };
+                    });
 
-    //                 const flattenedData = data.items.map(item => {
-    //                     return {
-    //                         thingId: item.thingId,
-    //                         name: item.attributes.name,
-    //                         labels: item.features.label.properties.labels,
-    //                         stage: item.features.runningstatus.properties.stage,
-    //                         stageStartOn: item.features.runningstatus.properties.stageStartOn
-    //                     };
-    //                 });
+                    // Update the state with the flattened data
+                    setFetchedData(flattenedData);
+                    console.log(flattenedData);
 
-    //                 // Update the state with the flattened data
-    //                 setFetchedData(flattenedData);
-    //                 console.log(flattenedData);
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
+        };
 
-    //             })
-    //             .catch(error => {
-    //                 console.error('Error fetching data:', error);
-    //             });
-    //     };
+        // Call fetchData initially
+        fetchData();
 
-    //     // Call fetchData initially
-    //     fetchData();
+        // Set interval to call fetchData every 10 seconds
+        const interval = setInterval(fetchData, 15000);
 
-    //     // Set interval to call fetchData every 10 seconds
-    //     const interval = setInterval(fetchData, 15000);
-
-    //     // Cleanup function to clear the interval when the component unmounts
-    //     return () => clearInterval(interval);
-    // }, []); // Empty dependency array means this effect runs once after the initial render
+        // Cleanup function to clear the interval when the component unmounts
+        return () => clearInterval(interval);
+    }, []); // Empty dependency array means this effect runs once after the initial render
     
     const [selectedRowIndex, setSelectedRowIndex] = useState(-1);
 

@@ -9,8 +9,6 @@ from dotenv import load_dotenv, set_key, get_key
 # Load environment variables from the .env file
 load_dotenv()
 
-
-
 conn = psycopg2.connect(**insert_data_3.db_params)
 
 def generate_samples():

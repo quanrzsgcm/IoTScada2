@@ -159,7 +159,8 @@ export default function SiteView() {
 
     return (
         <MainviewLayout>
-            {/* <div style={{ height: '200px', display: 'flex' }}> */}
+            <div style={{ height: '200px', display: 'flex' }}>{dateString}</div>
+
             <div style={{
                 display: 'flex',
                 height: '110px',

@@ -1,5 +1,4 @@
 import psycopg2
-
 # Database connection parameters
 db_params = {
     "database": "test",
@@ -19,8 +18,22 @@ def insertData(conn, data_to_insert):
 
         # Define the SQL query with placeholders for data
         insert_query = """
-            INSERT INTO iot_powermeterdata (meter_id, power, voltage, current, timestamp, energy)
-            VALUES (%s, %s, %s, %s, %s, %s);
+            INSERT INTO iot_invertermeasurement  (
+timestamp ,
+"internalTemp" , 
+"inputPower" , 
+"gridFrequency" , 
+"powerFactor" ,
+inverter_id ,
+"activePower" ,
+"apparentPower" ,
+efficiency ,
+"meterReadTotalEnergy" ,
+"productionToday" ,
+"reactivePower" ,
+stage , 
+"yieldToday")
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
         """
 
         # Execute the query with the data tuple

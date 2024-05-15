@@ -3,10 +3,17 @@ import pytz
 import random
 import psycopg2
 import insert_data_3
+import os
+from dotenv import load_dotenv, set_key, get_key
+
+# Load environment variables from the .env file
+load_dotenv()
 
 conn = psycopg2.connect(**insert_data_3.db_params)
 
 def generate_samples():
+    meterReadTotalEnergy = os.getenv("ENERGY_VAL")
+    meterReadTotalEnergy = int(meterReadTotalEnergy)
     # Set the timezone to Vietnam (Asia/Ho_Chi_Minh)
     local_timezone = pytz.timezone('Asia/Ho_Chi_Minh')
 
@@ -14,27 +21,38 @@ def generate_samples():
     current_year = datetime.now().year
 
     # Create a datetime object for November 1st of the current year with your local timezone
-    current_timestamp = local_timezone.localize(datetime(current_year, 1, 1))
+    current_timestamp = local_timezone.localize(datetime(current_year, 5, 14)) # YYMMDD
     print(current_timestamp)
 
-    for _ in range(300):
-        meter_id = 'pm08'
-        power = random.randint(1, 100)
-        voltage = random.randint(1, 100)
-        current = random.randint(1, 100)
+    for _ in range(200):
+        # measurementID =  start_id
+        timestamp = current_timestamp.strftime('%Y-%m-%dT%H:%M:%S.%f%z')
+        internalTemp = random.randint(1, 100)
+        inputPower = random.randint(1, 100)
+        gridFrequency =  random.randint(1, 100)
+        powerFactor = random.randint(1, 100)
+        inverter_id = 1
+        activePower = random.randint(1, 100)
+        apparentPower = random.randint(1, 100)
+        efficiency = random.randint(1, 100)
+        meterReadTotalEnergy = meterReadTotalEnergy + random.randint(1, 100)
+        productionToday = random.randint(1, 100)
+        reactivePower = random.randint(1, 100)
+        stage =  random.randint(1, 100)
+        yieldToday = random.randint(1, 100)
 
-        timestamp_str = current_timestamp.strftime('%Y-%m-%dT%H:%M:%S.%f%z')
-        yield (meter_id, power, voltage, current, timestamp_str)
+        yield (timestamp, internalTemp, inputPower, gridFrequency, powerFactor, inverter_id, activePower, apparentPower, efficiency, meterReadTotalEnergy, productionToday, reactivePower, stage, yieldToday)
 
-        # Increment timestamp by 1 minute
-        current_timestamp += timedelta(minutes=20)
+        # Add 1 minute and 1 second        
+        current_timestamp += timedelta(minutes=20, seconds=1)
+        # current_timestamp += timedelta(seconds=1, microseconds=100000)
+
+    # Set or update a key-value pair in the .env file
+    set_key(".env", "ENERGY_VAL", str(meterReadTotalEnergy))
+
 
 # Print the generated samples
 for sample in generate_samples():
-    print(sample[4])
     insert_data_3.insertData(conn,sample)
 
 conn.close()  # Close the database connection
-
-
-

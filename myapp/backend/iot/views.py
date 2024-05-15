@@ -8,6 +8,7 @@ import requests
 import json
 from base64 import b64encode
 from dotenv import load_dotenv
+from django.db.models import OuterRef, Subquery, Sum, F
 
 # import view sets from the REST framework
 from rest_framework import viewsets
@@ -21,7 +22,7 @@ import calendar
 # import the PowerMeterDataSerializer from the serializer file
 from .serializers import PowerMeterDataSerializer
 
-from .models import PowerMeterData, DailyEnergySum, MonthlyEnergySum
+from .models import PowerMeterData, DailyEnergySum, MonthlyEnergySum, Inverter, InverterMeasurement
 from django.db.models import Sum
 
 # Load environment variables from the .env file
@@ -41,11 +42,11 @@ class PowerMeterDataView(viewsets.ModelViewSet):
 def time_range_extract(dateString, unitoftime, local_timezone="Asia/Ho_Chi_Minh"):
     try:
         # Attempt to parse with the format "%Y-%m-%dT%H:%M:%S.%fZ%z"
-        date_object = datetime.strptime(dateString, "%Y-%m-%dT%H:%M:%S.%fZ%z")
+        date_object = datetime.strptime(dateString, "%Y-%m-%dT%H:%M:%S.%fZ")
     except ValueError:
         try:
             # Attempt to parse with the format "%Y-%m-%dT%H:%M:%S.%fZ"
-            date_object = datetime.strptime(dateString, "%Y-%m-%dT%H:%M:%S.%fZ")
+            date_object = datetime.strptime(dateString, "%Y-%m-%dT%H:%M:%S.%fZ%z")
         except ValueError:
             raise ValueError("Invalid date format")
 
@@ -55,12 +56,25 @@ def time_range_extract(dateString, unitoftime, local_timezone="Asia/Ho_Chi_Minh"
     print(f"date_object_local = {date_object_local}")
 
     start_of_day = date_object_local.replace(hour=0, minute=0, second=0, microsecond=0)
-    end_of_day = (start_of_day + timedelta(days=1)) - timedelta(microseconds=1)
+    end_of_day = (start_of_day + timedelta(days=1)) - timedelta(microseconds=1)   
 
     if unitoftime == "Day":
-        print("First time of the day:", start_of_day)
-        print("Last time of the day:", end_of_day)
-        return {"start": start_of_day, "end": end_of_day}
+        intervals = []
+        current_start = start_of_day
+        while current_start < end_of_day:
+            current_end = current_start + timedelta(hours=1, microseconds=-1)
+            intervals.append({
+                'start': current_start.strftime('%Y-%m-%d %H:%M:%S.%f%z'),
+                'end': current_end.strftime('%Y-%m-%d %H:%M:%S.%f%z')
+            })
+            current_start = current_start + timedelta(hours=1)
+       
+        return intervals
+
+    # if unitoftime == "Day":
+    #     print("First time of the day:", start_of_day)
+    #     print("Last time of the day:", end_of_day)
+    #     return {"start": start_of_day, "end": end_of_day}
 
     if unitoftime == "Week":
         start_of_week = start_of_day - timedelta(days=start_of_day.weekday())
@@ -1094,3 +1108,41 @@ def realtimesitedata(request):
         return JsonResponse(data, safe=False)
     else:
         return JsonResponse({'error': 'siteId parameter is missing'}, status=400)
+
+
+
+def total_energy_view(request):
+    # 1. Get the intervals from the dateString send by Frontend
+    # 2. Do calculate for one inverter with ID for all the intervals
+
+
+
+
+    # Define the target datetime
+    input_str = '2024-05-13T17:00:00.000Z'
+    intervals = time_range_extract(input_str,"Day")
+    # for interval in intervals:
+    #     print(interval['end'])
+    # Perform the ORM query
+    for interval in intervals:
+        print('==================')
+        start_target_datetime = interval['start']
+        start_measurements = InverterMeasurement.objects.filter(
+        inverter_id=1,  # Assuming '1' is the ID of the desired inverter
+        timestamp__gte=start_target_datetime
+        ).order_by('timestamp').first()
+
+        ho_chi_minh_tz = pytz.timezone('Asia/Ho_Chi_Minh')
+        converted_time = start_measurements.timestamp.astimezone(ho_chi_minh_tz)
+        print(converted_time)
+
+        end_target_datetime = interval['end']        
+        end_measurements = InverterMeasurement.objects.filter(
+        inverter_id=1,  # Assuming '1' is the ID of the desired inverter
+        timestamp__lte=end_target_datetime
+        ).order_by('-timestamp').first()
+
+        converted_time = end_measurements.timestamp.astimezone(ho_chi_minh_tz)
+        print(converted_time)
+    return JsonResponse({"result": "latest_measurement"})
+    

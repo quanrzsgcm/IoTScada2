@@ -23,3 +23,10 @@
 .ant-table-wrapper::-webkit-scrollbar-thumb:hover {
     background: #555; /* Color of the scrollbar handle on hover */
 }
+
+/* customModalStyles.css */
+.ant-modal-content {
+    border: 2px solid red; /* Change the border color to red */
+    /* Add any other styles you want to apply */
+  }
+  

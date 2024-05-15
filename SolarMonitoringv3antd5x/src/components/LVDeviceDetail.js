@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { DownOutlined } from '@ant-design/icons';
-import { Form, Radio, Space, Switch, Table, Checkbox, Input, Button, ConfigProvider } from 'antd';
-import { Dropdown, message, Tooltip } from 'antd';
+import { Form, Radio, Space, Switch, Table, Checkbox, Input, Button, ConfigProvider, Modal } from 'antd';
+import { Dropdown, message, Tooltip, InputNumber } from 'antd';
 import '../assets/styles/customscrollbar2.css'
 import { IoChevronForward } from "react-icons/io5";
 import { MdOutlineNewLabel } from "react-icons/md";
 import { FaCircle } from "react-icons/fa";
-
+import Chart1 from '../assets/charts/DetailChart';
+import ChartLeft from '../assets/charts/DetailChartLeft';
 
 const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
 
@@ -92,31 +93,31 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
                     'Authorization': `Basic ${btoa(`${username}:${password}`)}`,
                 },
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Fetched data one thing:', data);
-                setThingData(data);
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-            });
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Fetched data one thing:', data);
+                    setThingData(data);
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
         };
-    
+
         // Call fetchData initially
         fetchData();
-    
+
         // Set interval to call fetchData every 15 seconds
         const interval = setInterval(fetchData, 15000);
-    
+
         // Cleanup function to clear the interval when the component unmounts
         return () => clearInterval(interval);
-    
-    }, [selectedThing]);    
+
+    }, [selectedThing]);
 
     const device_name = "FULUH_INVERTER_1"
     const device_state = "Full capacity"
@@ -171,13 +172,89 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
         items,
         onClick: handleMenuClick,
     };
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const showModal = () => {
+        setIsModalOpen(true);
+    };
+    const handleOk = () => {
+        setIsModalOpen(false);
+    };
+    const handleCancel = () => {
+        setIsModalOpen(false);
+    };
 
+    const [valueofFanSpeed, setValueFanSpeed] = useState('Day');
 
+    const onChangeFanSpeed = (e) => {
+        setValueFanSpeed(e.target.value);
+    };
 
+    const [valueofPollingRate, setValuePollingRate] = useState('Month');
+
+    const onChangePollingRate = (e) => {
+        setValuePollingRate(e.target.value);
+    };
 
 
     return (
         <>
+            <ConfigProvider
+                theme={{
+                    components: {
+                        Modal: {
+                            contentBg: "rgba(0, 0, 0, 0.82)",
+                            headerBg: 'rgba(0, 0, 0, 0.82)',
+                            titleColor: 'white',
+                            colorText: 'white',
+                            borderRadiusLG: '0',
+                            padding: 0,
+                        },
+                        Radio: {
+                            buttonBg: "red",
+                            colorBorder: "#009bc4",
+                            borderRadius: 0
+                        },
+                    },
+                }}
+            >
+                <Modal title="Control" centered open={isModalOpen} onOk={handleOk} onCancel={handleCancel} style={{ border: '1px solid rgb(1,183,225)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '0px solid white' }}>
+                        <span style={{ backgroundColor: 'transparent', border: '0px solid #009bc4' }}>Fan Speed: </span>
+                        <Radio.Group
+                            onChange={onChangeFanSpeed}
+                            value={valueofFanSpeed}
+                            style={{ backgroundColor: '#043b3e', border: '1px solid #009bc4' }}
+                        >
+                            <Radio.Button value="Day" style={{ backgroundColor: valueofFanSpeed === 'Day' ? '#009bc4' : '#043b3e', color: 'white', borderWidth: 0 }}>Off</Radio.Button>
+                            <Radio.Button value="Month" style={{ backgroundColor: valueofFanSpeed === 'Month' ? '#009bc4' : '#043b3e', color: 'white', borderWidth: 0 }}>Slow</Radio.Button>
+                            <Radio.Button value="Year" style={{ backgroundColor: valueofFanSpeed === 'Year' ? '#009bc4' : '#043b3e', color: 'white', borderWidth: 0 }}>Medium</Radio.Button>
+                            <Radio.Button value="Total" style={{ backgroundColor: valueofFanSpeed === 'Total' ? '#009bc4' : '#043b3e', color: 'white', borderWidth: 0 }}>Fast</Radio.Button>
+                        </Radio.Group>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '0px solid white' }}>
+
+                        <span style={{ backgroundColor: 'transparent' }}>Polling Rate: </span>
+                        <Radio.Group
+                            onChange={onChangePollingRate}
+                            value={valueofPollingRate}
+                            style={{ backgroundColor: '#043b3e', border: '1px solid #009bc4', }}
+                        >
+                            <Radio.Button value="Month" style={{ backgroundColor: valueofPollingRate === 'Month' ? '#009bc4' : '#043b3e', color: 'white', borderWidth: 0 }}>1s</Radio.Button>
+                            <Radio.Button value="Year" style={{ backgroundColor: valueofPollingRate === 'Year' ? '#009bc4' : '#043b3e', color: 'white', borderWidth: 0 }}>5s</Radio.Button>
+                            <Radio.Button value="Total" style={{ backgroundColor: valueofPollingRate === 'Total' ? '#009bc4' : '#043b3e', color: 'white', borderWidth: 0 }}>10s</Radio.Button>
+                        </Radio.Group>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '0px solid white' }}>
+
+                        <span style={{ backgroundColor: 'transparent' }}>Limit Output: </span>
+
+                        <InputNumber min={1} max={10} defaultValue={3} style={{ backgroundColor: '#043b3e', color: 'white', border: "1px solid #009bc4", borderRadius: 0 }} />
+
+                    </div>
+                </Modal>
+            </ConfigProvider>
+
             <span style={{ marginRight: '20px', fontSize: '14px' }} onClick={() => setSelectedThing(null)}>List</span>
             <span style={{ marginRight: '20px', fontSize: '14px' }}>&gt;</span>
             <span style={{ fontSize: '14px' }}>Details</span>
@@ -216,6 +293,9 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
                     <FaCircle style={{ width: '8px', height: '8px', color: iconColor, marginLeft: '15px', marginRight: '5px' }} />
                     <span style={{ color: textColor }}>
                         {device_state}
+                    </span>
+                    <span style={{ marginLeft: 'auto', color: 'rgb(1,183,225)' }} onClick={showModal}>
+                        Control Inverter
                     </span>
                 </div>
                 <div style={{ marginBottom: '20px' }}>
@@ -262,7 +342,8 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
                         alignItems: 'center', // Center vertically
                         flex: 1, // Each child div takes up equal space
                         height: '45px',
-                        background: 'linear-gradient(to right, rgb(2,75,76), rgb(13,67,96))', // Define the gradient
+                        background: 'linear-gradient(to right, rgb(10, 57, 82), rgb(16, 40, 66))', // Define the gradient
+
                     }}>
                         <span style={{ marginLeft: '20px', fontSize: '16px', color: 'white' }}>General</span>
                     </div>
@@ -295,8 +376,8 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
                         </div>
                     </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'center'}}>
-                    <div style={{ width: '95%', borderBottom: '1px solid rgb(53,110,116)' }}></div> {/* Horizontal line */}
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                        <div style={{ width: '95%', borderBottom: '1px solid rgb(53,110,116)' }}></div> {/* Horizontal line */}
                     </div>
 
                     <div style={{
@@ -329,8 +410,8 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
                         </div>
                     </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'center', background: 'transparent'}}>
-                    <div style={{ width: '95%', borderBottom: '1px solid rgb(53,110,116)' }}></div> {/* Horizontal line */}
+                    <div style={{ display: 'flex', justifyContent: 'center', background: 'transparent' }}>
+                        <div style={{ width: '95%', borderBottom: '1px solid rgb(53,110,116)' }}></div> {/* Horizontal line */}
                     </div>
 
                     <div style={{
@@ -383,160 +464,140 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
                     }}>
                         <span style={{ marginLeft: '20px', fontSize: '16px', color: 'white' }}>Alarm</span>
                     </div>
-
                     <div style={{
                         display: 'flex',
-                        height: '45px', // Set the height of the flex container
+                        height: 'calc(100% - 45px)',
                         alignItems: 'center', // Center vertically
                         // border: '1px solid green', // Just for visualization
                         background: 'linear-gradient(to right, rgb(13,70,99), rgb(27,54,77)'
                     }}>
-                        <div style={{
-                            flex: '1', // Each child div takes half of the available space
-                            // border: '1px solid red', // Just for visualization
-                            height: '45px',
-                            display: 'flex', // Set display to flex
-                            alignItems: 'center', // Center vertically    
-                        }}>
-                            <span style={{ marginLeft: '10px', fontSize: '14px', color: 'rgb(29, 204, 204)' }}>Input Power: </span>
-                            <span style={{ marginLeft: '5px', fontSize: '14px', color: 'white' }}>{placeholder} kWh</span>
-                        </div>
-                        <div style={{ height: '20px', borderRight: '1px solid rgb(53,110,116)' }}></div> {/* Vertical line */}
-                        <div style={{
-                            flex: '1', // Each child div takes half of the available space
-                            // border: '1px solid blue', // Just for visualization
-                            height: '45px',
-                            display: 'flex', // Set display to flex
-                            alignItems: 'center', // Center vertically    
-                        }}>
-                            <span style={{ marginLeft: '10px', fontSize: '14px', color: 'rgb(29, 204, 204)' }}>Apparent Power: </span>
-                            <span style={{ marginLeft: '5px', fontSize: '14px', color: 'white' }}>{placeholder} kWh</span>
-                        </div>
                     </div>
 
-                    <div style={{ marginLeft: '10px', width: '600px', borderBottom: '1px solid rgb(53,110,116)' }}></div> {/* Vertical line */}
-
-                    <div style={{
-                        display: 'flex',
-                        height: '45px', // Set the height of the flex container
-                        alignItems: 'center', // Center vertically
-                        // border: '1px solid green', // Just for visualization
-                        background: 'linear-gradient(to right, rgb(13,70,99), rgb(27,54,77)'
-                    }}>
-                        <div style={{
-                            flex: '1', // Each child div takes half of the available space
-                            // border: '1px solid red', // Just for visualization
-                            height: '45px',
-                            display: 'flex', // Set display to flex
-                            alignItems: 'center', // Center vertically    
-                        }}>
-                            <span style={{ marginLeft: '10px', fontSize: '14px', color: 'rgb(29, 204, 204)' }}>Input Power: </span>
-                            <span style={{ marginLeft: '5px', fontSize: '14px', color: 'white' }}>{placeholder} kWh</span>
-                        </div>
-                        <div style={{ height: '20px', borderRight: '1px solid rgb(53,110,116)' }}></div> {/* Vertical line */}
-                        <div style={{
-                            flex: '1', // Each child div takes half of the available space
-                            // border: '1px solid blue', // Just for visualization
-                            height: '45px',
-                            display: 'flex', // Set display to flex
-                            alignItems: 'center', // Center vertically    
-                        }}>
-                            <span style={{ marginLeft: '10px', fontSize: '14px', color: 'rgb(29, 204, 204)' }}>Apparent Power: </span>
-                            <span style={{ marginLeft: '5px', fontSize: '14px', color: 'white' }}>{placeholder} kWh</span>
-                        </div>
-                    </div>
-
-                    <div style={{ marginLeft: '10px', width: '600px', borderBottom: '1px solid rgb(53,110,116)' }}></div> {/* Vertical line */}
-
-                    <div style={{
-                        display: 'flex',
-                        height: '45px', // Set the height of the flex container
-                        alignItems: 'center', // Center vertically
-                        // border: '1px solid green', // Just for visualization
-                        background: 'linear-gradient(to right, rgb(13,70,99), rgb(27,54,77)'
-                    }}>
-                        <div style={{
-                            flex: '1', // Each child div takes half of the available space
-                            // border: '1px solid red', // Just for visualization
-                            height: '45px',
-                            display: 'flex', // Set display to flex
-                            alignItems: 'center', // Center vertically    
-                        }}>
-                            <span style={{ marginLeft: '10px', fontSize: '14px', color: 'rgb(29, 204, 204)' }}>Input Power: </span>
-                            <span style={{ marginLeft: '5px', fontSize: '14px', color: 'white' }}>{placeholder} kWh</span>
-                        </div>
-                        <div style={{ height: '20px', borderRight: '1px solid rgb(53,110,116)' }}></div> {/* Vertical line */}
-                        <div style={{
-                            flex: '1', // Each child div takes half of the available space
-                            // border: '1px solid blue', // Just for visualization
-                            height: '45px',
-                            display: 'flex', // Set display to flex
-                            alignItems: 'center', // Center vertically    
-                        }}>
-                            <span style={{ marginLeft: '10px', fontSize: '14px', color: 'rgb(29, 204, 204)' }}>Apparent Power: </span>
-                            <span style={{ marginLeft: '5px', fontSize: '14px', color: 'white' }}>{placeholder} kWh</span>
-                        </div>
-                    </div>
                 </div>
             </div>
 
 
-
             <div style={{
-                height: '45px', // specify your desired height
+                height: '500px', // specify your desired height
                 width: '100%',
                 display: 'flex', // Use flexbox
-                alignItems: 'center', // Vertically center items
-                background: 'linear-gradient(to right, rgb(1, 105, 104), rgb(21, 59, 106)',
+                alignItems: 'flex-start', // Vertically center items
+                justifyContent: 'space-between',
+                background: 'transparent',
                 marginTop: '20px'
             }}>
-                <span style={{ marginLeft: '20px', fontSize: '16px', color: 'white' }}>Production</span>
+                <div style={{
+                    height: '500px', // specify your desired height
+                    width: '49.4%',
+                    // background: 'linear-gradient(to right, rgb(1, 105, 104), rgb(21, 59, 106)',
+                    background: 'transparent', // Define the gradient
+                }}>
 
-                <ConfigProvider
-                    theme={{
-                        components: {
-                            Button: {
-                                defaultBg: '#043b3e',
-                                defaultBorderColor: '#009bc4',
-                                borderRadius: '0px',
-                                defaultHoverBg: '#043b3e'
-                            },
-                            Dropdown: {
-                                // colorBgElevated: "rgb(2,7,10)",
-                                colorBgElevated: "black",
-                                controlItemBgHover: 'rgb(2,36,46)',
-                                controlItemBgActive: 'red',
-                                colorText: 'white'
-                            },
-                        },
-                    }}
-                >
-                    <Dropdown menu={menuProps} >
-                        <Button >
-                            <Space>
-                                Day
-                                <DownOutlined color="red" />
-                            </Space>
-                        </Button>
-                    </Dropdown>
+                    <div style={{
+                        height: '45px', // specify your desired height
+                        width: '100%',
+                        display: 'flex', // Use flexbox
+                        alignItems: 'center', // Vertically center items
+                        // background: 'linear-gradient(to right, rgb(1, 105, 104), rgb(21, 59, 106)',
+                        background: 'linear-gradient(to right, rgb(10, 57, 82), rgb(16, 40, 66))', // Define the gradient
+                    }}>
+                        <span style={{ marginLeft: '20px', fontSize: '16px', color: 'white' }}>Production</span>
 
-                </ConfigProvider>
+                        <ConfigProvider
+                            theme={{
+                                components: {
+                                    Button: {
+                                        defaultBg: '#043b3e',
+                                        defaultBorderColor: '#009bc4',
+                                        borderRadius: '0px',
+                                        defaultHoverBg: '#043b3e'
+                                    },
+                                    Dropdown: {
+                                        // colorBgElevated: "rgb(2,7,10)",
+                                        colorBgElevated: "black",
+                                        controlItemBgHover: 'rgb(2,36,46)',
+                                        controlItemBgActive: 'red',
+                                        colorText: 'white'
+                                    },
+                                },
+                            }}
+                        >
+                            <Dropdown menu={menuProps} >
+                                <Button >
+                                    <Space>
+                                        Day
+                                        <DownOutlined color="red" />
+                                    </Space>
+                                </Button>
+                            </Dropdown>
+
+                        </ConfigProvider>
+                    </div>
+                    <div style={{
+                        height: '400px', // specify your desired height
+                        width: '100%',
+                        border: '1px solid blue',
+                        background: 'linear-gradient(to right, rgb(6, 64, 67), rgb(9, 56, 80), rgb(26, 71, 102), rgb(29, 68, 92))',
+                        // background: 'rgb(121, 181, 162)'
+
+                    }}>
+                        <Chart1 />
+                    </div>
+                </div>
+
+                <div style={{ width: '49.4%', height: '500px', border: '1px solid red' }}>
+                    <div style={{
+                        height: '45px', // specify your desired height
+                        width: '100%',
+                        display: 'flex', // Use flexbox
+                        alignItems: 'center', // Vertically center items
+                        // background: 'linear-gradient(to right, rgb(1, 105, 104), rgb(21, 59, 106)',
+                        background: 'linear-gradient(to right, rgb(10, 57, 82), rgb(16, 40, 66))', // Define the gradient
+                    }}>
+                        <span style={{ marginLeft: '20px', fontSize: '16px', color: 'white' }}>Active Power & Irradiance</span>
+
+                        <ConfigProvider
+                            theme={{
+                                components: {
+                                    Button: {
+                                        defaultBg: '#043b3e',
+                                        defaultBorderColor: '#009bc4',
+                                        borderRadius: '0px',
+                                        defaultHoverBg: '#043b3e'
+                                    },
+                                    Dropdown: {
+                                        // colorBgElevated: "rgb(2,7,10)",
+                                        colorBgElevated: "black",
+                                        controlItemBgHover: 'rgb(2,36,46)',
+                                        controlItemBgActive: 'red',
+                                        colorText: 'white'
+                                    },
+                                },
+                            }}
+                        >
+                            <Dropdown menu={menuProps} >
+                                <Button >
+                                    <Space>
+                                        Day
+                                        <DownOutlined color="red" />
+                                    </Space>
+                                </Button>
+                            </Dropdown>
+
+                        </ConfigProvider>
+                    </div>
+                    <div style={{
+                        height: '400px', // specify your desired height
+                        width: '100%',
+                        border: '1px solid blue',
+                        background: 'linear-gradient(to right, rgb(6, 64, 67), rgb(9, 56, 80), rgb(26, 71, 102), rgb(29, 68, 92))'
+
+                    }}>
+                        <ChartLeft />
+
+                    </div> 
+                </div>
             </div>
-            <div style={{
-                height: '700px', // specify your desired height
-                width: '100%',
-                display: 'flex', // Use flexbox
-                alignItems: 'center', // Vertically center items
-                background: 'linear-gradient(to right, rgb(6, 64, 67), rgb(9, 56, 80), rgb(26, 71, 102), rgb(29, 68, 92))'
-
-            }}>
-
-            </div>
-
-
-
-
-
         </>
     );
 };
