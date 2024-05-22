@@ -424,14 +424,13 @@ const LVDeviceList = ({ setSelectedThing }) => {
                 })
                 .then(data => {
                     console.log('Fetched data:', data);
-
                     const flattenedData = data.items.map(item => {
                         return {
                             thingId: item.thingId,
                             name: item.attributes.name,
                             manufacturer: item.attributes.manufacturer,
                             labels: item.features.label.properties.labels,
-                            stage: item.features.runningstatus.properties.stage,
+                            state: item.features.measurements.properties.state,
                             stageStartOn: item.features.runningstatus.properties.stageStartOn,
                             meterReadTotalEnergy: item.features.measurements.properties.meterReadTotalEnergy,
                             activePower: item.features.measurements.properties.activePower,
@@ -444,11 +443,12 @@ const LVDeviceList = ({ setSelectedThing }) => {
 
                     // Update the state with the flattened data
                     setFetchedData(flattenedData);
-                    const stageArray = flattenedData.map(item => ({ stage: item.stage }));
+                    const stageArray = flattenedData.map(item => ({ stage: item.state }));
                     setStageArray(stageArray);
                     console.log(stageArray);
                     setDeviceStageCount(statecount(stageArray));
                     console.log(statecount(stageArray));
+                    console.log("flatten data: ", flattenedData)
                 })
                 .catch(error => {
                     console.error('Error fetching data:', error);
@@ -534,8 +534,8 @@ const LVDeviceList = ({ setSelectedThing }) => {
             }
         },
         {
-            title: 'Stage',
-            dataIndex: 'stage',
+            title: 'State',
+            dataIndex: 'state',
             sorter: (a, b) => {
                 // Define numerical values for each stage
                 const stageOrder = {
@@ -544,8 +544,8 @@ const LVDeviceList = ({ setSelectedThing }) => {
                 };
 
                 // Get the numerical value of the stage for each row
-                const stageA = stageOrder[a.stage];
-                const stageB = stageOrder[b.stage];
+                const stageA = stageOrder[a.state];
+                const stageB = stageOrder[b.state];
 
                 // Compare the numerical values
                 return stageA - stageB;

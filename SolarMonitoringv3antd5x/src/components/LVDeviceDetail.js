@@ -276,10 +276,26 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
             });
     }
 
+    const [limitOutputInModal, setLimitOutputInModal] = useState(null);
+
+    useEffect(() => {
+        if (thingData && !isModalOpen) {
+            setLimitOutputInModal(thingData.features.measurements.properties.limitOutput)
+            console.log('set limit output in modal')
+            console.log(thingData.features.measurements.properties.limitOutput);
+        }
+
+    }, [thingData]);
+
+    const onChangeInput = (value) => {
+        console.log('changed', value);
+        setLimitOutputInModal(value);
+    };
+
     return (
         <>
             <div style={{ height: '50px' }}>
-                {valueofFanSpeed} <br></br>
+            {thingData?.features?.measurements?.properties?.limitOutput ?? 'Default Limit Output'} <br />
                 {valueofFanSpeedinModal}
             </div>
             <ConfigProvider
@@ -298,6 +314,11 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
                             colorBorder: "#009bc4",
                             borderRadius: 0
                         },
+                        InputNumber: {
+                            colorText: 'white',
+                            colorBgContainer: 'red'
+
+                        }
                     },
                 }}
             >
@@ -333,8 +354,7 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
 
                         <span style={{ backgroundColor: 'transparent' }}>Limit Output: </span>
 
-                        <InputNumber min={1} max={10} controls={false} value={thingData ? thingData.features.measurements.properties.limitOutput : null} style={{ backgroundColor: '#043b3e', color: 'white', border: "1px solid #009bc4", borderRadius: 0 }} />
-
+                        <InputNumber onChange={onChangeInput} min={1} max={100} controls={false} value={limitOutputInModal ? limitOutputInModal : null} style={{ backgroundColor: '#043b3e', color: 'white', border: "1px solid #009bc4", borderRadius: 0 }} />
                     </div>
                 </Modal>
             </ConfigProvider>
