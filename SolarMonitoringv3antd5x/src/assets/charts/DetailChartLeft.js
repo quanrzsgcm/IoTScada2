@@ -17,148 +17,49 @@ const ChartLeft = () => {
     //     } else {
     //         setChartWidth('110%');
     //     }
-    // }, [toggled]);
+    // }, [toggled]);    
+    const getCurrentDate = () => {
+        // Get the current date and time in UTC
+        const currentDate = new Date();
 
-    // Sample data
-    const rawData = [
-        // { Period: '0:00', 'Production (kWh)': 0, 'Irradiation (Wh/㎡)': 0 },
-        // { Period: '1:00', 'Production (kWh)': 0, 'Irradiation (Wh/㎡)': 0 },
-        // { Period: '2:00', 'Production (kWh)': 0, 'Irradiation (Wh/㎡)': 0 },
-        // { Period: '3:00', 'Production (kWh)': 0, 'Irradiation (Wh/㎡)': 0 },
-        // { Period: '4:00', 'Production (kWh)': 0, 'Irradiation (Wh/㎡)': 0 },
-        // { Period: '5:00', 'Production (kWh)': 0, 'Irradiation (Wh/㎡)': 3.09 },
-        // { Period: '6:00', 'Production (kWh)': 73.56, 'Irradiation (Wh/㎡)': 77.1 },
-        // { Period: '7:00', 'Production (kWh)': 283.41, 'Irradiation (Wh/㎡)': 270.06 },
-        // { Period: '8:00', 'Production (kWh)': 492, 'Irradiation (Wh/㎡)': 482.78 },
-        // { Period: '9:00', 'Production (kWh)': 690.22, 'Irradiation (Wh/㎡)': 710.71 },
-        // { Period: '10:00', 'Production (kWh)': 453.47, 'Irradiation (Wh/㎡)': 481.08 },        
-        {
-            "Period": "0:00",
-            "Production (kWh)": 0,
-            "Irradiation (Wh/㎡)": 0
-        },
-        {
-            "Period": "1:00",
-            "Production (kWh)": 0,
-            "Irradiation (Wh/㎡)": 0
-        },
-        {
-            "Period": "2:00",
-            "Production (kWh)": 0,
-            "Irradiation (Wh/㎡)": 0
-        },
-        {
-            "Period": "3:00",
-            "Production (kWh)": 0,
-            "Irradiation (Wh/㎡)": 0
-        },
-        {
-            "Period": "4:00",
-            "Production (kWh)": 0,
-            "Irradiation (Wh/㎡)": 0
-        },
-        {
-            "Period": "5:00",
-            "Production (kWh)": 0,
-            "Irradiation (Wh/㎡)": 3.49
-        },
-        {
-            "Period": "6:00",
-            "Production (kWh)": 66.75,
-            "Irradiation (Wh/㎡)": 72.69
-        },
-        {
-            "Period": "7:00",
-            "Production (kWh)": 256.88,
-            "Irradiation (Wh/㎡)": 250.96
-        },
-        {
-            "Period": "8:00",
-            "Production (kWh)": 486.63,
-            "Irradiation (Wh/㎡)": 477.86
-        },
-        {
-            "Period": "9:00",
-            "Production (kWh)": 687.31,
-            "Irradiation (Wh/㎡)": 688.44
-        },
-        {
-            "Period": "10:00",
-            "Production (kWh)": 739.22,
-            "Irradiation (Wh/㎡)": 831.39
-        },
-        {
-            "Period": "11:00",
-            "Production (kWh)": 761.84,
-            "Irradiation (Wh/㎡)": 834.8
-        },
-        {
-            "Period": "12:00",
-            "Production (kWh)": 826,
-            "Irradiation (Wh/㎡)": 913.28
-        },
-        {
-            "Period": "13:00",
-            "Production (kWh)": 730.09,
-            "Irradiation (Wh/㎡)": 834.39
-        },
-        {
-            "Period": "14:00",
-            "Production (kWh)": 608.5,
-            "Irradiation (Wh/㎡)": 675.93
-        },
-        {
-            "Period": "15:00",
-            "Production (kWh)": 435.34,
-            "Irradiation (Wh/㎡)": 495.3
-        },
-        {
-            "Period": "16:00",
-            "Production (kWh)": 213.59,
-            "Irradiation (Wh/㎡)": 250.36
-        },
-        {
-            "Period": "17:00",
-            "Production (kWh)": 46.5,
-            "Irradiation (Wh/㎡)": 55.62
-        },
-        {
-            "Period": "18:00",
-            "Production (kWh)": 0,
-            "Irradiation (Wh/㎡)": 0.63
-        },
-        {
-            "Period": "19:00",
-            "Production (kWh)": 0,
-            "Irradiation (Wh/㎡)": 0
-        },
-        {
-            "Period": "20:00",
-            "Production (kWh)": 0,
-            "Irradiation (Wh/㎡)": 0
-        },
-        {
-            "Period": "21:00",
-            "Production (kWh)": 0,
-            "Irradiation (Wh/㎡)": 0
-        },
-        {
-            "Period": "22:00",
-            "Production (kWh)": 0,
-            "Irradiation (Wh/㎡)": 0
-        },
-        {
-            "Period": "23:00",
-            "Production (kWh)": 0,
-            "Irradiation (Wh/㎡)": 0
-        }
-    ];
+        // Extract the components in UTC
+        const year = currentDate.getUTCFullYear();
+        const month = String(currentDate.getUTCMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+        const day = String(currentDate.getUTCDate()).padStart(2, '0');
+        const hours = String(currentDate.getUTCHours()).padStart(2, '0');
+        const minutes = String(currentDate.getUTCMinutes()).padStart(2, '0');
+        const seconds = String(currentDate.getUTCSeconds()).padStart(2, '0');
+        const milliseconds = String(currentDate.getUTCMilliseconds()).padStart(3, '0');
+
+        // Construct the date string
+        const dateString = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}Z`;
+        console.log("datestring from chart left " + dateString);
+        return dateString;
+    }
+    const [rawData, setRawData] = useState(null);
+
+    useEffect(() => {
+        const dateString = getCurrentDate();
+        fetch("http://localhost:8000/api2/my-api/inverterdata/", {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ date: dateString, inverter_id: 1 }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data); // Log the data
+            setRawData(data);
+        })
+        .catch(error => console.error('Error:', error));
+    }, []); // Empty dependency array ensures this runs only once when the component mounts
 
     const ExportCSV = () => {
         // Construct CSV content
-        let csvContent = 'Period,Production (kWh),Irradiation (Wh/㎡)\n';
+        let csvContent = 'Time,Active Power (kW),Irradiance (W/㎡)\n';
         rawData.forEach(item => {
-        csvContent += `${item.Period},${item['Production (kWh)']},${item['Irradiation (Wh/㎡)']}\n`;
+        csvContent += `${item.Time},${item['ActivePower']},${item['Irradiance']}\n`;
         });
 
         // Create a Blob object containing the CSV data
@@ -182,9 +83,9 @@ const ChartLeft = () => {
     }
 
     // Extract data from rawData
-    const period = rawData.map(item => item.Period);
-    const production = rawData.map(item => parseFloat(item['Production (kWh)']));
-    const irradiation = rawData.map(item => parseFloat(item['Irradiation (Wh/㎡)']));
+    const period = rawData.map(item => item['timestamp']);
+    const production = rawData.map(item => parseFloat(item['activePower']));
+    const irradiation = rawData.map(item => parseFloat(item['internalTemp']));
     const svgIcon = `
 <svg width="16px" height="16px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
   <path d="M12.5535 16.5061C12.4114 16.6615 12.2106 16.75 12 16.75C11.7894 16.75 11.5886 16.6615 11.4465 16.5061L7.44648 12.1311C7.16698 11.8254 7.18822 11.351 7.49392 11.0715C7.79963 10.792 8.27402 10.8132 8.55352 11.1189L11.25 14.0682V3C11.25 2.58579 11.5858 2.25 12 2.25C12.4142 2.25 12.75 2.58579 12.75 3V14.0682L15.4465 11.1189C15.726 10.8132 16.2004 10.792 16.5061 11.0715C16.8118 11.351 16.833 11.8254 16.5535 12.1311L12.5535 16.5061Z" fill="rgb(161,171,182)"/>
@@ -193,13 +94,13 @@ const ChartLeft = () => {
 `;
 const svgMarkup = `<svg fill="rgb(161,171,182)" width="16px" height="16px" viewBox="0 0 24 24" id="export-2" xmlns="http://www.w3.org/2000/svg" class="icon line"><polyline id="primary" points="15 3 21 3 21 9" style="fill: none; stroke: rgb(161,171,182); stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.5;"></polyline><path id="primary-2" data-name="primary" d="M21,13v7a1,1,0,0,1-1,1H4a1,1,0,0,1-1-1V4A1,1,0,0,1,4,3h7" style="fill: none; stroke: rgb(161,171,182); stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.5;"></path><line id="primary-3" data-name="primary" x1="11" y1="13" x2="21" y2="3" style="fill: none; stroke: rgb(161,171,182); stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.5;"></line></svg>`;
 
-
+var counter = 1;
 
     // Construct chart options
     const options = {
         chart: {
-            // type: 'line',
-            // height: 300,
+            type: 'line',
+            height: 300,
             // width: chartWidth,
             fontFamily: 'Arial, Helvetica, sans-serif',
             offsetX: -40,
@@ -249,13 +150,13 @@ const svgMarkup = `<svg fill="rgb(161,171,182)" width="16px" height="16px" viewB
                 },
             },
         },
-        plotOptions: {
-            bar: {
-                horizontal: false,
-                columnWidth: '50%',
-                endingShape: 'flat'
-            },
-        },
+        // plotOptions: {
+        //     bar: {
+        //         horizontal: false,
+        //         columnWidth: '50%',
+        //         endingShape: 'flat'
+        //     },
+        // },
         dataLabels: {
             enabled: false
         },
@@ -276,23 +177,32 @@ const svgMarkup = `<svg fill="rgb(161,171,182)" width="16px" height="16px" viewB
             },
 
         },
+        stroke: {
+            width: 2,
+        },
         xaxis: {
             categories: period,
             labels: {
+                rotate: 0,
                 style: {
                     colors: '#5f8e95' // Change to the desired color (e.g., red)
                 },
                 formatter: function (value, timestamp, opts) {
-                    console.log(value);
+                    return value;
+                    if (value === undefined){
+                        return null;
+                    }
                     let splitTime = value.split(':');
                     // Parse the hour part into an integer
                     let hour = parseInt(splitTime[0]);
+                    let minute = parseInt(splitTime[1]);
+                    let totalminute = hour * 60 + minute;
 
                     // Define the interval at which you want to show labels
-                    const interval = 2; // Show label for every 2rd index (0, 3, 6, 9, ...)
+                    const interval = 120; // Show label for every 120 minute
 
                     // Show label for the first and every `interval` index
-                    if (hour % interval === 0) {
+                    if (totalminute % interval === 0) {
                         return value;
                     } else {
                         return ''; // Return an empty string for labels you want to hide
@@ -353,7 +263,7 @@ const svgMarkup = `<svg fill="rgb(161,171,182)" width="16px" height="16px" viewB
                 decimalsInFloat: 0,
             }
         ],
-        colors: ['rgb(0,217,254)', 'rgb(253,201,24)'], // Customize colors for Production and Irradiation
+        colors: ['rgb(178,224,88)', 'rgb(128,159,255)'], // Customize colors for Production and Irradiation
         fill: {
             type: 'gradient',
             gradient: {
@@ -376,6 +286,12 @@ const svgMarkup = `<svg fill="rgb(161,171,182)" width="16px" height="16px" viewB
                 colors: '#fff'
             }
         },
+        markers: {
+            size: 0,
+            hover: {
+                size: 1,
+              }
+        },
         tooltip: {
             style: {
                 background: 'rgba(255, 0, 0, 0.5)', // Red color with 50% opacity
@@ -383,68 +299,69 @@ const svgMarkup = `<svg fill="rgb(161,171,182)" width="16px" height="16px" viewB
             },
             shared: true,
             intersect: false,
+            followCursor: true,
+            x: {
+                show: true,
+            },
+            marker: {
+                show: false,
+            },
 
-            custom: function ({ series, seriesIndex, dataPointIndex, w }) {            
-                const xAxisValue = options.xaxis.categories[dataPointIndex];
-                if (series[0][dataPointIndex] === undefined) {
-                    return (
-                        '<div class="arrow_box" style="background: rgba(0, 0, 0, 0.9);">' +
-                        '<span style="color: white;">' + ' ' + xAxisValue + '</span>' +
-                        '<br>' +
-                        '<span style="color: #5f8e95;">Irradiation: </span>' +
-                        '<span style="color: white;">' + series[1][dataPointIndex] + '</span>' +
-                        '<span style="color: white;">' + ' Wh/m&sup2;' + '</span>' +
-                        '</div>'
-                    )
-                }
-                else if (series[1][dataPointIndex] === undefined) {
-                    return (
-                        '<div class="arrow_box" style="background: rgba(0, 0, 0, 0.9);">' +
-                        '<span style="color: white;">' + ' ' + xAxisValue + '</span>' +
-                        '<br>' +
-                        '<span style="color: #5f8e95;">' + 'Production: ' + '</span>' +
-                        '<span style="color: white;">' + series[0][dataPointIndex] + '</span>' +
-                        '<span style="color: white;">' + ' kWh' + '</span>' +
-                        '</div>'
-                    )
-                }
+            // custom: function ({ series, seriesIndex, dataPointIndex, w }) {
+            //     const xAxisValue = options.xaxis.categories[dataPointIndex];
+            //     if (series[0][dataPointIndex] === undefined) {
+            //         return (
+            //             '<div class="arrow_box" style="background: rgba(0, 0, 0, 0.9);">' +
+            //             '<span style="color: white;">' + ' ' + xAxisValue + '</span>' +
+            //             '<br>' +
+            //             '<span style="color: #5f8e95;">Irradiation: </span>' +
+            //             '<span style="color: white;">' + series[1][dataPointIndex] + '</span>' +
+            //             '<span style="color: white;">' + ' Wh/m&sup2;' + '</span>' +
+            //             '</div>'
+            //         )
+            //     }
+            //     else if (series[1][dataPointIndex] === undefined) {
+            //         return (
+            //             '<div class="arrow_box" style="background: rgba(0, 0, 0, 0.9);">' +
+            //             '<span style="color: white;">' + ' ' + xAxisValue + '</span>' +
+            //             '<br>' +
+            //             '<span style="color: #5f8e95;">' + 'Production: ' + '</span>' +
+            //             '<span style="color: white;">' + series[0][dataPointIndex] + '</span>' +
+            //             '<span style="color: white;">' + ' kWh' + '</span>' +
+            //             '</div>'
+            //         )
+            //     }
 
-                return (
-                    '<div class="arrow_box" style="background: rgba(0, 0, 0, 0.9);">' +
-                    '<span style="color: white;">' + ' ' + xAxisValue + '</span>' +
-                    '<br>' +
-                    '<span style="color: #5f8e95;">' + 'Production: ' + '</span>' +
-                    '<span style="color: white;">' + series[0][dataPointIndex] + '</span>' +
-                    '<span style="color: white;">' + ' kWh' + '</span>' +
-                    '<br>' +
-                    '<span style="color: #5f8e95;">Irradiation: </span>' +
-                    '<span style="color: white;">' + series[1][dataPointIndex] + '</span>' +
-                    '<span style="color: white;">' + ' Wh/m&sup2;' + '</span>' +
-                    '</div>'
-                )
-            }
+            //     return (
+            //         '<div class="arrow_box" style="background: rgba(0, 0, 0, 0.9);">' +
+            //         '<span style="color: white;">' + ' ' + xAxisValue + '</span>' +
+            //         '<br>' +
+            //         '<span style="color: #5f8e95;">' + 'Production: ' + '</span>' +
+            //         '<span style="color: white;">' + series[0][dataPointIndex] + '</span>' +
+            //         '<span style="color: white;">' + ' kWh' + '</span>' +
+            //         '<br>' +
+            //         '<span style="color: #5f8e95;">Irradiation: </span>' +
+            //         '<span style="color: white;">' + series[1][dataPointIndex] + '</span>' +
+            //         '<span style="color: white;">' + ' Wh/m&sup2;' + '</span>' +
+            //         '</div>'
+            //     )
+            // }
         },
     };
 
     // Construct chart series
     const series = [
         {
-            name: 'Production',
-            data: production
+            name: 'Active Power',
+            data: production,
+            type: 'line',
         },
         {
-            name: 'Irradiation',
-            data: irradiation
-        },
-        // {
-        //     name: 'Active Power',
-        //     data: activePower,
-        // },
-        // {
-        //     name: 'Irradiance',
-        //     data: irradiation,
-        // },
+            name: 'Irradiance',
+            data: irradiation,
+            type: 'line',
 
+        }
     ];
 
     // const handleWidthChange = (width) => {
@@ -453,13 +370,17 @@ const svgMarkup = `<svg fill="rgb(161,171,182)" width="16px" height="16px" viewB
     //     console.log('called')
     // };
 
-    return (
+    return (       
         <Chart
             options={options}
             series={series}
-            type="bar"
+            type="line"
             height="90%"
-            width="100%" 
+            width="110%" 
+            max-width="110%"
+            min-width="110%"
+            maxWidth="110%"
+            minWidth="110%"
         />
     );
 }

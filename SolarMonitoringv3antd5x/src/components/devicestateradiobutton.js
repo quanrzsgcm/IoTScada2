@@ -1,28 +1,23 @@
 import { Radio, ConfigProvider, Space, Button } from 'antd';
 import React, { useState } from 'react';
 
-const DeviceStateRadio = ({ data, value, setValue }) => {
-    const inverterState = {
-        "noCom": 1,
-        "connectionfail": 0,
-        "nonoperative": 1,
-        "FullCapability": 12
-    };
-    const totalSum = Object.values(inverterState).reduce((acc, curr) => acc + curr, 0);
-
+const DeviceStateRadio = ({ deviceStageCount, value, setValue }) => {
+    const totalSum =  Object.values(deviceStageCount).reduce((acc, curr) => acc + curr, 0);
     // Mapping object for more readable names
     const stateDisplayName = {
-        "noCom": "No Communication",
-        "connectionfail": "Connection Fail",
-        "nonoperative": "Non-operative",
-        "FullCapability": "Full Capability"
+        "No Communication": "No Communication",
+        "Connection Fail": "Connection Fail",
+        "Non Operative": "Non Operative",
+        "Full Capability": "Full Capability",
+        "Night State": "Night State"
     };
 
     const [activeButton, setActiveButton] = useState('all');
 
     const onClickHandler = (key) => {
         setActiveButton(key);
-        console.log(key);
+        // setValue(key)
+        console.log('key ' + key);
     };
 
     return (
@@ -46,7 +41,7 @@ const DeviceStateRadio = ({ data, value, setValue }) => {
                         backgroundColor: activeButton === 'all' ? 'rgb(0,167,219)' : 'rgb(3,119,137)',
                         color: activeButton === 'all' ? 'white' : 'inherit',
                     }}>All&nbsp;&nbsp;&nbsp;&nbsp;{totalSum}</Button>
-                {Object.entries(inverterState).map(([key, value]) => {
+                {Object.entries(deviceStageCount).map(([key, value]) => {
                     const isActive = activeButton === key;
                     if (value > 0) {
                         return (

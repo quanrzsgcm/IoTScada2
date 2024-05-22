@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from django.db.models import Max
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import IsAuthenticated
+from django.utils.timezone import make_aware, get_current_timezone
 import os
 import requests
 import json
@@ -13,12 +14,12 @@ from django.db.models import OuterRef, Subquery, Sum, F
 # import view sets from the REST framework
 from rest_framework import viewsets
 from django.views.decorators.csrf import csrf_exempt
-import json
 from datetime import datetime, timezone, timedelta
 from django.utils import timezone as django_timezone
 import pytz
 import calendar
-
+from time import sleep
+import paho.mqtt.client as mqtt
 # import the PowerMeterDataSerializer from the serializer file
 from .serializers import PowerMeterDataSerializer
 
@@ -71,10 +72,10 @@ def time_range_extract(dateString, unitoftime, local_timezone="Asia/Ho_Chi_Minh"
        
         return intervals
 
-    # if unitoftime == "Day":
-    #     print("First time of the day:", start_of_day)
-    #     print("Last time of the day:", end_of_day)
-    #     return {"start": start_of_day, "end": end_of_day}
+    if unitoftime == "OneDay":
+        print("First time of the day:", start_of_day)
+        print("Last time of the day:", end_of_day)
+        return {"start": start_of_day, "end": end_of_day}
 
     if unitoftime == "Week":
         start_of_week = start_of_day - timedelta(days=start_of_day.weekday())
@@ -1116,8 +1117,6 @@ def total_energy_view(request):
     # 2. Do calculate for one inverter with ID for all the intervals
 
 
-
-
     # Define the target datetime
     input_str = '2024-05-13T17:00:00.000Z'
     intervals = time_range_extract(input_str,"Day")
@@ -1146,3 +1145,118 @@ def total_energy_view(request):
         print(converted_time)
     return JsonResponse({"result": "latest_measurement"})
     
+
+@csrf_exempt   
+def inverter_activepower(request):
+    body = json.loads(request.body)
+    print(body)  # Print the whole body for debugging
+
+    # Extract the date string
+    date_string = body.get('date')
+    inverter_id = int(body.get('inverter_id'))
+    if date_string:
+        time_range = time_range_extract(date_string, "OneDay")
+        start, end = time_range['start'], time_range['end']
+        print("Start:", start)
+        print("End:", end)
+
+
+        measurements = InverterMeasurement.objects.filter(
+                    inverter_id=inverter_id,
+                    timestamp__gte=start,
+                    timestamp__lte=end,
+                ).order_by('timestamp')
+        
+         # Serialize the queryset into a list of dictionaries
+        measurement_list = list(measurements.values())
+
+        # Convert the timestamp to UTC+7
+        for measurement in measurement_list:
+            utc_timestamp = measurement['timestamp']
+            # Assuming the timestamps are already aware and in UTC, adjust by 7 hours
+            utc_plus_7_timestamp = utc_timestamp + timedelta(hours=7)
+            measurement['timestamp'] = utc_plus_7_timestamp.isoformat()
+            utc_timestamp = measurement['timestamp']
+            # Extract only the time part (hours and minutes)
+            time_part = utc_timestamp.split('T')[1][:5]
+            measurement['timestamp'] = time_part
+
+
+        return JsonResponse(measurement_list, safe=False)          
+  
+    return JsonResponse({"here":"there"})
+
+@csrf_exempt   
+def inverter_control(request):
+    # Load the JSON data from the request body
+    body = json.loads(request.body)
+    print(body)  # Print the whole body for debugging
+
+    # Extract the control string and inverter ID from the JSON data
+    fanSpeed = body.get('valueofFanSpeed')
+    inverter_id = int(body.get('inverter_id'))
+    print(inverter_id) 
+
+    # MQTT Broker
+    broker_address = "broker.emqx.io"  # Update with your MQTT broker's address
+    port = 1883  # MQTT default port
+
+    # Topics
+    subscribe_topic = "/neuron/invertersite1/write/resp"  # Topic to subscribe to
+    publish_topic = "/neuron/invertersite1/write/req"  # Topic to publish to
+
+    # Callback function for MQTT client when connection is established
+    def on_connect(client, userdata, flags, reason_code, properties):
+        print("Connected with result code " + str(reason_code))
+        client.subscribe(subscribe_topic)
+
+    # Callback function for MQTT client when a message is received
+    def on_message(client, userdata, msg):
+        payload = msg.payload.decode()
+        try:
+            parsed_payload = json.loads(payload)
+            print("Received message:")
+            print(json.dumps(parsed_payload, indent=2))  # Print JSON with indentation for readability
+        except json.JSONDecodeError as e:
+            print("Received message (not JSON): " + payload)
+
+        # Stop the MQTT client loop
+        client.loop_stop()
+        # Disconnect from MQTT broker
+        client.disconnect()
+
+    # Create MQTT client instance
+    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
+
+    # Assign callback functions
+    client.on_connect = on_connect
+    client.on_message = on_message
+
+    # Connect to MQTT broker
+    client.connect(broker_address, port, 60)
+
+    # Start the MQTT client loop
+    client.loop_start()
+
+    # Construct payload for MQTT message
+    payload = {
+        "uuid": "cd32be1b-c8b1-3257-94af-77f847b1ed3e",
+        "node": "inv1",  # Assuming the node is always "inv1", you can adjust this if needed
+        "group": "test",
+        "tag": "fanSpeed",
+        "value": fanSpeed,
+    }
+
+    try:
+        sleep(1)  # Wait for a few seconds before publishing (optional)
+        # Publish user input to MQTT topic
+        client.publish(publish_topic, json.dumps(payload))
+        print("Published message to " + publish_topic)
+        sleep(5)  # Optional sleep to keep the program running for a few more seconds
+    except:
+        print("Exiting...")
+        client.loop_stop()  # Stop the MQTT client loop
+        client.disconnect()  # Disconnect from MQTT broker
+  
+    # Return a JSON response indicating success (or you can return other relevant data)
+    return JsonResponse({"message": "Data published to MQTT topic successfully."})

@@ -283,7 +283,7 @@ const svgMarkup = `<svg fill="rgb(161,171,182)" width="16px" height="16px" viewB
                     colors: '#5f8e95' // Change to the desired color (e.g., red)
                 },
                 formatter: function (value, timestamp, opts) {
-                    console.log(value);
+                    // console.log(value);
                     let splitTime = value.split(':');
                     // Parse the hour part into an integer
                     let hour = parseInt(splitTime[0]);
@@ -459,7 +459,7 @@ const svgMarkup = `<svg fill="rgb(161,171,182)" width="16px" height="16px" viewB
             series={series}
             type="bar"
             height="90%"
-            width="100%" 
+            width="110%" 
         />
     );
 }

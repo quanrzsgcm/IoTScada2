@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { DownOutlined } from '@ant-design/icons';
 import { Form, Radio, Space, Switch, Table, Checkbox, Input, Button, ConfigProvider, Modal } from 'antd';
 import { Dropdown, message, Tooltip, InputNumber } from 'antd';
@@ -8,8 +8,10 @@ import { MdOutlineNewLabel } from "react-icons/md";
 import { FaCircle } from "react-icons/fa";
 import Chart1 from '../assets/charts/DetailChart';
 import ChartLeft from '../assets/charts/DetailChartLeft';
+import AuthContext from '../context/AuthContext';
 
 const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
+    const { authTokens, logoutUser } = useContext(AuthContext);
 
     const [thingData, setThingData] = useState(null);
     const [listname, setlistname] = useState(null);
@@ -172,32 +174,114 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
         items,
         onClick: handleMenuClick,
     };
+
     const [isModalOpen, setIsModalOpen] = useState(false);
+
     const showModal = () => {
         setIsModalOpen(true);
+        if (valueofFanSpeed){
+            setValueofFanSpeedinModal(valueofFanSpeed);
+            console.log('set when open modal '+ valueofFanSpeed);
+        }
     };
     const handleOk = () => {
         setIsModalOpen(false);
+        sendControlMessage();
+        console.log('sendControlMessage');
     };
     const handleCancel = () => {
         setIsModalOpen(false);
     };
 
-    const [valueofFanSpeed, setValueFanSpeed] = useState('Day');
+    const [valueofFanSpeed, setValueFanSpeed] = useState(null);
+
+    const [valueofFanSpeedinModal, setValueofFanSpeedinModal] = useState(null);
+
+    const [inverter_id, setInverter_id] = useState(null);
+
 
     const onChangeFanSpeed = (e) => {
         setValueFanSpeed(e.target.value);
+        setValueofFanSpeedinModal(e.target.value);
+        console.log(e.target.value);
+        console.log('fanspeedchanged');
     };
 
-    const [valueofPollingRate, setValuePollingRate] = useState('Month');
+    const [valueofPollingRate, setValuePollingRate] = useState('10s');
 
     const onChangePollingRate = (e) => {
         setValuePollingRate(e.target.value);
+        console.log(e.target.value);
+        console.log('pRatechanged');
     };
 
+    useEffect(() => {
+        if (thingData) {
+            setValueFanSpeed(fanSpeedMap[thingData.features.measurements.properties.fanSpeed]);
+            setInverter_id(extractNumberFromString(thingData.thingId));
+            console.log('set fan speed')
+            console.log(extractNumberFromString(thingData.thingId));
+        }
+
+    }, [thingData]);
+
+    // Mapping object for fan speed values
+    const fanSpeedMap = {
+        0: 'off',
+        1: 'slow',
+        2: 'medium',
+        3: 'fast'
+    };
+
+    const fanSpeedMapsending = (fanSpeed) => {
+        const map = {
+            'off': 0,
+            'slow': 1,
+            'medium': 2,
+            'fast': 3
+        };
+        return map[fanSpeed];
+    };
+
+    function extractNumberFromString(str) {
+        const parts = str.split(':');
+        const number = parseInt(parts[1].replace(/\D/g, ''), 10); // Convert to integer
+        return number;
+    }
+
+    const sendControlMessage = () => {
+        fetch('http://localhost:8000/api2/my-api/invertercontrol/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + String(authTokens.access)
+            },
+            body: JSON.stringify({
+                valueofFanSpeed: fanSpeedMapsending(valueofFanSpeedinModal),
+                limitOutput: '',
+                inverter_id: inverter_id
+            })
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(({ data }) => {
+                console.log(data);
+            })
+            .catch(error => {
+                console.error('Error fetching profile:', error);
+            });
+    }
 
     return (
         <>
+            <div style={{ height: '50px' }}>
+                {valueofFanSpeed} <br></br>
+                {valueofFanSpeedinModal}
+            </div>
             <ConfigProvider
                 theme={{
                     components: {
@@ -222,13 +306,13 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
                         <span style={{ backgroundColor: 'transparent', border: '0px solid #009bc4' }}>Fan Speed: </span>
                         <Radio.Group
                             onChange={onChangeFanSpeed}
-                            value={valueofFanSpeed}
+                            value={valueofFanSpeedinModal}
                             style={{ backgroundColor: '#043b3e', border: '1px solid #009bc4' }}
                         >
-                            <Radio.Button value="Day" style={{ backgroundColor: valueofFanSpeed === 'Day' ? '#009bc4' : '#043b3e', color: 'white', borderWidth: 0 }}>Off</Radio.Button>
-                            <Radio.Button value="Month" style={{ backgroundColor: valueofFanSpeed === 'Month' ? '#009bc4' : '#043b3e', color: 'white', borderWidth: 0 }}>Slow</Radio.Button>
-                            <Radio.Button value="Year" style={{ backgroundColor: valueofFanSpeed === 'Year' ? '#009bc4' : '#043b3e', color: 'white', borderWidth: 0 }}>Medium</Radio.Button>
-                            <Radio.Button value="Total" style={{ backgroundColor: valueofFanSpeed === 'Total' ? '#009bc4' : '#043b3e', color: 'white', borderWidth: 0 }}>Fast</Radio.Button>
+                            <Radio.Button value="off" style={{ backgroundColor: valueofFanSpeedinModal === 'off' ? '#009bc4' : '#043b3e', color: 'white', borderWidth: 0 }}>Off</Radio.Button>
+                            <Radio.Button value="slow" style={{ backgroundColor: valueofFanSpeedinModal === 'slow' ? '#009bc4' : '#043b3e', color: 'white', borderWidth: 0 }}>Slow</Radio.Button>
+                            <Radio.Button value="medium" style={{ backgroundColor: valueofFanSpeedinModal === 'medium' ? '#009bc4' : '#043b3e', color: 'white', borderWidth: 0 }}>Medium</Radio.Button>
+                            <Radio.Button value="fast" style={{ backgroundColor: valueofFanSpeedinModal === 'fast' ? '#009bc4' : '#043b3e', color: 'white', borderWidth: 0 }}>Fast</Radio.Button>
                         </Radio.Group>
                     </div>
 
@@ -240,16 +324,16 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
                             value={valueofPollingRate}
                             style={{ backgroundColor: '#043b3e', border: '1px solid #009bc4', }}
                         >
-                            <Radio.Button value="Month" style={{ backgroundColor: valueofPollingRate === 'Month' ? '#009bc4' : '#043b3e', color: 'white', borderWidth: 0 }}>1s</Radio.Button>
-                            <Radio.Button value="Year" style={{ backgroundColor: valueofPollingRate === 'Year' ? '#009bc4' : '#043b3e', color: 'white', borderWidth: 0 }}>5s</Radio.Button>
-                            <Radio.Button value="Total" style={{ backgroundColor: valueofPollingRate === 'Total' ? '#009bc4' : '#043b3e', color: 'white', borderWidth: 0 }}>10s</Radio.Button>
+                            <Radio.Button value="1s" style={{ backgroundColor: valueofPollingRate === '1s' ? '#009bc4' : '#043b3e', color: 'white', borderWidth: 0 }}>1s</Radio.Button>
+                            <Radio.Button value="5s" style={{ backgroundColor: valueofPollingRate === '5s' ? '#009bc4' : '#043b3e', color: 'white', borderWidth: 0 }}>5s</Radio.Button>
+                            <Radio.Button value="10s" style={{ backgroundColor: valueofPollingRate === '10s' ? '#009bc4' : '#043b3e', color: 'white', borderWidth: 0 }}>10s</Radio.Button>
                         </Radio.Group>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '0px solid white' }}>
 
                         <span style={{ backgroundColor: 'transparent' }}>Limit Output: </span>
 
-                        <InputNumber min={1} max={10} defaultValue={3} style={{ backgroundColor: '#043b3e', color: 'white', border: "1px solid #009bc4", borderRadius: 0 }} />
+                        <InputNumber min={1} max={10} controls={false} value={thingData ? thingData.features.measurements.properties.limitOutput : null} style={{ backgroundColor: '#043b3e', color: 'white', border: "1px solid #009bc4", borderRadius: 0 }} />
 
                     </div>
                 </Modal>
@@ -292,7 +376,7 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
                     />
                     <FaCircle style={{ width: '8px', height: '8px', color: iconColor, marginLeft: '15px', marginRight: '5px' }} />
                     <span style={{ color: textColor }}>
-                        {device_state}
+                        {thingData ? thingData.features.runningstatus.properties.stage : null}
                     </span>
                     <span style={{ marginLeft: 'auto', color: 'rgb(1,183,225)' }} onClick={showModal}>
                         Control Inverter
@@ -361,7 +445,7 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
                             alignItems: 'center', // Center vertically    
                         }}>
                             <span style={{ marginLeft: '10px', fontSize: '14px', color: 'rgb(29, 204, 204)' }}>Input Power: </span>
-                            <span style={{ marginLeft: '5px', fontSize: '14px', color: 'white' }}>{placeholder} kW</span>
+                            <span style={{ marginLeft: '5px', fontSize: '14px', color: 'white' }}>{thingData ? thingData.features.measurements.properties.inputPower : null} kW</span>
                         </div>
                         <div style={{ height: '20px', borderRight: '1px solid rgb(53,110,116)' }}></div> {/* Vertical line */}
                         <div style={{
@@ -372,7 +456,7 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
                             alignItems: 'center', // Center vertically    
                         }}>
                             <span style={{ marginLeft: '10px', fontSize: '14px', color: 'rgb(29, 204, 204)' }}>Apparent Power: </span>
-                            <span style={{ marginLeft: '5px', fontSize: '14px', color: 'white' }}>{placeholder} kWh</span>
+                            <span style={{ marginLeft: '5px', fontSize: '14px', color: 'white' }}>{thingData ? thingData.features.measurements.properties.apparentPower : null} VA</span>
                         </div>
                     </div>
 
@@ -395,7 +479,7 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
                             alignItems: 'center', // Center vertically    
                         }}>
                             <span style={{ marginLeft: '10px', fontSize: '14px', color: 'rgb(29, 204, 204)' }}>Active Power: </span>
-                            <span style={{ marginLeft: '5px', fontSize: '14px', color: 'white' }}>{placeholder} kW</span>
+                            <span style={{ marginLeft: '5px', fontSize: '14px', color: 'white' }}>{thingData ? thingData.features.measurements.properties.activePower : null} kW</span>
                         </div>
                         <div style={{ height: '20px', borderRight: '1px solid rgb(53,110,116)' }}></div> {/* Vertical line */}
                         <div style={{
@@ -406,7 +490,7 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
                             alignItems: 'center', // Center vertically    
                         }}>
                             <span style={{ marginLeft: '10px', fontSize: '14px', color: 'rgb(29, 204, 204)' }}>Grid Frequency: </span>
-                            <span style={{ marginLeft: '5px', fontSize: '14px', color: 'white' }}>{placeholder} Hz</span>
+                            <span style={{ marginLeft: '5px', fontSize: '14px', color: 'white' }}>{thingData ? thingData.features.measurements.properties.gridFrequency : null} Hz</span>
                         </div>
                     </div>
 
@@ -429,7 +513,7 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
                             alignItems: 'center', // Center vertically    
                         }}>
                             <span style={{ marginLeft: '10px', fontSize: '14px', color: 'rgb(29, 204, 204)' }}>Reactive Power: </span>
-                            <span style={{ marginLeft: '5px', fontSize: '14px', color: 'white' }}>{placeholder} kVar</span>
+                            <span style={{ marginLeft: '5px', fontSize: '14px', color: 'white' }}>{thingData ? thingData.features.measurements.properties.reactivePower : null} kVar</span>
                         </div>
                         <div style={{ height: '20px', borderRight: '1px solid rgb(53,110,116)' }}></div> {/* Vertical line */}
                         <div style={{
@@ -440,7 +524,7 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
                             alignItems: 'center', // Center vertically    
                         }}>
                             <span style={{ marginLeft: '10px', fontSize: '14px', color: 'rgb(29, 204, 204)' }}>Power Factor: </span>
-                            <span style={{ marginLeft: '5px', fontSize: '14px', color: 'white' }}>{placeholder}</span>
+                            <span style={{ marginLeft: '5px', fontSize: '14px', color: 'white' }}>{thingData ? thingData.features.measurements.properties.powerFactor : null}</span>
                         </div>
                     </div>
 
@@ -545,7 +629,7 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
                     </div>
                 </div>
 
-                <div style={{ width: '49.4%', height: '500px', border: '1px solid red' }}>
+                <div style={{ width: '49.4%', height: '500px', border: '0px solid red' }}>
                     <div style={{
                         height: '45px', // specify your desired height
                         width: '100%',
@@ -595,7 +679,7 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
                     }}>
                         <ChartLeft />
 
-                    </div> 
+                    </div>
                 </div>
             </div>
         </>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { DownOutlined } from '@ant-design/icons';
-import { Form, Radio, Space, Switch, Table, Checkbox, Input, Button, Tooltip, ConfigProvider, Dropdown } from 'antd';
+import { Form, Radio, Space, Switch, Table, Checkbox, Input, Button, Tooltip, ConfigProvider, Dropdown, Modal } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
 import '../assets/styles/LVDeviceList.scss'
@@ -8,6 +8,8 @@ import DeviceStateRadio from './devicestateradiobutton';
 import { InfoCircleOutlined, UserOutlined } from '@ant-design/icons';
 import CheckboxDropdown from './ActionLevel';
 import ExportCSVButton from './ExportCSVButton';
+import BlueButton from './ButtonLV';
+import FormInverter from './FormInverter';
 
 const { Search } = Input;
 
@@ -365,7 +367,33 @@ console.log(data);
 const defaultTitle = () => 'Here is title';
 const defaultFooter = () => 'Here is footer';
 
-const LVDeviceList = ({setSelectedThing}) => {
+const statecount = (stagearray) => {
+    // Define all possible stages with initial counts set to 0
+    const initialState = {
+        "No Communication": 0,
+        "Connection Fail": 0,
+        "Non Operative": 0,
+        "Full Capability": 0,
+        "Night State": 0
+    };
+
+    // Count the occurrences of each stage
+    const inverterState = stagearray.reduce((acc, item) => {
+        // If the stage exists in the accumulator, increment its count
+        if (acc[item.stage] !== undefined) {
+            acc[item.stage]++;
+        } else {
+            // This block handles any unexpected stages not in the initial state
+            // It's a safeguard, but ideally, all stages should be in initialState
+            acc[item.stage] = 1;
+        }
+        return acc;
+    }, { ...initialState }); // Start with a copy of the initial state
+
+    return inverterState;
+}
+
+const LVDeviceList = ({ setSelectedThing }) => {
 
     const [fetchedData, setFetchedData] = useState(null); // Initialize state variable with null
 
@@ -375,10 +403,13 @@ const LVDeviceList = ({setSelectedThing}) => {
 
     const basicAuth = btoa(`${username}:${password}`);
 
+    const [stageArray, setStageArray] = useState(null);
+    const [deviceStageCount, setDeviceStageCount] = useState(null);
+
     useEffect(() => {
         // Function to fetch data from the API
         const fetchData = () => {
-            fetch('http://localhost:8080/api/2/search/things?namespaces=my.inverter&option=size(5)', {
+            fetch('http://localhost:8080/api/2/search/things?namespaces=my.inverter&option=size(200)', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -398,16 +429,26 @@ const LVDeviceList = ({setSelectedThing}) => {
                         return {
                             thingId: item.thingId,
                             name: item.attributes.name,
+                            manufacturer: item.attributes.manufacturer,
                             labels: item.features.label.properties.labels,
                             stage: item.features.runningstatus.properties.stage,
-                            stageStartOn: item.features.runningstatus.properties.stageStartOn
+                            stageStartOn: item.features.runningstatus.properties.stageStartOn,
+                            meterReadTotalEnergy: item.features.measurements.properties.meterReadTotalEnergy,
+                            activePower: item.features.measurements.properties.activePower,
+                            inputPower: item.features.measurements.properties.inputPower,
+                            efficiency: item.features.measurements.properties.efficiency,
+                            productionToday: item.features.measurements.properties.productionToday,
+                            yieldToday: item.features.measurements.properties.yieldToday,
                         };
                     });
 
                     // Update the state with the flattened data
                     setFetchedData(flattenedData);
-                    console.log(flattenedData);
-
+                    const stageArray = flattenedData.map(item => ({ stage: item.stage }));
+                    setStageArray(stageArray);
+                    console.log(stageArray);
+                    setDeviceStageCount(statecount(stageArray));
+                    console.log(statecount(stageArray));
                 })
                 .catch(error => {
                     console.error('Error fetching data:', error);
@@ -423,7 +464,7 @@ const LVDeviceList = ({setSelectedThing}) => {
         // Cleanup function to clear the interval when the component unmounts
         return () => clearInterval(interval);
     }, []); // Empty dependency array means this effect runs once after the initial render
-    
+
     const [selectedRowIndex, setSelectedRowIndex] = useState(-1);
 
     const [activeSearch, setActiveSearch] = useState(false); // Initialize activeSearch as false
@@ -462,54 +503,6 @@ const LVDeviceList = ({setSelectedThing}) => {
             dataIndex: 'name',
             width: 200,
             fixed: 'left',
-            // Add filterDropdown and filterIcon for search box
-            // filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) =>
-            // (
-            //     <div style={{ padding: 8 }}>
-            //         <Input
-            //             id="search-input"
-            //             placeholder={`Search Inverter Name`}
-            //             value={selectedKeys[0]}
-            //             // onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-            //             onChange={(e) => {
-            //                 setSelectedKeys(e.target.value ? [e.target.value] : []);
-            //             }}
-            //             onPressEnter={() => handleSearch(selectedKeys, confirm, 'name')}
-            //             style={{ width: 188, marginBottom: 8, display: 'block' }}
-            //         />
-            //         <Space>
-            //             <Button
-            //                 type="primary"
-            //                 onClick={() => handleSearch(selectedKeys, confirm, 'name')}
-            //                 icon={<SearchOutlined />}
-            //                 size="small"
-            //                 style={{ width: 90 }}
-            //             >
-            //                 Search
-            //             </Button>
-            //             <Button onClick={() => handleReset(clearFilters)} size="small" style={{ width: 90 }}>
-            //                 Reset
-            //             </Button>
-            //         </Space>
-            //     </div>
-            // ),
-            // filterIcon: (filtered) => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
-            // onFilter: (value, record) => record.name.toLowerCase().includes(value.toLowerCase()),
-            // onFilterDropdownVisibleChange: (visible) => {
-            //     if (visible) {
-            //         setTimeout(() => document.getElementById('search-input').select(), 100);
-            //     }
-            // },
-            // render: (text) => searchedColumn === 'name' ? (
-            //     <Highlighter
-            //         highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-            //         searchWords={[searchText]}
-            //         autoEscape
-            //         textToHighlight={text.toString()}
-            //     />
-            // ) : text,
-
-
             render: function (text, record, index) {
                 const backgroundColor = index % 2 === 0 ? 'rgb(12,62,82)' : 'rgb(12,55,70)';
 
@@ -568,20 +561,20 @@ const LVDeviceList = ({setSelectedThing}) => {
         },
         {
             title: 'Meter-read Total Energy',
-            dataIndex: 'meter_read_total_energy',
-            sorter: (a, b) => a.meter_read_total_energy - b.meter_read_total_energy,
+            dataIndex: 'meterReadTotalEnergy',
+            sorter: (a, b) => a.meterReadTotalEnergy - b.meterReadTotalEnergy,
             className: 'numeric-data'
         },
         {
             title: 'Active Power(kW)',
-            dataIndex: 'active_power',
-            sorter: (a, b) => a.active_power - b.active_power,
+            dataIndex: 'activePower',
+            sorter: (a, b) => a.activePower - b.activePower,
             className: 'numeric-data'
         },
         {
             title: 'Input Power(kW)',
-            dataIndex: 'input_power',
-            sorter: (a, b) => a.input_power - b.input_power,
+            dataIndex: 'inputPower',
+            sorter: (a, b) => a.inputPower - b.inputPower,
             className: 'numeric-data'
         },
         {
@@ -598,18 +591,19 @@ const LVDeviceList = ({setSelectedThing}) => {
         },
         {
             title: 'Production Today (kWh)',
-            dataIndex: 'production_today',
-            sorter: (a, b) => a.production_today - b.production_today,
+            dataIndex: 'productionToday',
+            sorter: (a, b) => a.productionToday - b.productionToday,
             className: 'numeric-data'
         },
         {
             title: 'Yield Today (h)',
-            dataIndex: 'yield_today',
-            sorter: (a, b) => a.yield_today - b.yield_today,
+            dataIndex: 'yieldToday',
+            sorter: (a, b) => a.yieldToday - b.yieldToday,
             className: 'numeric-data'
         },
 
     ];
+
 
     const defaultCheckedList = columns.map((item) => item.dataIndex);
     const [checkedList, setCheckedList] = useState(defaultCheckedList);
@@ -640,12 +634,38 @@ const LVDeviceList = ({setSelectedThing}) => {
     const [yScroll, setYScroll] = useState(false);
     const [xScroll, setXScroll] = useState();
 
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const showModal = () => {
+        setIsModalOpen(true);
+    };
+    const handleOk = () => {
+        setIsModalOpen(false);
+    };
+    const handleCancel = () => {
+        setIsModalOpen(false);
+    };
+
+    const [valueofFanSpeed, setValueFanSpeed] = useState('Day');
+
+    const onChangeFanSpeed = (e) => {
+        setValueFanSpeed(e.target.value);
+    };
+
+    const [valueofPollingRate, setValuePollingRate] = useState('Month');
+
+    const onChangePollingRate = (e) => {
+        setValuePollingRate(e.target.value);
+    };
+
 
     return (
         <>
             <div style={{ width: '100%', height: '45px', border: '1px solid #000', display: 'flex' }}>
                 <div style={{ flex: '9', borderRight: '1px solid #000', display: 'flex', alignItems: 'center' }}>
-                    <DeviceStateRadio />
+                    {deviceStageCount !== null && (
+  <DeviceStateRadio deviceStageCount={deviceStageCount}/>
+)}
                 </div>
                 <div style={{ flex: '1' }}>
                     {/* Content for the second div (takes 1/10 of the parent's width) */}
@@ -687,16 +707,19 @@ const LVDeviceList = ({setSelectedThing}) => {
                             }
                         />
                     </ConfigProvider>
-                    <span>Action Level:</span>
+                    <span style={{ marginLeft: '20px', marginRight: '5px' }}>Action Level:</span>
                     <CheckboxDropdown />
-
-
-
                 </div>
-                <div style={{ flex: '1', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-                    {/* <ExportCSVButton data={fetchedData} /> */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '0px solid red' }}>
+                    <BlueButton onClick={showModal} />
+
+
+                    <div style={{ marginLeft: '10px' }}> {/* Add margin to create space */}
+                        <ExportCSVButton data={fetchedData} />
+                    </div>
                 </div>
             </div>
+
 
             <ConfigProvider
                 theme={{
@@ -743,6 +766,30 @@ const LVDeviceList = ({setSelectedThing}) => {
                         }
                     })}
                 />
+            </ConfigProvider>
+            <ConfigProvider
+                theme={{
+                    components: {
+                        Modal: {
+                            contentBg: "rgba(0, 0, 0, 0.82)",
+                            headerBg: 'rgba(0, 0, 0, 0.82)',
+                            titleColor: 'white',
+                            colorText: 'white',
+                            borderRadiusLG: '0',
+                            padding: 0,
+                            margin: 0,
+                        },
+                        Radio: {
+                            buttonBg: "red",
+                            colorBorder: "#009bc4",
+                            borderRadius: 0
+                        },
+                    },
+                }}
+            >
+                <Modal title="Add an inverter" centered width={650} open={isModalOpen} onOk={handleOk} onCancel={handleCancel} style={{ border: '1px solid rgb(1,183,225)' }}>
+                    <FormInverter />
+                </Modal>
             </ConfigProvider>
 
 

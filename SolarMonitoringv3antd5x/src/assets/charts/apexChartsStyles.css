@@ -1,10 +1,15 @@
+.apexcharts-tooltip {
+  background: cyan;
+  color: orange;
+}
+
 /* .apexcharts-tooltip {
-    background-color: cyan;
-    color: orange;
-  } */
+  background: #000000;
+  color: rgb(255, 255, 255);
+} */
 
 .mixed-chart {
-  border: 1px solid blue;
+  border: 0px solid blue;
   height: calc(100% - 50px);
   overflow: hidden;
 }

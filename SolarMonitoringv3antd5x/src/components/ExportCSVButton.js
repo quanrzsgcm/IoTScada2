@@ -8,6 +8,7 @@ const ExportCSVButton = ({ data }) => {
     { label: 'Name', key: 'name' },
     { label: 'Label', key: 'label' },
     { label: 'Stage', key: 'stage' },
+
     // { label: 'Stage Start On', key: 'stage_start_on' },
     // { label: 'Stage Duration', key: 'stage_duration' },
     // { label: 'Meter-read Total Energy', key: 'meter_read_total_energy' },
@@ -17,31 +18,32 @@ const ExportCSVButton = ({ data }) => {
     // { label: 'Grid Freq.', key: 'grid_freq' },
     // { label: 'Production Today', key: 'production_today' },
     // { label: 'Yield Today', key: 'yield_today' },
-    // Add more headers as needed
+
   ];
 
-
+  // Render the export button only if data is available
   return (
-    <CSVLink data={data} headers={headers} filename={'data.csv'}>
+    data && data.length > 0 ? (
+      <CSVLink data={data} headers={headers} filename={'data.csv'}>
         <ConfigProvider
-      theme={{
-        components: {
-          Button: {
-            defaultBg: 'transparent',
-            defaultBorderColor: '#009bc4',
-            borderRadius: '0px',
-            defaultHoverBg: 'transparent',
-            colorText: '#009bc4',
-            defaultHoverBorderColor: '#009bc4',
-            defaultHoverColor: 'rgb(0,204,255)'
-          },
-
-        },
-      }}  >
-
-      <Button>Export</Button>
-      </ConfigProvider>
-    </CSVLink>
+          theme={{
+            components: {
+              Button: {
+                defaultBg: 'transparent',
+                defaultBorderColor: '#009bc4',
+                borderRadius: '0px',
+                defaultHoverBg: 'transparent',
+                colorText: '#009bc4',
+                defaultHoverBorderColor: '#009bc4',
+                defaultHoverColor: 'rgb(0,204,255)'
+              },
+            },
+          }}
+        >
+          <Button>Export</Button>
+        </ConfigProvider>
+      </CSVLink>
+    ) : null
   );
 };
 

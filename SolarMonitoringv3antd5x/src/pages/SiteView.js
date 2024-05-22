@@ -25,7 +25,7 @@ import App3 from '../assets/charts/test';
 export default function SiteView() {
     const [placeholdervalue, setPlaceholdervalue] = useState(149);
     const [realtimesitedata, setRealTimeSiteData] = useState({
-        capacity: 11.9,
+        capacity: 1.19,
         temp: 45,
         irradiation: 67.8,
         yield: 120,
@@ -159,8 +159,6 @@ export default function SiteView() {
 
     return (
         <MainviewLayout>
-            <div style={{ height: '200px', display: 'flex' }}>{dateString}</div>
-
             <div style={{
                 display: 'flex',
                 height: '110px',
@@ -221,17 +219,29 @@ export default function SiteView() {
 
 
                 <span style={{ color: '#9cafb0', marginRight: '5px' }}>Capacity</span>
-                <span style={{ color: 'white', marginRight: '40px' }}>{realtimesitedata.capacity}</span>
-                <span style={{ color: '#9cafb0', marginRight: '5px' }}>Temperature</span>
-                <span style={{ color: 'white', marginRight: '40px' }}>{realtimesitedata.temp}</span>
+                <span style={{ color: 'white', marginRight: '5px' }}>{realtimesitedata.capacity}</span>
+                <span style={{ color: 'white', marginRight: '40px' }}>MWp</span>
+
+                <span style={{ color: '#9cafb0', marginRight: '5px' }}>Temperature</span>                
+                <span style={{ color: 'white', marginRight: '5px' }}>{realtimesitedata.temp}</span>
+                <span style={{ color: 'white', marginRight: '40px' }}>°C</span>
+
                 <span style={{ color: '#9cafb0', marginRight: '5px' }}>Irradiation </span>
-                <span style={{ color: 'white', marginRight: '40px' }}>{realtimesitedata.irradiation}</span>
+                <span style={{ color: 'white', marginRight: '5px' }}>{realtimesitedata.irradiation}</span>
+                <span style={{ color: 'white', marginRight: '40px' }}>Wh/㎡</span>
+
                 <span style={{ color: '#9cafb0', marginRight: '5px' }}>Yield</span>
-                <span style={{ color: 'white', marginRight: '40px' }}>{realtimesitedata.yield}</span>
+                <span style={{ color: 'white', marginRight: '5px' }}>{realtimesitedata.yield}</span>
+                <span style={{ color: 'white', marginRight: '40px' }}>h</span>
+
                 <span style={{ color: '#9cafb0', marginRight: '5px' }}>Production</span>
-                <span style={{ color: 'white', marginRight: '40px' }}>{realtimesitedata.production}</span>
+                <span style={{ color: 'white', marginRight: '5px' }}>{realtimesitedata.production}</span>
+                <span style={{ color: 'white', marginRight: '40px' }}>MWh</span>
+
                 <span style={{ color: '#9cafb0', marginRight: '5px' }}>Power Ratio</span>
-                <span style={{ color: 'white', marginRight: '40px' }}>{realtimesitedata.powerratio}</span>
+                <span style={{ color: 'white', marginRight: '5px' }}>{realtimesitedata.powerratio}</span>
+                <span style={{ color: 'white', marginRight: '40px' }}>%</span>
+
 
                 <span style={{ marginLeft: 'auto' }}>
 
@@ -253,12 +263,12 @@ export default function SiteView() {
                 overflow: 'hidden', // Prevents content from overflowing
             }}>
                 <div style={{  flex: '0 0 50%' , marginRight: '0px', 
-                border: '2px solid red',
+                border: '0px solid red',
                  overflow: 'hidden' }}> {/* Border color for the first child div */}
                     <Chart1 />
                 </div>
                 <div style={{ flex: '0 0 50%' ,marginLeft: '0px', 
-                border: '2px solid blue', 
+                border: '0px solid blue', 
                 overflow: 'hidden' }}> {/* Border color for the second child div */}
                     <Chart2 />
                 </div>
