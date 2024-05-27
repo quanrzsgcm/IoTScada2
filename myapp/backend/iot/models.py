@@ -39,6 +39,16 @@ class Inverter(models.Model):
 
     def __str__(self):
         return f"Inverter {self.model} at Site {self.site.siteName}"
+    
+class InverterState(models.Model):
+    inverter = models.ForeignKey(Inverter, on_delete=models.CASCADE)  # Foreign key to Inverter model
+    state = models.CharField(max_length=50)
+    timestamp = models.DateTimeField()
+    starton = models.DateTimeField(null=True)
+    duration = models.IntegerField(null=True)  # Duration in seconds
+
+    def __str__(self):
+        return f"State: {self.state} at {self.timestamp} for Inverter {self.inverter.inverterID}"
 
 class InverterMeasurement(models.Model):
     measurementID = models.AutoField(primary_key=True)

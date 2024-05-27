@@ -2,10 +2,13 @@
 from django.core.management.base import BaseCommand
 import paho.mqtt.client as mqtt
 import json
-from iot.models import InverterMeasurement, Inverter, Site, SiteMeasurements
+from iot.models import InverterMeasurement, Inverter, Site, SiteMeasurements, InverterState
 import queue
 import threading
 import time
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
+from datetime import datetime
 
 # INSERT INTO iot_invertermeasurement (
 #     timestamp, 
@@ -38,13 +41,21 @@ import time
 #     1, 
 #     450
 # );
-
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
 
 
 class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         message_queue = queue.Queue()
-
         def process_messages():
             while True:
                 msg = message_queue.get()
@@ -59,9 +70,60 @@ class Command(BaseCommand):
                         inverter_id = int(inverter_id[3:])
                         inv_instance = Inverter.objects.get(inverterID=inverter_id)
                         if "value" in payload:
+                            state = ""
                             value = payload["value"]
+                            path = payload["path"]
+                            if path == "/features/measurements/properties":
+                                state = value["state"]
+                            elif path == "/features/measurements/properties/state":
+                                state = value
+                            
+                            print(f'State: {state}')
+                            timestamp=payload["timestamp"]
+                            print(f'Timestamp: {timestamp}')
+
+                            state_start_on = ""
+                            last_state = InverterState.objects.filter(inverter__inverterID=inverter_id).order_by('-timestamp').first()
+                            if last_state:
+                                last_state_value = last_state.state
+                                last_state_timestamp = last_state.timestamp
+                                last_state_inverterID = last_state.inverter.inverterID
+                                last_state_starton = last_state.starton
+                                
+                                print(f"Last State: {last_state_value}, Timestamp: {last_state_timestamp}, Inverter ID: {last_state_inverterID}")
+                                print(f"Current State: {state}, Timestamp: {timestamp}, Inverter ID: {inverter_id}")
+                                if state != last_state_value:
+                                    state_start_on = timestamp
+                                else: 
+                                    state_start_on = last_state_starton
+                            else: 
+                                state_start_on = timestamp         
+                            
+                            print(f"Start On: {state_start_on}")
+                            print("debug")
+                            
+                            duration = timezone.now() - state_start_on
+                            print("debug2")
+                            
+                            print(f"Duration : {duration}")
+                            print("debug3")
+
+
+                            InverterState.objects.create(
+                                inverter=inv_instance,
+                                state=state,
+                                timestamp=payload["timestamp"],
+                                starton= state_start_on
+                            )
+                            print("debug")
+
+
+                            if path == "/features/measurements/properties/state":
+                                continue
+
                             # Check for None or missing values
                             meter_read_total_energy = value.get("meterReadTotalEnergy")
+
                             if meter_read_total_energy is None:
                                 # Handle the None case here if needed
                                 print("meterReadTotalEnergy is None")

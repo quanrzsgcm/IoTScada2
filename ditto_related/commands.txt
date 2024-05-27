@@ -1,8 +1,9 @@
 Create policy
 curl -X PUT 'http://localhost:8080/api/2/policies/my.test:policy' -u 'ditto:ditto' -H 'Content-Type: application/json' -d @policy.json
+curl -X PUT 'http://159.223.78.150:8080/api/2/policies/my.test:policy' -u 'ditto:ditto' -H 'Content-Type: application/json' -d @policy.json
 
 CREATE THINGS
-curl -X PUT 'http://localhost:8080/api/2/things/my.inverter:inv02' -u 'ditto:ditto' -H 'Content-Type: application/json' -d @inverter.json
+curl -X PUT 'http://159.223.78.150:8080/api/2/things/my.inverter:inv02' -u 'ditto:ditto' -H 'Content-Type: application/json' -d @inverter.json
 
 curl -X PUT 'http://localhost:8080/api/2/things/my.power:pm02' -u 'ditto:ditto' -H 'Content-Type: application/json' -d @pm.json
 
@@ -22,7 +23,9 @@ UPDATE CONNECTION
 curl -X 'PUT' -u 'devops:foobar' 'http://localhost:8080/api/2/connections/robinsendback' -H 'Accept: application/json' -H 'Content-Type: application/json' -d @connection_update.json | python -m json.tool
 
 GET ALL THINGS
-curl -X GET 'http://localhost:8080/api/2/things?fields=thingId/' -u 'ditto:ditto' -H 'Content-Type: application/json' | python -m json.tool
+curl -X GET 'http://159.223.78.150:8080/api/2/things?fields=thingId/' -u 'ditto:ditto' -H 'Content-Type: application/json' | python -m json.tool
+
+
 curl -X GET 'http://localhost:8080/api/2/things/my.inverter:inv01' -u 'ditto:ditto' -H 'Content-Type: application/json' | python -m json.tool
 
 GET ALL THINGS WITH namespaces 

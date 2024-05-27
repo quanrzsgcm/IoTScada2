@@ -37,11 +37,11 @@ export default function SiteView() {
     useEffect(() => {
         // Function to fetch data from the API
         const fetchData = () => {
-            fetch('http://192.168.1.209:8000/api2/my-api/realtimesitedata?siteId=1', {
+            fetch(`${process.env.DJANGO_URL}/api2/my-api/realtimesitedata?siteId=1`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + String(authTokens.access)
+                    // 'Authorization': 'Bearer ' + String(authTokens.access)
                 },
             })
                 .then(response => {
