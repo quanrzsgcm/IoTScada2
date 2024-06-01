@@ -184,7 +184,6 @@ def get_sites(request, site_id=None):
 @csrf_exempt
 def get_inverters(request, inverter_id=None):
     if request.method == "GET":
-
         if inverter_id is not None:
             try:
                 inverter = get_object_or_404(Inverter, pk=inverter_id)
@@ -281,7 +280,7 @@ def get_inverters(request, inverter_id=None):
             post_data = json.loads(request.body)
             site_id = int(post_data.get('siteId'))
 
-            site_instance = get_object_or_404(Site, siteID=site_id)
+            site_instance = get_object_or_404(Site, siteID=1)
             print(site_id)
             latest_id = Inverter.objects.aggregate(Max("inverterID"))["inverterID__max"]
             print("last id", latest_id)

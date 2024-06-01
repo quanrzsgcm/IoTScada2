@@ -650,6 +650,7 @@ const LVDeviceList = ({ setSelectedThing }) => {
     const handleOk = () => {
         console.log('Modal is OK')
         triggerSubmit()
+        createNewInverter()
         setIsModalOpen(false);
     };
     const handleCancel = () => {
@@ -683,6 +684,7 @@ const LVDeviceList = ({ setSelectedThing }) => {
 
     const triggerSubmit = () => {
         if (formInstance) {
+            formInstance.validateFields();
             console.log("triggerSubmit!");
             formInstance.submit();
             setFormValues(formInstance.getFieldsValue());      
@@ -690,6 +692,32 @@ const LVDeviceList = ({ setSelectedThing }) => {
             console.log("resetFields!");      
         }
     };
+
+    const createNewInverter = () => {
+        console.log(`${process.env.REACT_APP_DJANGO_URL}/myadmin/inverters/`);
+            fetch(`${process.env.REACT_APP_DJANGO_URL}/myadmin/inverters/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + String(authTokens.access)
+                },
+                body: JSON.stringify({
+                    formValues
+                })
+            })      
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Returned data:', data);                    
+                })                                 
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
+        };    
 
     return (
         <>
@@ -824,11 +852,15 @@ const LVDeviceList = ({ setSelectedThing }) => {
                             buttonBg: "red",
                             colorBorder: "#009bc4",
                             borderRadius: 0
-                        },
+                        },                        
                     },
                 }}
             >
-                <Modal title="Add an inverter" centered width={650} open={isModalOpen} onOk={handleOk} onCancel={handleCancel} style={{ border: '1px solid rgb(1,183,225)' }}>
+                <Modal title="Add an inverter" centered width={650} open={isModalOpen} 
+                onOk={handleOk} onCancel={handleCancel} 
+                okButtonProps={{ style: { backgroundColor: 'rgb(1,183,225)', borderRadius: 0 } }}       
+                cancelButtonProps={{ style: { backgroundColor: 'black', borderRadius: 0, colorText: 'white', color: 'white' } }}  
+                style={{ border: '1px solid rgb(1,183,225)' }}>
                     <FormInverter onFormSubmit={handleFormSubmit}  />
                 </Modal>
             </ConfigProvider>
