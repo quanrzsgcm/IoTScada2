@@ -5,7 +5,8 @@ import { ToggledProvider, useToggled } from '../../context/ToggledContext';
 
 // x =< 10 show all x
 
-const ChartLeft = () => {
+const ChartLeft = ({ dateString, unitoftime, inverter_id }) => {
+    console.log("from chart left: " + dateString);
     const [chartWidth, setChartWidth] = useState('200%');
 
     const { toggled, setToggled } = useToggled()
@@ -18,48 +19,49 @@ const ChartLeft = () => {
     //         setChartWidth('110%');
     //     }
     // }, [toggled]);    
-    const getCurrentDate = () => {
-        // Get the current date and time in UTC
-        const currentDate = new Date();
+    // const getCurrentDate = () => {
+    // Get the current date and time in UTC
+    // const currentDate = new Date();
 
-        // Extract the components in UTC
-        const year = currentDate.getUTCFullYear();
-        const month = String(currentDate.getUTCMonth() + 1).padStart(2, '0'); // Months are zero-indexed
-        const day = String(currentDate.getUTCDate()).padStart(2, '0');
-        const hours = String(currentDate.getUTCHours()).padStart(2, '0');
-        const minutes = String(currentDate.getUTCMinutes()).padStart(2, '0');
-        const seconds = String(currentDate.getUTCSeconds()).padStart(2, '0');
-        const milliseconds = String(currentDate.getUTCMilliseconds()).padStart(3, '0');
+    // // Extract the components in UTC
+    // const year = currentDate.getUTCFullYear();
+    // const month = String(currentDate.getUTCMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+    // const day = String(currentDate.getUTCDate()).padStart(2, '0');
+    // const hours = String(currentDate.getUTCHours()).padStart(2, '0');
+    // const minutes = String(currentDate.getUTCMinutes()).padStart(2, '0');
+    // const seconds = String(currentDate.getUTCSeconds()).padStart(2, '0');
+    // const milliseconds = String(currentDate.getUTCMilliseconds()).padStart(3, '0');
 
-        // Construct the date string
-        const dateString = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}Z`;
-        console.log("datestring from chart left " + dateString);
-        return dateString;
-    }
+    // // Construct the date string
+    // const dateString = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}Z`;
+    // console.log("datestring from chart left " + dateString);
+    // return dateString;
+    // }
     const [rawData, setRawData] = useState(null);
 
     useEffect(() => {
-        const dateString = getCurrentDate();
-        fetch("http://localhost:8000/api2/my-api/inverterdata/", {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ date: dateString, inverter_id: 1 }),
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log(data); // Log the data
-            setRawData(data);
-        })
-        .catch(error => console.error('Error:', error));
-    }, []); // Empty dependency array ensures this runs only once when the component mounts
+        if (dateString) { // Check if dateString is not null
+            fetch("http://localhost:8000/api2/my-api/inverterdata/", {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ date: dateString, unitoftime: unitoftime, inverter_id: inverter_id }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data); // Log the data
+                    setRawData(data);
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    }, [dateString, unitoftime, inverter_id]); // Dependencies array includes dateString and unitoftime
 
     const ExportCSV = () => {
         // Construct CSV content
         let csvContent = 'Time,Active Power (kW),Irradiance (W/㎡)\n';
         rawData.forEach(item => {
-        csvContent += `${item.Time},${item['ActivePower']},${item['Irradiance']}\n`;
+            csvContent += `${item.Time},${item['ActivePower']},${item['Irradiance']}\n`;
         });
 
         // Create a Blob object containing the CSV data
@@ -78,7 +80,7 @@ const ChartLeft = () => {
     }
 
 
-    if (!rawData || rawData.length === 0) {
+    if (!rawData || !Array.isArray(rawData) || rawData.length === 0) {
         return <div>No data</div>;
     }
 
@@ -92,9 +94,9 @@ const ChartLeft = () => {
   <path d="M3.75 15C3.75 14.5858 3.41422 14.25 3 14.25C2.58579 14.25 2.25 14.5858 2.25 15V15.0549C2.24998 16.4225 2.24996 17.5248 2.36652 18.3918C2.48754 19.2919 2.74643 20.0497 3.34835 20.6516C3.95027 21.2536 4.70814 21.5125 5.60825 21.6335C6.47522 21.75 7.57754 21.75 8.94513 21.75H15.0549C16.4225 21.75 17.5248 21.75 18.3918 21.6335C19.2919 21.5125 20.0497 21.2536 20.6517 20.6516C21.2536 20.0497 21.5125 19.2919 21.6335 18.3918C21.75 17.5248 21.75 16.4225 21.75 15.0549V15C21.75 14.5858 21.4142 14.25 21 14.25C20.5858 14.25 20.25 14.5858 20.25 15C20.25 16.4354 20.2484 17.4365 20.1469 18.1919C20.0482 18.9257 19.8678 19.3142 19.591 19.591C19.3142 19.8678 18.9257 20.0482 18.1919 20.1469C17.4365 20.2484 16.4354 20.25 15 20.25H9C7.56459 20.25 6.56347 20.2484 5.80812 20.1469C5.07435 20.0482 4.68577 19.8678 4.40901 19.591C4.13225 19.3142 3.9518 18.9257 3.85315 18.1919C3.75159 17.4365 3.75 16.4354 3.75 15Z" fill="rgb(161,171,182)"/>
 </svg>
 `;
-const svgMarkup = `<svg fill="rgb(161,171,182)" width="16px" height="16px" viewBox="0 0 24 24" id="export-2" xmlns="http://www.w3.org/2000/svg" class="icon line"><polyline id="primary" points="15 3 21 3 21 9" style="fill: none; stroke: rgb(161,171,182); stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.5;"></polyline><path id="primary-2" data-name="primary" d="M21,13v7a1,1,0,0,1-1,1H4a1,1,0,0,1-1-1V4A1,1,0,0,1,4,3h7" style="fill: none; stroke: rgb(161,171,182); stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.5;"></path><line id="primary-3" data-name="primary" x1="11" y1="13" x2="21" y2="3" style="fill: none; stroke: rgb(161,171,182); stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.5;"></line></svg>`;
+    const svgMarkup = `<svg fill="rgb(161,171,182)" width="16px" height="16px" viewBox="0 0 24 24" id="export-2" xmlns="http://www.w3.org/2000/svg" class="icon line"><polyline id="primary" points="15 3 21 3 21 9" style="fill: none; stroke: rgb(161,171,182); stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.5;"></polyline><path id="primary-2" data-name="primary" d="M21,13v7a1,1,0,0,1-1,1H4a1,1,0,0,1-1-1V4A1,1,0,0,1,4,3h7" style="fill: none; stroke: rgb(161,171,182); stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.5;"></path><line id="primary-3" data-name="primary" x1="11" y1="13" x2="21" y2="3" style="fill: none; stroke: rgb(161,171,182); stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.5;"></line></svg>`;
 
-var counter = 1;
+    var counter = 1;
 
     // Construct chart options
     const options = {
@@ -120,22 +122,22 @@ var counter = 1;
                         click: async function (chart, options, e) {
                             // Get the PNG data URI of the chart
                             const base64 = await chart.dataURI();
-                        
+
                             // Create a temporary anchor element to trigger the download
                             const downloadLink = document.createElement("a");
                             downloadLink.href = base64.imgURI;
                             downloadLink.download = "chart.png";
-                        
+
                             // Add the anchor element to the document
                             document.body.appendChild(downloadLink);
-                        
+
                             // Simulate a click event to initiate the download
                             downloadLink.click();
-                        
+
                             // Remove the anchor element from the document
                             document.body.removeChild(downloadLink);
                         }
-                        
+
                     },
                     {
                         // <img width="50" height="50" src="https://img.icons8.com/ios/50/export.png" alt="export"/>
@@ -143,9 +145,9 @@ var counter = 1;
                         index: 1,
                         title: 'Export CSV',
                         class: 'custom-icon',
-                        click: function (chart, options, e) { 
+                        click: function (chart, options, e) {
                             ExportCSV();
-                        }                                                    
+                        }
                     }]
                 },
             },
@@ -189,7 +191,7 @@ var counter = 1;
                 },
                 formatter: function (value, timestamp, opts) {
                     return value;
-                    if (value === undefined){
+                    if (value === undefined) {
                         return null;
                     }
                     let splitTime = value.split(':');
@@ -290,7 +292,7 @@ var counter = 1;
             size: 0,
             hover: {
                 size: 1,
-              }
+            }
         },
         tooltip: {
             style: {
@@ -370,13 +372,13 @@ var counter = 1;
     //     console.log('called')
     // };
 
-    return (       
+    return (
         <Chart
             options={options}
             series={series}
             type="line"
             height="90%"
-            width="110%" 
+            width="110%"
             max-width="110%"
             min-width="110%"
             maxWidth="110%"

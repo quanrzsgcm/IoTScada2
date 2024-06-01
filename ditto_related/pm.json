@@ -1,9 +1,12 @@
 {
     "policyId": "my.test:policy",
     "attributes": {
-        "manufacturer": "Well known producer",
-        "serial number": "02",
-        "location": "Ground floor"
+        "name": "SolarPark_Canteen 2_Inverter 2",
+        "manufacturer": "HUAWEI",
+        "model": "SUN2000_100KTL_M1",
+        "serialNumber": "--",
+        "location": "Empty",
+        "site": "Empty"
     },
     "features": {
         "measurements": {

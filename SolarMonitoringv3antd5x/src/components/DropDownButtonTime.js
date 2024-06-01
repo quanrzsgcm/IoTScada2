@@ -10,21 +10,20 @@ import App2 from './droptest';
 
 import moment from 'moment'
 
-const App = ({ setDateString, uppersetSelectedLabel }) => {
-    const [selectedLabel, setSelectedLabel] = useState('Day');
-    
+const App = ({ setDateString, selectedLabel, uppersetSelectedLabel }) => {       
+    // const [selectedLabel, setSelectedLabel] = useState('Day');
     const handleButtonClick = (e) => {
         console.log('click left button', e);
     };
 
-    const handleMenuClick = (e) => {
-        const selectedItem = items.find(item => item.key === e.key);
-        if (selectedItem) {
-            setSelectedLabel(selectedItem.label);
-            uppersetSelectedLabel(selectedItem.label);
-        }
-        //   setSelectedLabel(e.label);
-    };
+    // const handleMenuClick = (e) => {
+    //     const selectedItem = items.find(item => item.key === e.key);
+    //     if (selectedItem) {
+    //         setSelectedLabel(selectedItem.label);
+    //         uppersetSelectedLabel(selectedItem.label);
+    //     }
+    //     //   setSelectedLabel(e.label);
+    // };
     const items = [
         {
             label: 'Day',
@@ -48,10 +47,7 @@ const App = ({ setDateString, uppersetSelectedLabel }) => {
         },
 
     ];
-    const menuProps = {
-        items,
-        onClick: handleMenuClick,
-    };
+ 
     return (
         <Space wrap>
             {/* <Dropdown  menu={menuProps} style={{ backgroundColor: 'lightblue'}}> */}
@@ -63,7 +59,8 @@ const App = ({ setDateString, uppersetSelectedLabel }) => {
                     </Space>
                 </Button>
             </Dropdown> */}
-            <App2 value={selectedLabel} setValue={setSelectedLabel} />
+            
+            <App2 value={selectedLabel} setValue={uppersetSelectedLabel} />
             <MyDatePicker unitsOfTime={selectedLabel} setDateString={setDateString} />
         </Space>
     );
@@ -81,6 +78,8 @@ const MyDatePicker = ({ unitsOfTime, setDateString }) => {
     }, [unitsOfTime])
 
     const onChange = (date, dateString) => {
+        console.log(date)
+        console.log(date)
         setDateString(JSON.parse(JSON.stringify(date)));
     };
     useEffect(() => {
@@ -134,13 +133,60 @@ const MyDatePicker = ({ unitsOfTime, setDateString }) => {
                     >
                       <DatePicker onChange={onChange} allowClear={false} defaultValue={defaultValue} style={{ height: '34px', width: '200px' }} suffixIcon={suffixIcon}/>
                     </ConfigProvider>
-                  );
-            case 'Week':
-                return <DatePicker onChange={onChange} picker="week" style={{ backgroundColor: 'red' }} defaultValue={defaultValue}/>;
+                  );            
             case 'Month':
-                return <DatePicker onChange={onChange} picker="month" style={{ backgroundColor: '#043b3e' }} cellHeight={1000} defaultValue={defaultValue}/>;
+                return (
+                    <ConfigProvider
+                      theme={{
+                        components: {
+                          DatePicker: {
+                            activeBg: "#043b3e",
+                            borderRadius: '0px',
+                            colorBgContainer: "#043b3e",
+                            colorBgElevated: "rgba(0, 0, 0, 0.95)",
+                            colorText: "white",
+                            colorTextHeading: "grey",
+                            colorIcon: "#009bc4",
+                            defaultBorderColor: 'red',
+                            colorBorder: '#009bc4',
+                            defaultGhostColor: 'red',
+                            colorTextDisabled: 'rgb(77,91,94)',
+                            
+                            // controlHeight: '40px'
+                          }
+                        }
+                      }}
+                    >
+                      <DatePicker onChange={onChange} picker="month" allowClear={false} defaultValue={defaultValue} style={{ height: '34px', width: '200px' }} suffixIcon={suffixIcon}/>
+                    </ConfigProvider>
+                  );
             case 'Year':
-                return <DatePicker onChange={onChange} picker="year" style={{ backgroundColor: '#043b3e' }} defaultValue={defaultValue} />;
+                return (
+                    <ConfigProvider
+                      theme={{
+                        components: {
+                          DatePicker: {
+                            activeBg: "#043b3e",
+                            borderRadius: '0px',
+                            colorBgContainer: "#043b3e",
+                            colorBgElevated: "rgba(0, 0, 0, 0.95)",
+                            colorText: "white",
+                            colorTextHeading: "grey",
+                            colorIcon: "#009bc4",
+                            defaultBorderColor: 'red',
+                            colorBorder: '#009bc4',
+                            defaultGhostColor: 'red',
+                            colorTextDisabled: 'rgb(77,91,94)',
+                            
+                            // controlHeight: '40px'
+                          }
+                        }
+                      }}
+                    >
+                      <DatePicker onChange={onChange} picker="year" allowClear={false} defaultValue={defaultValue} style={{ height: '34px', width: '200px' }} suffixIcon={suffixIcon}/>
+                    </ConfigProvider>
+                  );
+
             default:
                 return null;
         }

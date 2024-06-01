@@ -1,0 +1,21 @@
+{
+    "policyId": "my.test:policy",
+    "attributes": {
+        "name": "SolarPark_WeatherStation",
+        "manufacturer": "Davis Instruments",
+        "model": "Vantage Pro2",
+        "serialNumber": "VP2-123456",
+        "location": "Yard",
+        "site": 1
+    },
+    "features": {
+        "measurements": {
+            "properties": {
+                "temperature": 0,
+                "irradiance": 508748.54,
+                "irradiation": 39.89,
+                "state": "Full Capability"
+            }
+        }
+    }
+}

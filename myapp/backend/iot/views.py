@@ -23,7 +23,7 @@ import paho.mqtt.client as mqtt
 # import the PowerMeterDataSerializer from the serializer file
 from .serializers import PowerMeterDataSerializer
 
-from .models import PowerMeterData, DailyEnergySum, MonthlyEnergySum, Inverter, InverterMeasurement
+from .models import PowerMeterData, DailyEnergySum, MonthlyEnergySum, Inverter, InverterMeasurement, InverterState
 from django.db.models import Sum
 
 # Load environment variables from the .env file
@@ -1153,7 +1153,13 @@ def inverter_activepower(request):
 
     # Extract the date string
     date_string = body.get('date')
-    inverter_id = int(body.get('inverter_id'))
+    inverter_id = body.get('inverter_id')
+    parts = inverter_id.split(":")
+    inverter_id = parts[1][3:]
+    inverter_id = int(inverter_id)
+    print(inverter_id)
+    
+
     if date_string:
         time_range = time_range_extract(date_string, "OneDay")
         start, end = time_range['start'], time_range['end']
@@ -1187,7 +1193,46 @@ def inverter_activepower(request):
     return JsonResponse({"here":"there"})
 
 @csrf_exempt   
-def inverter_control(request):
+def inverter_control_get_polling_rate(request):
+    request_body = request.body.decode('utf-8')
+    data = json.loads(request_body)
+    
+    # Print the raw request body and the parsed data
+    parts = data['thingId'].split(':')
+    # Get the part after the colon
+    inv_value = parts[1]
+    print(inv_value)  # Output: inv1
+
+    token = refresh_token()
+
+    target_url = os.getenv("BASE_URL_NEURON")
+
+    target_url = f"{target_url}/api/v2/group?node={inv_value}"
+
+    print("Target URL:", target_url)
+
+    # Define the headers
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+    }
+
+    response = requests.get(target_url, headers=headers)
+    if response.status_code == 200:       
+        print(response.text)
+        response_dict = response.json()
+        result = response_dict["groups"][0]["interval"]
+        text_result = str(result // 1000) + "s"  
+
+           
+
+    return JsonResponse({'pollingrate': text_result})
+
+### TODO ADD EACH MQTT FOR EACH COMMANDS
+@csrf_exempt   
+def inverter_control(request): 
+    counter = 2
+    print(f'counter is {counter}')
     # Load the JSON data from the request body
     body = json.loads(request.body)
     print(body)  # Print the whole body for debugging
@@ -1195,8 +1240,14 @@ def inverter_control(request):
     # Extract the control string and inverter ID from the JSON data
     fanSpeed = body.get('valueofFanSpeed')
     inverter_id = int(body.get('inverter_id'))
-    print(inverter_id) 
-
+    pollingratestr = body.get('pollingrate')
+    pollingrateint = int(pollingratestr.replace('s', ''))
+    pollingrateint = pollingrateint * 1000
+    inverter_control_set_polling_rate(inverter_id, pollingrateint)
+    limitOutput = body.get('limitOutput')
+    inv_value = "inv" + str(inverter_id)
+    print(inv_value)
+    
     # MQTT Broker
     broker_address = "broker.emqx.io"  # Update with your MQTT broker's address
     port = 1883  # MQTT default port
@@ -1219,11 +1270,13 @@ def inverter_control(request):
             print(json.dumps(parsed_payload, indent=2))  # Print JSON with indentation for readability
         except json.JSONDecodeError as e:
             print("Received message (not JSON): " + payload)
-
-        # Stop the MQTT client loop
-        client.loop_stop()
-        # Disconnect from MQTT broker
-        client.disconnect()
+        
+        if counter == 0:
+            print("Exiting because counter == 0...")
+            # Stop the MQTT client loop
+            client.loop_stop()
+            # Disconnect from MQTT broker
+            client.disconnect()
 
     # Create MQTT client instance
     client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
@@ -1246,13 +1299,25 @@ def inverter_control(request):
         "tag": "fanSpeed",
         "value": fanSpeed,
     }
+    payload2 = {
+        "uuid": "cd32be1b-c8b1-3257-94af-77f847b1ed3e",
+        "node": "inv1",  
+        "group": "test",
+        "tag": "limitOutput",
+        "value": limitOutput,
+    }
 
     try:
         sleep(1)  # Wait for a few seconds before publishing (optional)
         # Publish user input to MQTT topic
         client.publish(publish_topic, json.dumps(payload))
+        counter -= 1
+        print(f'counter is {counter}')
         print("Published message to " + publish_topic)
-        sleep(5)  # Optional sleep to keep the program running for a few more seconds
+        client.publish(publish_topic, json.dumps(payload2))
+        counter -= 1
+        print(f'counter is {counter}')
+    
     except:
         print("Exiting...")
         client.loop_stop()  # Stop the MQTT client loop
@@ -1260,3 +1325,173 @@ def inverter_control(request):
   
     # Return a JSON response indicating success (or you can return other relevant data)
     return JsonResponse({"message": "Data published to MQTT topic successfully."})
+    
+
+
+@csrf_exempt
+# @permission_classes([IsAuthenticated])
+def inverter_count(request): 
+    # target_url = (
+    #     "http://localhost:8080/api/2/things"  # Replace with your actual target URL
+    # )
+    # # Extract authentication headers from the incoming request
+    # auth_headers = {}
+    # for header, value in request.headers.items():
+    #     if header.startswith("Authorization"):
+    #         auth_headers[header] = value
+
+    # Retrieve the base URL from the environment
+    target_url = os.getenv("BASE_URL_DITTO")
+  
+    target_url = target_url + '/api/2/search/things/count?namespaces=my.inverter'
+
+    print("Target URL:", target_url)
+
+    username = os.getenv("USERNAME")
+    password = os.getenv("PASSWORD")
+
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Basic ' + b64encode((username + ':' + password).encode()).decode('utf-8'),
+    }
+
+    # Forward the request to the target URL with authentication headers
+    response = requests.get(target_url, headers=headers)
+
+    data = response.json()
+    print(data)
+    print(data)
+    print(data)
+
+    return JsonResponse(data, safe=False)
+
+@csrf_exempt
+# @permission_classes([IsAuthenticated])
+def inverter_list(request): 
+    # Retrieve the base URL from the environment
+    target_url = os.getenv("BASE_URL_DITTO")  
+    target_url = target_url + '/api/2/search/things?namespaces=my.inverter&option=size(200)'   
+    print("Target URL:", target_url)
+
+    username = os.getenv("USERNAME")
+    password = os.getenv("PASSWORD")
+
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Basic ' + b64encode((username + ':' + password).encode()).decode('utf-8'),
+    }
+
+    # Forward the request to the target URL with authentication headers
+    response = requests.get(target_url, headers=headers)
+
+    data = response.json()
+    # Pretty print the JSON data
+    pretty_data = json.dumps(data, indent=4)
+    
+    # Print the pretty JSON to the console
+
+    for item in data['items']:
+        parts = item['thingId'].split(":")
+        number = parts[1][3:]
+        number = int(number)
+        print(number)
+        inverter_states = InverterState.objects.filter(inverter_id=number).order_by('-timestamp').first()
+        # Check if inverter_states is not None before accessing its attributes
+        if inverter_states:
+            print(inverter_states.starton)
+            # Define the target timezone (GMT+7)
+            target_timezone = pytz.timezone('Asia/Bangkok')
+            temp = django_timezone.localtime(inverter_states.starton, target_timezone) if inverter_states.starton else None
+            print(temp)
+            print(type(temp))
+
+            # Get the current time
+            current_time = datetime.now(timezone.utc)
+
+            # Calculate the duration
+            duration = current_time - inverter_states.starton
+
+            # Convert the duration to hours
+            duration_hours = duration.total_seconds() / 3600
+
+            print("Duration:", duration_hours, "hours")
+            rounded_duration = round(duration_hours, 2)
+            print("Duration:", rounded_duration, "hours")
+
+        
+            # Format the datetime object to remove microseconds and timezone information
+            simplified = temp.strftime("%Y-%m-%d %H:%M:%S")
+
+            print("Simplified timestamp:", simplified)
+            if 'measurements' in item['features'] and 'properties' in item['features']['measurements']:
+                properties = item['features']['measurements']['properties']
+                properties['starton'] = simplified
+                properties['duration'] = rounded_duration
+
+        else:
+            print("No inverter state found for the given inverter_id.")
+
+    return JsonResponse(data, safe=False)
+
+def refresh_token():
+    # Retrieve the base URL from the environment
+    target_url = os.getenv("BASE_URL_NEURON")  
+
+    target_url = target_url + '/api/v2/login'
+
+    print("Target URL:", target_url)
+
+    # Define the headers
+    headers = {
+        'Content-Type': 'application/json',
+    }
+    data = {
+        "name": "admin",
+        "pass": "0000"
+    }
+
+    response = requests.post(target_url, headers=headers, json=data)
+    if response.status_code == 200:
+        # Extract JWT token from response and store it in Django's session
+
+        jwt_token = response.json().get('token')
+        # print(jwt_token)
+        return jwt_token
+    return None
+
+def inverter_control_set_polling_rate(inv_value, pollingrate):    
+    print(inv_value)
+    inv_value = "inv" + str(inv_value)
+    print(inv_value)
+
+    print(pollingrate)
+    token = refresh_token()
+
+    target_url = os.getenv("BASE_URL_NEURON")
+
+    target_url = f"{target_url}/api/v2/group"
+
+    print("Target URL:", target_url)
+
+    # Define the headers
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+    }
+
+    data = {
+        "node": inv_value,
+        "group": "test",
+        "interval": pollingrate
+    }
+
+    
+
+    response = requests.put(target_url, headers=headers, json=data)
+    if response.status_code == 200:       
+        print(response.text)
+        response_dict = response.json()
+
+           
+
+    return JsonResponse({'pollingrate': 'okj'})

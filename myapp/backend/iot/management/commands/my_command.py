@@ -9,6 +9,7 @@ import time
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from datetime import datetime
+import pytz
 
 # INSERT INTO iot_invertermeasurement (
 #     timestamp, 
@@ -93,10 +94,29 @@ class Command(BaseCommand):
                                 print(f"Last State: {last_state_value}, Timestamp: {last_state_timestamp}, Inverter ID: {last_state_inverterID}")
                                 print(f"Current State: {state}, Timestamp: {timestamp}, Inverter ID: {inverter_id}")
                                 if state != last_state_value:
-                                    state_start_on = timestamp
+                                    print("diff state")
+                                    print(type(timestamp))
+                                    state_start_on = timestamp                      
+                             
+                                    # Truncate the string to include only up to microseconds
+                                    state_start_on_str = timestamp[:26] + "Z"
+                                    # Define the format of the date string
+                                    date_format = "%Y-%m-%dT%H:%M:%S.%fZ"
+
+                                    # Parse the string to a datetime object
+                                    state_start_on = datetime.strptime(state_start_on_str, date_format)
+
+                                    # Add timezone information (UTC)
+                                    state_start_on = state_start_on.replace(tzinfo=pytz.UTC)
+                                    print(type(state_start_on))
+
                                 else: 
+                                    print("same state")
+                                    print(type(last_state_starton))
                                     state_start_on = last_state_starton
                             else: 
+                                print("not found state")
+                                print(type(timestamp))
                                 state_start_on = timestamp         
                             
                             print(f"Start On: {state_start_on}")
@@ -115,7 +135,7 @@ class Command(BaseCommand):
                                 timestamp=payload["timestamp"],
                                 starton= state_start_on
                             )
-                            print("debug")
+                            print("debug4")
 
 
                             if path == "/features/measurements/properties/state":

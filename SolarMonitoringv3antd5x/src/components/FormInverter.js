@@ -1,31 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect} from 'react';
 import { PlusOutlined } from '@ant-design/icons';
 import {
     Button,
-    Cascader,
-    Checkbox,
-    ColorPicker,
-    DatePicker,
     Form,
     Input,
-    InputNumber,
-    Radio,
-    Select,
-    Slider,
-    Switch,
-    TreeSelect,
-    Upload,
     ConfigProvider
 } from 'antd';
-const { RangePicker } = DatePicker;
-const { TextArea } = Input;
-const normFile = (e) => {
-    if (Array.isArray(e)) {
-        return e;
-    }
-    return e?.fileList;
-};
-const FormInverter = () => {
+
+const FormInverter = ({ onFormSubmit }) => {
+    const [form] = Form.useForm();
+
+    const onFinish = (values) => {
+        console.log('Form values:', values);
+    };
+    useEffect(() => {
+        if (onFormSubmit) {
+            onFormSubmit(form);
+        }
+    }, [form, onFormSubmit]);
+
+    const validateIP = (rule, value) => {
+        if (!value) {
+            return Promise.resolve();
+        }
+        // Regular expression to validate IPv4 address
+        const ipRegExp = /^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)$/;
+        if (ipRegExp.test(value)) {
+            return Promise.resolve();
+        }
+        return Promise.reject('Invalid IP address format!');
+    };
+
     return (
         <>
             <ConfigProvider
@@ -46,6 +51,7 @@ const FormInverter = () => {
                 }}
             >
                 <Form
+                    form={form}
                     labelCol={{
                         span: 4,
                     }}
@@ -54,25 +60,53 @@ const FormInverter = () => {
                     }}
                     layout="horizontal"
                     style={{
-                        maxWidth: 600,
+                        maxWidth: 650,
                     }}
+                    onFinish={onFinish}
+                    preserve={false}
                 >                    
-                    <Form.Item label="Name">
+                    <Form.Item
+                        label="Name"
+                        name="name"
+                        rules={[{ required: true, message: 'Please input the name!' }]}
+                    >
                         <Input />
                     </Form.Item>
-                    <Form.Item label="Manufacturer">
+                    <Form.Item
+                        label="Manufacturer"
+                        name="manufacturer"
+                        rules={[{ required: false, message: 'Please input the manufacturer!' }]}
+                    >
                         <Input />
                     </Form.Item>
-                    <Form.Item label="Model">
+                    <Form.Item
+                        label="Model"
+                        name="model"
+                        rules={[{ required: false, message: 'Please input the model!' }]}
+                    >
                         <Input />
                     </Form.Item>
-                    <Form.Item label="Serial Number">
+                    <Form.Item
+                        label="Serial Number"
+                        name="serialNumber"
+                        rules={[{ required: false, message: 'Please input the serial number!' }]}
+                    >
                         <Input />
-                    </Form.Item>                                        
+                    </Form.Item>     
+                    <Form.Item
+                        label="IP Address"
+                        name="ipaddress"
+                        rules={[
+                            { required: true, message: 'Please input the IP address!' },
+                            { validator: validateIP }
+                        ]}
+                    >
+                        <Input />
+                    </Form.Item>
                 </Form>
             </ConfigProvider>
-
         </>
     );
 };
-export default () => <FormInverter />;
+
+export default FormInverter;

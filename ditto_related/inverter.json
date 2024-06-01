@@ -1,7 +1,7 @@
 {
     "policyId": "my.test:policy",
     "attributes": {
-        "name": "FULUH_Canteen 1_Inverter 2",
+        "name": "SolarPark_Canteen 2_Inverter 3",
         "manufacturer": "HUAWEI",
         "model": "SUN2000_100KTL_M1",
         "serialNumber": "--",
@@ -11,17 +11,19 @@
     "features": {
         "measurements": {
             "properties": {
-                "meterReadTotalEnergy": 0,
-                "activePower": 0,
-                "inputPower": 0,
+                "capacity": 0,
+                "meterReadTotalEnergy": 508748.54,
+                "activePower": 39.89,
+                "inputPower": 40.55,
+                "efficiency": 98.36,
+                "internalTemp": 51.5,
+                "gridFrequency": 49.97,
+                "productionToday": 28.43,
+                "yieldToday": 0.25,
                 "reactivePower": 0,
                 "apparentPower": 0,
                 "powerFactor": 0,
-                "efficiency": 0,
-                "internalTemp": 0,
-                "gridFrequency": 0,
-                "productionToday": 0,
-                "yieldToday": 0
+                "state": "Full Capability"
             }
         },
         "runningstatus" : {

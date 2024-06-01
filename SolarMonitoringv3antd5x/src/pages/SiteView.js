@@ -36,12 +36,13 @@ export default function SiteView() {
 
     useEffect(() => {
         // Function to fetch data from the API
-        const fetchData = () => {
-            fetch(`${process.env.DJANGO_URL}/api2/my-api/realtimesitedata?siteId=1`, {
+        const fetchData = () => {            
+            console.log(`${process.env.REACT_APP_DJANGO_URL}/api2/my-api/realtimesitedata?siteId=1`);
+            fetch(`${process.env.REACT_APP_DJANGO_URL}/api2/my-api/realtimesitedata?siteId=1`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    // 'Authorization': 'Bearer ' + String(authTokens.access)
+                    'Authorization': 'Bearer ' + String(authTokens.access)
                 },
             })
                 .then(response => {
@@ -65,6 +66,29 @@ export default function SiteView() {
                 .catch(error => {
                     console.error('Error fetching data:', error);
                 });
+
+            console.log(`${process.env.REACT_APP_DJANGO_URL}/api2/my-api/invertercount/`);
+            fetch(`${process.env.REACT_APP_DJANGO_URL}/api2/my-api/invertercount/`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + String(authTokens.access)
+                },
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Update the state with the fetched data
+                    console.log('Fetched inverter count:', data);
+                    setnumberOfInverter(data);
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
         };
 
         // Call fetchData initially
@@ -79,7 +103,7 @@ export default function SiteView() {
 
 
 
-    const [numberOfInverter, setnumberOfInverter] = useState(12);
+    const [numberOfInverter, setnumberOfInverter] = useState(null);
     const [dateString, setDateString] = useState(null);
     const [selectedLabel, setSelectedLabel] = useState('Day');
     const [eData, seteData] = useState(null);
@@ -159,6 +183,15 @@ export default function SiteView() {
 
     return (
         <MainviewLayout>
+            <div style={{        
+                height: '110px',
+                border: '1px solid red'                
+            }}>
+            {dateString} <br>
+            </br>
+            {selectedLabel}
+            </div>
+
             <div style={{
                 display: 'flex',
                 height: '110px',
@@ -196,7 +229,7 @@ export default function SiteView() {
 
 
             <div style={{ display: "flex", alignItems: "center", marginTop: '10px'}}>
-                <App setDateString={setDateString} uppersetSelectedLabel={setSelectedLabel} />
+                <App setDateString={setDateString} selectedLabel={selectedLabel} uppersetSelectedLabel={setSelectedLabel} />
                 {/* <Button onClick={() => { fetcheData(dateString); }}> Get Data </Button> */}
                 <div style={{ marginLeft: 'auto', display: "flex", alignItems: "center" }}>
                     <IoLocationOutline color="#9fbbc4" style={{ marginRight: '8px' }} />

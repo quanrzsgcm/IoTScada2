@@ -9,6 +9,7 @@ import { FaCircle } from "react-icons/fa";
 import Chart1 from '../assets/charts/DetailChart';
 import ChartLeft from '../assets/charts/DetailChartLeft';
 import AuthContext from '../context/AuthContext';
+import App from './DropDownButtonTimeDL';
 
 const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
     const { authTokens, logoutUser } = useContext(AuthContext);
@@ -39,12 +40,13 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
     const username = "ditto";
     const password = "ditto";
 
-    const basicAuth = btoa(`${username}:${password}`);
-
+    const basicAuth = btoa(`${username}:${password}`);    
+    
     useEffect(() => {
         // Function to fetch data from the API
         const fetchData = () => {
-            fetch('http://localhost:8080/api/2/search/things?namespaces=my.inverter&fields=thingId&option=size(200)', {
+            console.log(`${process.env.REACT_APP_DITTO_URL}/api/2/search/things?namespaces=my.inverter&fields=thingId&option=size(200)`);
+            fetch(`${process.env.REACT_APP_DITTO_URL}/api/2/search/things?namespaces=my.inverter&fields=thingId&option=size(200)`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -87,8 +89,8 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
     }, [currentIndex, listname]);
 
     useEffect(() => {
-        const fetchData = () => {
-            fetch(`http://localhost:8080/api/2/things/${selectedThing}`, {
+        const fetchData = () => {            
+            fetch(`${process.env.REACT_APP_DITTO_URL}/api/2/things/${selectedThing}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -104,6 +106,32 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
                 .then(data => {
                     console.log('Fetched data one thing:', data);
                     setThingData(data);
+                    setDeviceState(data.features.measurements.properties.state);
+                    console.log('set device state ' + data.features.measurements.properties.state)
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
+
+            fetch(`${process.env.REACT_APP_DJANGO_URL}/api2/my-api/invertergetpr/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // 'Authorization': `Basic ${btoa(`${username}:${password}`)}`,
+                },
+                body: JSON.stringify({
+                    thingId: selectedThing,
+                })
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('FETCH PR', data);
+                    setValuePollingRate(data.pollingrate)
                 })
                 .catch(error => {
                     console.error('Error fetching data:', error);
@@ -121,59 +149,28 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
 
     }, [selectedThing]);
 
-    const device_name = "FULUH_INVERTER_1"
-    const device_state = "Full capacity"
 
-    const [deviceState, setDeviceState] = useState('running');
-    const changeDeviceState = (newState) => {
-        setDeviceState(newState);
-    };
+    const [deviceState, setDeviceState] = useState(null);
 
     // Determine colors based on device state
     let iconColor = '';
     let textColor = '';
-    if (deviceState === 'running' || deviceState === 'night') {
+    if (deviceState === 'Full Capability' || deviceState === 'night') {
         iconColor = 'rgb(7, 201, 136)'; // Green
         textColor = 'rgb(7, 201, 136)';
-    } else if (deviceState === 'error') {
-        iconColor = 'red';
-        textColor = 'red';
+    } else if (deviceState === 'Connection Fail' || deviceState === 'No Communication') {
+        iconColor = 'rgb(141,166,187)';
+        textColor = 'rgb(141,166,187)';
     }
 
     const [isRotated, setIsRotated] = useState(false);
-    const placeholder = 5.55
 
     // Function to handle click event
     const handleClick = () => {
         // Update state to toggle rotation
         setIsRotated(!isRotated);
     };
-    const manufacturer = 'Example Manufacturer';
-    const models = 'Example Models';
-    const serialNumber = '123456789';
 
-    const items = [
-        {
-            label: '1st menu item',
-            key: '1',
-        },
-        {
-            label: '2nd menu item',
-            key: '2',
-        },
-        {
-            label: '3rd menu item',
-            key: '3',
-        }
-    ]
-    const handleMenuClick = (e) => {
-        message.info('Click on menu item.');
-        console.log('click', e);
-    };
-    const menuProps = {
-        items,
-        onClick: handleMenuClick,
-    };
 
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -182,6 +179,10 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
         if (valueofFanSpeed){
             setValueofFanSpeedinModal(valueofFanSpeed);
             console.log('set when open modal '+ valueofFanSpeed);
+        }
+        if (valueofPollingRate){
+            setValueofPollingRateinModal(valueofPollingRate);
+            console.log('set when open modal '+ valueofPollingRate);
         }
     };
     const handleOk = () => {
@@ -196,6 +197,7 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
     const [valueofFanSpeed, setValueFanSpeed] = useState(null);
 
     const [valueofFanSpeedinModal, setValueofFanSpeedinModal] = useState(null);
+    const [valueofPollingRateinModal, setValueofPollingRateinModal] = useState(null);
 
     const [inverter_id, setInverter_id] = useState(null);
 
@@ -207,10 +209,11 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
         console.log('fanspeedchanged');
     };
 
-    const [valueofPollingRate, setValuePollingRate] = useState('10s');
+    const [valueofPollingRate, setValuePollingRate] = useState(null);
 
     const onChangePollingRate = (e) => {
         setValuePollingRate(e.target.value);
+        setValueofPollingRateinModal(e.target.value);
         console.log(e.target.value);
         console.log('pRatechanged');
     };
@@ -249,8 +252,8 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
         return number;
     }
 
-    const sendControlMessage = () => {
-        fetch('http://localhost:8000/api2/my-api/invertercontrol/', {
+    const sendControlMessage = () => {                
+        fetch(`${process.env.REACT_APP_DJANGO_URL}/api2/my-api/invertercontrol/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -258,7 +261,8 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
             },
             body: JSON.stringify({
                 valueofFanSpeed: fanSpeedMapsending(valueofFanSpeedinModal),
-                limitOutput: '',
+                pollingrate: valueofPollingRateinModal,
+                limitOutput: limitOutputInModal,
                 inverter_id: inverter_id
             })
         })
@@ -292,12 +296,16 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
         setLimitOutputInModal(value);
     };
 
+    const [dateString, setDateString] = useState(null);
+    const [selectedLabel, setSelectedLabel] = useState('Day');
+
+    useEffect(() => {
+        console.log("unit of changes " + selectedLabel);
+        console.log("datestring changes " + dateString);
+    },[dateString, selectedLabel])
+
     return (
-        <>
-            <div style={{ height: '50px' }}>
-            {thingData?.features?.measurements?.properties?.limitOutput ?? 'Default Limit Output'} <br />
-                {valueofFanSpeedinModal}
-            </div>
+        <>            
             <ConfigProvider
                 theme={{
                     components: {
@@ -342,17 +350,17 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
                         <span style={{ backgroundColor: 'transparent' }}>Polling Rate: </span>
                         <Radio.Group
                             onChange={onChangePollingRate}
-                            value={valueofPollingRate}
+                            value={valueofPollingRateinModal}
                             style={{ backgroundColor: '#043b3e', border: '1px solid #009bc4', }}
                         >
-                            <Radio.Button value="1s" style={{ backgroundColor: valueofPollingRate === '1s' ? '#009bc4' : '#043b3e', color: 'white', borderWidth: 0 }}>1s</Radio.Button>
-                            <Radio.Button value="5s" style={{ backgroundColor: valueofPollingRate === '5s' ? '#009bc4' : '#043b3e', color: 'white', borderWidth: 0 }}>5s</Radio.Button>
-                            <Radio.Button value="10s" style={{ backgroundColor: valueofPollingRate === '10s' ? '#009bc4' : '#043b3e', color: 'white', borderWidth: 0 }}>10s</Radio.Button>
+                            <Radio.Button value="1s" style={{ backgroundColor: valueofPollingRateinModal === '1s' ? '#009bc4' : '#043b3e', color: 'white', borderWidth: 0 }}>1s</Radio.Button>
+                            <Radio.Button value="5s" style={{ backgroundColor: valueofPollingRateinModal === '5s' ? '#009bc4' : '#043b3e', color: 'white', borderWidth: 0 }}>5s</Radio.Button>
+                            <Radio.Button value="10s" style={{ backgroundColor: valueofPollingRateinModal === '10s' ? '#009bc4' : '#043b3e', color: 'white', borderWidth: 0 }}>10s</Radio.Button>
                         </Radio.Group>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '0px solid white' }}>
 
-                        <span style={{ backgroundColor: 'transparent' }}>Limit Output: </span>
+                        <span style={{ backgroundColor: 'transparent' }}>Limit Output (kW): </span>
 
                         <InputNumber onChange={onChangeInput} min={1} max={100} controls={false} value={limitOutputInModal ? limitOutputInModal : null} style={{ backgroundColor: '#043b3e', color: 'white', border: "1px solid #009bc4", borderRadius: 0 }} />
                     </div>
@@ -396,7 +404,7 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
                     />
                     <FaCircle style={{ width: '8px', height: '8px', color: iconColor, marginLeft: '15px', marginRight: '5px' }} />
                     <span style={{ color: textColor }}>
-                        {thingData ? thingData.features.runningstatus.properties.stage : null}
+                        {thingData ? thingData.features.measurements.properties.state : null}
                     </span>
                     <span style={{ marginLeft: 'auto', color: 'rgb(1,183,225)' }} onClick={showModal}>
                         Control Inverter
@@ -598,44 +606,19 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
                 }}>
 
                     <div style={{
-                        height: '45px', // specify your desired height
+                        height: '45px',
                         width: '100%',
-                        display: 'flex', // Use flexbox
+                        display: 'flex',
                         alignItems: 'center', // Vertically center items
+                        justifyContent: 'space-between', // Distribute items with space between them
                         // background: 'linear-gradient(to right, rgb(1, 105, 104), rgb(21, 59, 106)',
                         background: 'linear-gradient(to right, rgb(10, 57, 82), rgb(16, 40, 66))', // Define the gradient
                     }}>
                         <span style={{ marginLeft: '20px', fontSize: '16px', color: 'white' }}>Production</span>
-
-                        <ConfigProvider
-                            theme={{
-                                components: {
-                                    Button: {
-                                        defaultBg: '#043b3e',
-                                        defaultBorderColor: '#009bc4',
-                                        borderRadius: '0px',
-                                        defaultHoverBg: '#043b3e'
-                                    },
-                                    Dropdown: {
-                                        // colorBgElevated: "rgb(2,7,10)",
-                                        colorBgElevated: "black",
-                                        controlItemBgHover: 'rgb(2,36,46)',
-                                        controlItemBgActive: 'red',
-                                        colorText: 'white'
-                                    },
-                                },
-                            }}
-                        >
-                            <Dropdown menu={menuProps} >
-                                <Button >
-                                    <Space>
-                                        Day
-                                        <DownOutlined color="red" />
-                                    </Space>
-                                </Button>
-                            </Dropdown>
-
-                        </ConfigProvider>
+                        <div style={{ marginRight: '20px'}} >
+                        <App  setDateString={setDateString} selectedLabel={selectedLabel} uppersetSelectedLabel={setSelectedLabel} />
+                        {dateString}
+                        </div>
                     </div>
                     <div style={{
                         height: '400px', // specify your desired height
@@ -658,46 +641,15 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
                         // background: 'linear-gradient(to right, rgb(1, 105, 104), rgb(21, 59, 106)',
                         background: 'linear-gradient(to right, rgb(10, 57, 82), rgb(16, 40, 66))', // Define the gradient
                     }}>
-                        <span style={{ marginLeft: '20px', fontSize: '16px', color: 'white' }}>Active Power & Irradiance</span>
-
-                        <ConfigProvider
-                            theme={{
-                                components: {
-                                    Button: {
-                                        defaultBg: '#043b3e',
-                                        defaultBorderColor: '#009bc4',
-                                        borderRadius: '0px',
-                                        defaultHoverBg: '#043b3e'
-                                    },
-                                    Dropdown: {
-                                        // colorBgElevated: "rgb(2,7,10)",
-                                        colorBgElevated: "black",
-                                        controlItemBgHover: 'rgb(2,36,46)',
-                                        controlItemBgActive: 'red',
-                                        colorText: 'white'
-                                    },
-                                },
-                            }}
-                        >
-                            <Dropdown menu={menuProps} >
-                                <Button >
-                                    <Space>
-                                        Day
-                                        <DownOutlined color="red" />
-                                    </Space>
-                                </Button>
-                            </Dropdown>
-
-                        </ConfigProvider>
+                        <span style={{ marginLeft: '20px', fontSize: '16px', color: 'white' }}>Active Power & Irradiance</span>                        
                     </div>
                     <div style={{
                         height: '400px', // specify your desired height
                         width: '100%',
                         border: '1px solid blue',
                         background: 'linear-gradient(to right, rgb(6, 64, 67), rgb(9, 56, 80), rgb(26, 71, 102), rgb(29, 68, 92))'
-
                     }}>
-                        <ChartLeft />
+                        <ChartLeft dateString={dateString} unitoftime={selectedLabel} inverter_id={selectedThing}/>
 
                     </div>
                 </div>

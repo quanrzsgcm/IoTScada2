@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { DownOutlined } from '@ant-design/icons';
 import { Form, Radio, Space, Switch, Table, Checkbox, Input, Button, Tooltip, ConfigProvider, Dropdown, Modal } from 'antd';
 import Highlighter from 'react-highlight-words';
@@ -10,6 +10,8 @@ import CheckboxDropdown from './ActionLevel';
 import ExportCSVButton from './ExportCSVButton';
 import BlueButton from './ButtonLV';
 import FormInverter from './FormInverter';
+import AuthContext from '../context/AuthContext';
+
 
 const { Search } = Input;
 
@@ -405,17 +407,20 @@ const LVDeviceList = ({ setSelectedThing }) => {
 
     const [stageArray, setStageArray] = useState(null);
     const [deviceStageCount, setDeviceStageCount] = useState(null);
+    const { authTokens, logoutUser } = useContext(AuthContext);
 
     useEffect(() => {
         // Function to fetch data from the API
         const fetchData = () => {
-            fetch('http://localhost:8080/api/2/search/things?namespaces=my.inverter&option=size(200)', {
+            console.log(`${process.env.REACT_APP_DJANGO_URL}/api2/my-api/inverterlist`);
+
+            fetch(`${process.env.REACT_APP_DJANGO_URL}/api2/my-api/inverterlist`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Basic ${btoa(`${username}:${password}`)}`,
+                    'Authorization': 'Bearer ' + String(authTokens.access)
                 },
-            })
+            })      
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
@@ -431,7 +436,8 @@ const LVDeviceList = ({ setSelectedThing }) => {
                             manufacturer: item.attributes.manufacturer,
                             labels: item.features.label.properties.labels,
                             state: item.features.measurements.properties.state,
-                            stageStartOn: item.features.runningstatus.properties.stageStartOn,
+                            stageStartOn: item.features.measurements.properties.starton,
+                            duration: item.features.measurements.properties.duration,
                             meterReadTotalEnergy: item.features.measurements.properties.meterReadTotalEnergy,
                             activePower: item.features.measurements.properties.activePower,
                             inputPower: item.features.measurements.properties.inputPower,
@@ -552,12 +558,14 @@ const LVDeviceList = ({ setSelectedThing }) => {
             },
         },
         {
-            title: 'Stage start on',
+            title: 'State start on',
             dataIndex: 'stageStartOn',
         },
         {
-            title: 'Stage duration (h)',
-            dataIndex: 'stage_duration ',
+            title: 'State duration (h)',
+            dataIndex: 'duration',
+            className: 'numeric-data'
+
         },
         {
             title: 'Meter-read Total Energy',
@@ -640,6 +648,8 @@ const LVDeviceList = ({ setSelectedThing }) => {
         setIsModalOpen(true);
     };
     const handleOk = () => {
+        console.log('Modal is OK')
+        triggerSubmit()
         setIsModalOpen(false);
     };
     const handleCancel = () => {
@@ -658,9 +668,40 @@ const LVDeviceList = ({ setSelectedThing }) => {
         setValuePollingRate(e.target.value);
     };
 
+    const [formInstance, setFormInstance] = useState(null);
+    
+    const [formValues, setFormValues] = useState(null);
+
+    const handleFormSubmit = (form) => {
+        if (form) {
+            setFormInstance(form);
+            console.log("Form set!");
+        } else {
+            console.log("Form submitted!");
+        }
+    };
+
+    const triggerSubmit = () => {
+        if (formInstance) {
+            console.log("triggerSubmit!");
+            formInstance.submit();
+            setFormValues(formInstance.getFieldsValue());      
+            formInstance.resetFields();
+            console.log("resetFields!");      
+        }
+    };
 
     return (
         <>
+        <div>
+
+        {formValues && (
+            <div style={{ marginTop: '20px' }}>
+                    <h3>Form Values:</h3>
+                    <pre>{JSON.stringify(formValues, null, 2)}</pre> {/* Display form values as JSON */}
+                </div>
+            )}
+            </div>
             <div style={{ width: '100%', height: '45px', border: '1px solid #000', display: 'flex' }}>
                 <div style={{ flex: '9', borderRight: '1px solid #000', display: 'flex', alignItems: 'center' }}>
                     {deviceStageCount !== null && (
@@ -788,7 +829,7 @@ const LVDeviceList = ({ setSelectedThing }) => {
                 }}
             >
                 <Modal title="Add an inverter" centered width={650} open={isModalOpen} onOk={handleOk} onCancel={handleCancel} style={{ border: '1px solid rgb(1,183,225)' }}>
-                    <FormInverter />
+                    <FormInverter onFormSubmit={handleFormSubmit}  />
                 </Modal>
             </ConfigProvider>
 

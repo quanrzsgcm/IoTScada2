@@ -12,5 +12,8 @@ urlpatterns = [
     path('my-api/realtimesitedata/', views.realtimesitedata, name='realtimesitedata'),
     path('my-api/testquery/', views.total_energy_view),    
     path('my-api/inverterdata/', views.inverter_activepower),    
-    path('my-api/invertercontrol/', views.inverter_control),    
+    path('my-api/invertercontrol/', views.inverter_control),
+    path('my-api/invertercount/', views.inverter_count),
+    path('my-api/inverterlist/', views.inverter_list),    
+    # path('my-api/invertergetpr/', views.inverter_control_get_polling_rate),
 ]
