@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, ConfigProvider } from 'antd';
 
-const DeleteButton = ({ onClick }) => {
+const DeleteButton = ({ enableDelete, onClick }) => {
   return (
     <ConfigProvider
       theme={{
@@ -18,7 +18,9 @@ const DeleteButton = ({ onClick }) => {
         },
       }}
     >
-      <Button onClick={onClick}>Delete</Button>
+      <Button onClick={()=>onClick(enableDelete)}>
+        {enableDelete ? 'Delete' : 'Delete Mode'}
+      </Button>
     </ConfigProvider>
   );
 };

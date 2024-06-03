@@ -652,9 +652,52 @@ const LVDeviceList = ({ setSelectedThing }) => {
         console.log('selectedRowKeys changed: ', newSelectedRowKeys);
         setSelectedRowKeys(newSelectedRowKeys);
     };
-    const rowSelection = {
-        selectedRowKeys,
-        onChange: onSelectChange,
+    // const settingforrowSelection = {
+    //     selectedRowKeys,
+    //     onChange: onSelectChange,
+    // };
+    const DeleteInverter = () => {
+        console.log(`${process.env.REACT_APP_DJANGO_URL}/myadmin/inverters/`);
+            fetch(`${process.env.REACT_APP_DJANGO_URL}/myadmin/inverters/`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + String(authTokens.access)
+                },
+                body: JSON.stringify(selectedRowKeys)
+
+            })      
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Returned data:', data);                    
+                })                                 
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
+        };   
+    const [enable, setEnable] = useState(false);
+    const deleteFunction = (enable) => {
+        if (enable){
+            console.log('Delete ?')
+            DeleteInverter()
+            console.log('Deleted')
+            setEnable(false);
+        }
+        else {
+            setEnable(true);
+        }
+    }
+    const [rowSelection, setRowSelection] = useState(null);
+    const handleRowSelectionChange = (enable) => {
+        setRowSelection(enable ? {
+            selectedRowKeys,
+            onChange: onSelectChange,
+        } : null);
     };
     const hasSelected = selectedRowKeys.length > 0;
 
@@ -791,7 +834,7 @@ const LVDeviceList = ({ setSelectedThing }) => {
                         <ExportCSVButton data={fetchedData} />
                     </div>
                     <div style={{ marginLeft: '10px' }}> {/* Add margin to create space */}
-                        <DeleteButton/>
+                        <DeleteButton enableDelete={enable} onClick={deleteFunction}/>
                     </div>
                 </div>
             </div>
@@ -823,12 +866,20 @@ const LVDeviceList = ({ setSelectedThing }) => {
             >
                 <Table style={{ marginTop: '10px', width: '100%' }}                
                     rowKey={(record) => record.thingId}
-                    rowSelection={{
+                    rowSelection={enable ? {
                         selectedRowKeys,
-                        onChange: (selectedRowKeys, selectedRows) => {
-                            setSelectedRowKeys(selectedRowKeys);
-                        }
-                    }}
+                        onChange: onSelectChange,
+                    } : undefined}
+                    // rowSelection={{
+                    //     selectedRowKeys,
+                    //     onChange: onSelectChange,}}
+
+                    // rowSelection={{
+                    //     selectedRowKeys,
+                    //     onChange: (selectedRowKeys, selectedRows) => {
+                    //         setSelectedRowKeys(selectedRowKeys);
+                    //     }
+                    // }}
                     pagination={{
                         position: [top, bottom],
                     }}
@@ -881,8 +932,6 @@ const LVDeviceList = ({ setSelectedThing }) => {
                     <FormInverter onFormSubmit={handleFormSubmit}  />
                 </Modal>
             </ConfigProvider>
-
-
         </>
     );
 };

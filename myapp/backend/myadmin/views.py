@@ -278,7 +278,7 @@ def get_inverters(request, inverter_id=None):
     elif request.method == "POST":
         try:        
             # Retrieve the base URL from the environment
-            target_url = os.getenv("BASE_URL_GET_ALL_THING")
+            target_url = os.getenv("BASE_URL_DITTO")
 
             username = os.getenv("USERNAME")
             password = os.getenv("PASSWORD")
@@ -314,7 +314,7 @@ def get_inverters(request, inverter_id=None):
             # Increment the ID for the new record
             new_id = latest_id + 1 if latest_id is not None else 1
 
-            target_url_with_id = f"{target_url}/my.inverter:inv{new_id}"
+            target_url_with_id = f"{target_url}/api/2/things/my.inverter:inv{new_id}"
             print("Target URL with ID:", target_url_with_id)
 
             new_inverters = {
@@ -515,28 +515,77 @@ def get_inverters(request, inverter_id=None):
             return JsonResponse({"error": str(e)}, status=500)
 
     elif request.method == "DELETE":
-        # Logic for handling DELETE requests
-        inverter = get_object_or_404(Inverter, pk=inverter_id)
-        print(inverter)
-        # Retrieve the base URL from the environment
-        target_url = os.getenv("BASE_URL_GET_ALL_THING")
+        try:
+            data = json.loads(request.body)
+            print(data)
+            for inverter in data:
+                print(inverter) #DITTO
+                parts = inverter.split(':')
+                if len(parts) > 1:
+                    invpart = parts[1]  #NEURON
+                    print(invpart)
+                    inverter_id = invpart[3:]
+                    print(inverter_id) #DB      
 
-        username = os.getenv("USERNAME")
-        password = os.getenv("PASSWORD")
+                    # Logic for handling DELETE requests
+                    inverter = get_object_or_404(Inverter, pk=inverter_id)
+                    print(inverter)
+                    inverter.delete()
 
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": "Basic "
-            + b64encode((username + ":" + password).encode()).decode("utf-8"),
-        }
-        target_url_with_id = f"{target_url}/my.inverter:inv{inverter_id}"
-        print("Target URL with ID:", target_url_with_id)
-        response = requests.delete(
-                target_url_with_id, headers=headers
-        )
-        print(response.status_code)
-        # Delete the site
-        inverter.delete()
+                    # Retrieve the base URL from the environment
+                    target_url = os.getenv("BASE_URL_DITTO")
+
+                    username = os.getenv("USERNAME")
+                    password = os.getenv("PASSWORD")
+
+                    headers = {
+                        "Content-Type": "application/json",
+                        "Authorization": "Basic "
+                        + b64encode((username + ":" + password).encode()).decode("utf-8"),
+                    }
+                    target_url_with_id = f"{target_url}/api/2/things/my.inverter:inv{inverter_id}"
+                    print("Target URL with ID:", target_url_with_id)
+                    response = requests.delete(
+                            target_url_with_id, headers=headers
+                    )
+                    print("Ditto start")
+                    print(response.status_code)
+                    print(response.text)
+                    print("Ditto end")
+
+                    # NEURON 
+                    token = refresh_token(request)
+                    headers = {
+                        'Content-Type': 'application/json',
+                        'Authorization': f'Bearer {token}'  
+                    }
+
+                    target_url = os.getenv("BASE_URL_NEURON")  
+                    target_url = target_url + '/api/v2/node'
+
+                    print("Target URL:", target_url)
+
+                    # Define the JSON data
+                    data = {
+                        "name": invpart,
+                    }
+                    # Send the POST request
+                    response = requests.delete(target_url, headers=headers, json=data)
+
+                    # Print the response
+                    print("Neuron start")
+                    print(response.status_code)
+                    print(response.text)
+                    print("Neuron end")
+
+                    if response.status_code == 409:
+                        return JsonResponse({'Error':'Error deleting in Neuron'})
+                    print("Neuron 2")        
+        except Exception as e:
+            print("Neuron 3")
+
+            print(str(e))
+            return JsonResponse({'not':'ok'})
         return JsonResponse({"message": "This is a DELETE request"})
 
     else:
@@ -988,6 +1037,7 @@ def get_token(request):
 def refresh_token(request):    
     target_url = os.getenv("BASE_URL_NEURON")  
     target_url = target_url + '/api/v2/login'
+    print(target_url)
 
     # Define the headers
     headers = {
@@ -1003,6 +1053,9 @@ def refresh_token(request):
     response = requests.post(target_url, headers=headers, json=data)
     if response.status_code == 200:
         jwt_token = response.json().get('token')
+        print("get token successfully")
+
+
         return jwt_token
     return None
 
@@ -1015,8 +1068,8 @@ def test_token(request):
 def create_device(node, request, host, port):
     token = refresh_token(request)
     headers = {
-    'Content-Type': 'application/json',
-    'Authorization': f'Bearer {token}'  
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {token}'  
     }
 
     target_url = os.getenv("BASE_URL_NEURON")  
