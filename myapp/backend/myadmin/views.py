@@ -12,6 +12,8 @@ from django.db.models import Max
 import logging
 import uuid
 import pprint
+import re
+
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +35,18 @@ logger = logging.getLogger(__name__)
 #     # Return JSON response
 #     return JsonResponse(data, safe=False)
 
+
+def is_valid_ip(ip):
+    # Regular expression for validating an IP address
+    ip_pattern = re.compile(r'^(\d{1,3}\.){3}\d{1,3}$')
+    if ip_pattern.match(ip):
+        # Check each part of the IP address to ensure it's in the range 0-255
+        parts = ip.split('.')
+        for part in parts:
+            if not (0 <= int(part) <= 255):
+                return False
+        return True
+    return False
 
 def my_view(request, resource_id):
     if request.method == "GET":
@@ -262,7 +276,7 @@ def get_inverters(request, inverter_id=None):
         # Return JSON response
         return response
     elif request.method == "POST":
-        try:
+        try:        
             # Retrieve the base URL from the environment
             target_url = os.getenv("BASE_URL_GET_ALL_THING")
 
@@ -278,10 +292,22 @@ def get_inverters(request, inverter_id=None):
             # Forward the request to the target URL with authentication headers
             # response = requests.get(target_url, headers=headers)
             post_data = json.loads(request.body)
-            site_id = int(post_data.get('siteId'))
+            print(post_data)
+            ip_address = post_data.get("ipaddress")
+            print(ip_address)
+            print('debug 1')
 
+            if is_valid_ip(ip_address):
+                host = ip_address
+                print(f"IP address {ip_address} is valid.")
+            else:
+                print(f"IP address {ip_address} is not valid.")
+                return JsonResponse({'error': 'Invalid IP address'})
+            print('debug 2')
+            
+            port= post_data.get("port"),
+           
             site_instance = get_object_or_404(Site, siteID=1)
-            print(site_id)
             latest_id = Inverter.objects.aggregate(Max("inverterID"))["inverterID__max"]
             print("last id", latest_id)
 
@@ -294,28 +320,47 @@ def get_inverters(request, inverter_id=None):
             new_inverters = {
                 "policyId": "my.test:policy",
                 "attributes": {
+                    "name": post_data.get("name"),                    
                     "manufacturer": post_data.get("manufacturer"),
                     "model": post_data.get("model"),
                     "serial number": post_data.get("serialNumber"),
                     "location": post_data.get("location"),
-                    "site": post_data.get("siteId"),
+                    "site": 1,
                 },
                 "features": {
                     "measurements": {
                         "properties": {
                             "capacity": 0,
-                            "internal temp": 0,
-                            "input power": 0,
-                            "grid frequency": 0,
-                            "power factor": 0,
+                            "meterReadTotalEnergy": 0,
+                            "activePower": 0,
+                            "inputPower": 0,
+                            "efficiency": 0,
+                            "internalTemp": 0,
+                            "gridFrequency": 0,
+                            "productionToday": 0,
+                            "yieldToday": 0,
+                            "reactivePower": 0,
+                            "apparentPower": 0,
+                            "powerFactor": 0,
+                            "fanSpeed": 0,
+                            "limitOutput": 0,
+                            "state": "Connection Fail"
+                        }
+                    },
+                    "runningstatus": {
+                        "properties": {
+                            
+                        }
+                    },
+                    "label": {
+                        "properties": {
+                            "labels": []
                         }
                     }
                 },
             }
 
-            print(type(new_inverters))
             json_data = json.dumps(new_inverters)
-            print(type(json_data))
 
             response = requests.put(
                 target_url_with_id, json=new_inverters, headers=headers
@@ -329,35 +374,41 @@ def get_inverters(request, inverter_id=None):
                 # Save the new Site instance to the database
                 try:
                     # Create a new Site instance with the extracted data
+                    print(new_id)
+                    print(site_instance)
+                    print(post_data.get("manufacturer"))
+                    print(post_data.get("model"))
+                    print(post_data.get("serialNumber"))
+
                     inverter = Inverter(
                         inverterID=new_id,
                         site=site_instance,
                         manufacturer=post_data.get("manufacturer"),
                         model=post_data.get("model"),
                         serialNumber=post_data.get("serialNumber"),
-                        location=post_data.get("location"),
                     )
                     inverter.full_clean()  # Validate the model fields
                     inverter.save()  # Save the record
-                    # Create in ditto
+                    
 
                 except ValidationError as e:
                     return JsonResponse({"error": str(e)}, status=400)
+                
+                node = "inv" + f'{new_id}'
+                temp = create_device(node, request, host, port)
+                print(f'Status of create device {temp}')
+                if temp == 0:
+                    subscribe_to_new_node('invertersite1', node, "/neuron/invertersite1")
+
 
             else:
                 # Print the status code if the request was not successful
                 print(f"PUT request failed with status code {response.status_code}")
                 return JsonResponse({"error": "Something went wrong"}, status=500)
-            response = {
-                'id': post_data.get("id"),
-                'site_id': post_data.get("site_id"),
-                'manufacturer': post_data.get("manufacturer"),
-                'model': post_data.get("model"),
-                'serialNumber': post_data.get("serialNumber"),
-                'location':  post_data.get("location"),
-            }
-            return JsonResponse(response)
+
+            return JsonResponse({'response': 'ok'})
         except Exception as e:
+            print(str(e))
             return JsonResponse({"error": str(e)}, status=500)
 
     elif request.method == "PUT":
@@ -934,8 +985,9 @@ def get_token(request):
         data = response.json()
     return JsonResponse({"token": jwt_token})
 
-def refresh_token(request):
-    url = 'http://192.168.1.210:7000/api/v2/login'
+def refresh_token(request):    
+    target_url = os.getenv("BASE_URL_NEURON")  
+    target_url = target_url + '/api/v2/login'
 
     # Define the headers
     headers = {
@@ -948,13 +1000,9 @@ def refresh_token(request):
         "pass": "0000"
     }
 
-    response = requests.post(url, headers=headers, json=data)
+    response = requests.post(target_url, headers=headers, json=data)
     if response.status_code == 200:
-        # Extract JWT token from response and store it in Django's session
-
         jwt_token = response.json().get('token')
-        request.session['jwt_token'] = jwt_token
-        print(jwt_token)
         return jwt_token
     return None
 
@@ -964,45 +1012,56 @@ def test_token(request):
     print(token)
     return JsonResponse({"token": token})
 
-def create_device(node, request):
+def create_device(node, request, host, port):
     token = refresh_token(request)
-
     headers = {
     'Content-Type': 'application/json',
-    'Authorization': f'Bearer {token}'  # Using f-string to insert the token
+    'Authorization': f'Bearer {token}'  
     }
+
+    target_url = os.getenv("BASE_URL_NEURON")  
+    target_url = target_url + '/api/v2/node'
+    print("Target URL:", target_url)
+    print(node)
 
     # Define the JSON data
     data = {
         "name": node,
         "plugin": "Modbus TCP",
-        "params": {
-            "param1": 1,
-            "param2": "1.1.1.1",
-            "param3": True,
-            "param4": 11.22
-        }
+        # "params": {
+        #     "param1": 1,
+        #     "param2": "1.1.1.1",
+        #     "param3": True,
+        #     "param4": 11.22
+        # }
     }
-    url = 'http://192.168.1.210:7000/api/v2/node'
     # Send the POST request
-    response = requests.post(url, headers=headers, json=data)
+    response = requests.post(target_url, headers=headers, json=data)
 
     # Print the response
     print(response.text)
     print(response.status_code)
     if response.status_code == 409:
-        return 409
-    
+        return 1
+    device_setting(request, node, token, '192.168.1.2', 502)
     return 0
 
 def device_setting(request, node, token, host, port):
+    print(f'host {host}')
+    print(f'port {port}')
+ 
+
     headers = {
     'Content-Type': 'application/json',
     'Authorization': f'Bearer {token}'  # Using f-string to insert the token
     }
     
     # NODE SETTING
-    url = 'http://192.168.1.210:7000/api/v2/node/setting'
+    target_url = os.getenv("BASE_URL_NEURON")  
+    target_url = target_url + '/api/v2/node/setting'
+    print("Target URL:", target_url)
+    print(f'debug 1 {port}')
+   
 
     data = {
         "node": node,
@@ -1025,7 +1084,11 @@ def device_setting(request, node, token, host, port):
             "retry_interval": 0
         }
     }
-    response = requests.post(url, headers=headers, json=data)
+    print(f'debug 2 {port}')
+
+    response = requests.post(target_url, headers=headers, json=data)
+    print(f'debug 3 {port}')
+
 
     # Print the response
     print(response.text)
@@ -1059,29 +1122,24 @@ def device_setting(request, node, token, host, port):
     # if response.status_code == 400:
     #     return JsonResponse({"something": "wrong"})
     # print("group")
-    
-
-
     ### ADD TAG ###
+    add_group(node, token, request)
 
     return 0
 
 @csrf_exempt
 def add_group(node, token, request):
-    ### ADD GROUP ###
-    if token is None:
-        token = refresh_token(request)
-
+    print("Executing ADD GROUP")
     headers = {
     'Content-Type': 'application/json',
     'Authorization': f'Bearer {token}'  # Using f-string to insert the token
     }
-    url = f'http://192.168.1.210:7000/api/v2/group?node={node}'
-    print(url)
+    
+    base_url = os.getenv("BASE_URL_NEURON")
+    target_url = base_url + f'/api/v2/group?node={node}'
+    print("Target URL:", target_url)
 
-   
-
-    response = requests.get(url, headers=headers)
+    response = requests.get(target_url, headers=headers)
     # Print the response
     print(response.text)
     print(response.status_code)
@@ -1095,13 +1153,13 @@ def add_group(node, token, request):
         if len(data.get('groups', [])) == 0:
             print("The 'groups' key contains an empty list.")
             ### add default group
-            url = f'http://192.168.1.210:7000/api/v2/group'
+            target_url = base_url + f'/api/v2/group'
             data = {
-                "group": "defaultgroup",
+                "group": "test",
                 "node": node,
-                "interval": 10000
+                "interval": 1000
             }
-            response = requests.post(url, headers=headers, json=data)
+            response = requests.post(target_url, headers=headers, json=data)
             # Print the response
             print(response.text)
             print(response.status_code)
@@ -1111,6 +1169,9 @@ def add_group(node, token, request):
                 token = refresh_token(request)
                 return add_group(node, token, request)
             elif response.status_code == 200:
+
+                ### continue to add tags
+                add_tag(node, token, request)
                 return 0
 
             ###
@@ -1120,41 +1181,170 @@ def add_group(node, token, request):
     
     
     ### ADD TAG ###
-
     return JsonResponse({"good": "dfs"})
 
 
 @csrf_exempt
-def add_tag(request):
+def add_tag(node, token, request):
     ### ADD GROUP ###
-    token = request.session.get('jwt_token')
+    base_url = os.getenv("BASE_URL_NEURON")
+    target_url = base_url + f'/api/v2/tags'
+    print("Target URL:", target_url)
 
     headers = {
     'Content-Type': 'application/json',
     'Authorization': f'Bearer {token}'  # Using f-string to insert the token
     }
-    url = 'http://192.168.1.210:7000/api/v2/tags'
 
     data = {
     # //node name
-        "node": "modbus-tcp-node",
+        "node": node,
     # //group name
-        "group": "defaultgroup",
+        "group": "test",
         "tags": [
-            {
-                "name": "tag3",
-                "address": "1!00001", # cant be 
-                "attribute": 3,
-                "type": 11,
-                "decimal": 0.01
-            },
-        ]
+        {
+            "type": 9,
+            "name": "meterReadTotalEnergy",
+            "attribute": 3,
+            "precision": 2,
+            "decimal": 0.0,
+            "address": "1!40001",
+            "description": ""
+        },
+        {
+            "type": 9,
+            "name": "activePower",
+            "attribute": 1,
+            "precision": 2,
+            "decimal": 0.0,
+            "address": "1!40003",
+            "description": ""
+        },
+        {
+            "type": 9,
+            "name": "inputPower",
+            "attribute": 1,
+            "precision": 2,
+            "decimal": 0.0,
+            "address": "1!40005",
+            "description": ""
+        },
+        {
+            "type": 9,
+            "name": "efficiency",
+            "attribute": 1,
+            "precision": 2,
+            "decimal": 0.0,
+            "address": "1!40007",
+            "description": ""
+        },
+        {
+            "type": 9,
+            "name": "internalTemp",
+            "attribute": 1,
+            "precision": 2,
+            "decimal": 0.0,
+            "address": "1!40009",
+            "description": ""
+        },
+        {
+            "type": 9,
+            "name": "gridFrequency",
+            "attribute": 1,
+            "precision": 2,
+            "decimal": 0.0,
+            "address": "1!40011",
+            "description": ""
+        },
+        {
+            "type": 9,
+            "name": "productionToday",
+            "attribute": 1,
+            "precision": 2,
+            "decimal": 0.0,
+            "address": "1!40013",
+            "description": ""
+        },
+        {
+            "type": 9,
+            "name": "yieldToday",
+            "attribute": 1,
+            "precision": 2,
+            "decimal": 0.0,
+            "address": "1!40015",
+            "description": ""
+        },
+        {
+            "type": 9,
+            "name": "reactivePower",
+            "attribute": 1,
+            "precision": 2,
+            "decimal": 0.0,
+            "address": "1!40017",
+            "description": ""
+        },
+        {
+            "type": 9,
+            "name": "apparentPower",
+            "attribute": 1,
+            "precision": 2,
+            "decimal": 0.0,
+            "address": "1!40019",
+            "description": ""
+        },
+        {
+            "type": 9,
+            "name": "powerFactor",
+            "attribute": 1,
+            "precision": 2,
+            "decimal": 0.0,
+            "address": "1!40021",
+            "description": ""
+        },
+        {
+            "type": 9,
+            "name": "stage",
+            "attribute": 1,
+            "precision": 2,
+            "decimal": 0.0,
+            "address": "1!40023",
+            "description": ""
+        },
+        {
+            "type": 9,
+            "name": "capacity",
+            "attribute": 1,
+            "precision": 2,
+            "decimal": 0.0,
+            "address": "1!40025",
+            "description": ""
+        },
+        {
+            "type": 9,
+            "name": "fanSpeed",
+            "attribute": 3,
+            "precision": 2,
+            "decimal": 0.0,
+            "address": "1!40027",
+            "description": ""
+        },
+        {
+            "type": 9,
+            "name": "limitOutput",
+            "attribute": 3,
+            "precision": 2,
+            "decimal": 0.0,
+            "address": "1!40029",
+            "description": ""
+        }
+    ]
+        
     }
     
     ## INT8 UINT8 INT16 UINT16 INT32 UINT32 INT64 UINT64 FLOAT DOUBLE BIT BOOL STRING BYTES ERROR WORD DWORD LWORD 
     ##   1    2    3      4      5       6    7     8       9    10    11   12   13    14     15   16   17     18
 
-    response = requests.post(url, headers=headers, json=data)
+    response = requests.post(target_url, headers=headers, json=data)
     # Print the response
     print("group")
     print(response.text)
@@ -1165,32 +1355,33 @@ def add_tag(request):
     if response.status_code == 403:
         refresh_token(request)
         return add_tag(request)
+    if response.status_code == 200:    
+        return JsonResponse({"good": "dfs"})
+        
+        pass
     
-    ### ADD TAG ###
 
     return JsonResponse({"good": "dfs"})
 
 @csrf_exempt
 def create_northapp(request):
-    token = request.session.get('jwt_token')
+    token = refresh_token('request')
 
     headers = {
     'Content-Type': 'application/json',
     'Authorization': f'Bearer {token}'  # Using f-string to insert the token
     }
-    url = 'http://192.168.1.210:7000/api/v2/node'
+
+    base_url = os.getenv("BASE_URL_NEURON")
+    target_url = base_url + f'/api/v2/node'
+    print("Target URL:", target_url)
 
     data = {
-    # //node name
-        "name": "mqtttest",
-    # //group name
+        "name": "invertersite1",
         "plugin": "MQTT"
     }
-    
-    ## INT8 UINT8 INT16 UINT16 INT32 UINT32 INT64 UINT64 FLOAT DOUBLE BIT BOOL STRING BYTES ERROR WORD DWORD LWORD 
-    ##   1    2    3      4      5       6    7     8       9    10    11   12   13    14     15   16   17     18
 
-    response = requests.post(url, headers=headers, json=data)
+    response = requests.post(target_url, headers=headers, json=data)
     # Print the response
     print(response.text)
     print(response.status_code)
@@ -1201,6 +1392,8 @@ def create_northapp(request):
     if response.status_code == 403:
         refresh_token(request)
         return create_northapp(request)
+    
+    setting_northapp("invertersite1", 'broker.emqx.io', 1883, token)
 
     return JsonResponse({"good": "dfs"})
     
@@ -1218,7 +1411,8 @@ def change_middle_string(original_string, new_middle):
     return modified_string
 
 
-def setting_northapp(node, host, port, request, token):
+def setting_northapp(node, host, port, token):
+    print('in setting north app')
     headers = {
     'Content-Type': 'application/json',
     'Authorization': f'Bearer {token}'  # Using f-string to insert the token
@@ -1229,10 +1423,10 @@ def setting_northapp(node, host, port, request, token):
     client_id = str(uuid.uuid4())
     print(client_id)
 
-    req_string = "/neuron/ore/write/req"
+    req_string = "/neuron/placeholder/write/req"
     new_node = node
     new_req_string = change_middle_string(req_string, new_node)
-    req_string = "/neuron/ore/write/resp"
+    req_string = "/neuron/placeholder/write/resp"
     new_node = node
     new_resp_string = change_middle_string(req_string, new_node)
 
@@ -1253,9 +1447,6 @@ def setting_northapp(node, host, port, request, token):
             "ssl":False
         }
     }
-    print(data)
-    print(data)
-    print(data)
 
     response = requests.post(url, headers=headers, json=data)
     # Print the response
@@ -1268,14 +1459,53 @@ def setting_northapp(node, host, port, request, token):
     if response.status_code == 403:
         return JsonResponse({"something": "wrong"})
 
-    return JsonResponse({"good": "dfs"})
+    return 0
+
+
+def subscribe_to_new_node(app, node, topic ):
+    token = refresh_token('request')
+    base_url = os.getenv("BASE_URL_NEURON")
+    target_url = base_url + f'/api/v2/subscribe'
+    print("Target URL:", target_url)
+
+    headers = {
+    'Content-Type': 'application/json',
+    'Authorization': f'Bearer {token}'  # Using f-string to insert the token
+    }
+
+    data = {
+        "app": app,
+        "driver": node,
+        "group": "test",
+        "params": {
+            "topic": topic
+        }
+    }    
+
+
+    response = requests.post(target_url, headers=headers, json=data)
+    # Print the response
+    print(response.text)
+    print(response.status_code)
+    if response.status_code == 400:
+        return JsonResponse({"something": "wrong"})
+    if response.status_code == 403:
+        token = refresh_token('temp')
+        return subscribe_to_new_node(app, node, token, topic)
+    if response.status_code == 200:    
+        print("success subcribe")
+        return 0
+    return 0
+
+ 
+
+
+
 
 @csrf_exempt
 def subscribe(siteId, node, topic, request, token):
     ### find all inverter has a siteId = 2
-
     inverters = Inverter.objects.filter(site=siteId)
-
     # 
     driver_list = []
     # Process the retrieved inverters

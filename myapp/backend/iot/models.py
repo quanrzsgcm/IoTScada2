@@ -35,7 +35,6 @@ class Inverter(models.Model):
     manufacturer = models.CharField(max_length=100)
     model = models.CharField(max_length=100)
     serialNumber = models.CharField(max_length=100)
-    location = models.CharField(max_length=100)
 
     def __str__(self):
         return f"Inverter {self.model} at Site {self.site.siteName}"

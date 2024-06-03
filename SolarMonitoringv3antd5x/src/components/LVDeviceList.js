@@ -9,6 +9,7 @@ import { InfoCircleOutlined, UserOutlined } from '@ant-design/icons';
 import CheckboxDropdown from './ActionLevel';
 import ExportCSVButton from './ExportCSVButton';
 import BlueButton from './ButtonLV';
+import DeleteButton from './ButtonDeleteLV';
 import FormInverter from './FormInverter';
 import AuthContext from '../context/AuthContext';
 
@@ -412,9 +413,9 @@ const LVDeviceList = ({ setSelectedThing }) => {
     useEffect(() => {
         // Function to fetch data from the API
         const fetchData = () => {
-            console.log(`${process.env.REACT_APP_DJANGO_URL}/api2/my-api/inverterlist`);
+            console.log(`${process.env.REACT_APP_DJANGO_URL}/api2/my-api/inverterlist/`);
 
-            fetch(`${process.env.REACT_APP_DJANGO_URL}/api2/my-api/inverterlist`, {
+            fetch(`${process.env.REACT_APP_DJANGO_URL}/api2/my-api/inverterlist/`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -434,7 +435,7 @@ const LVDeviceList = ({ setSelectedThing }) => {
                             thingId: item.thingId,
                             name: item.attributes.name,
                             manufacturer: item.attributes.manufacturer,
-                            labels: item.features.label.properties.labels,
+                            labels: item.features.label?.properties?.labels || [],
                             state: item.features.measurements.properties.state,
                             stageStartOn: item.features.measurements.properties.starton,
                             duration: item.features.measurements.properties.duration,
@@ -649,8 +650,8 @@ const LVDeviceList = ({ setSelectedThing }) => {
     };
     const handleOk = () => {
         console.log('Modal is OK')
+        createNewInverter(formInstance.getFieldsValue())
         triggerSubmit()
-        createNewInverter()
         setIsModalOpen(false);
     };
     const handleCancel = () => {
@@ -693,7 +694,7 @@ const LVDeviceList = ({ setSelectedThing }) => {
         }
     };
 
-    const createNewInverter = () => {
+    const createNewInverter = (formValues) => {
         console.log(`${process.env.REACT_APP_DJANGO_URL}/myadmin/inverters/`);
             fetch(`${process.env.REACT_APP_DJANGO_URL}/myadmin/inverters/`, {
                 method: 'POST',
@@ -701,9 +702,8 @@ const LVDeviceList = ({ setSelectedThing }) => {
                     'Content-Type': 'application/json',
                     'Authorization': 'Bearer ' + String(authTokens.access)
                 },
-                body: JSON.stringify({
-                    formValues
-                })
+                body: JSON.stringify(formValues)
+
             })      
                 .then(response => {
                     if (!response.ok) {
@@ -721,15 +721,6 @@ const LVDeviceList = ({ setSelectedThing }) => {
 
     return (
         <>
-        <div>
-
-        {formValues && (
-            <div style={{ marginTop: '20px' }}>
-                    <h3>Form Values:</h3>
-                    <pre>{JSON.stringify(formValues, null, 2)}</pre> {/* Display form values as JSON */}
-                </div>
-            )}
-            </div>
             <div style={{ width: '100%', height: '45px', border: '1px solid #000', display: 'flex' }}>
                 <div style={{ flex: '9', borderRight: '1px solid #000', display: 'flex', alignItems: 'center' }}>
                     {deviceStageCount !== null && (
@@ -785,6 +776,7 @@ const LVDeviceList = ({ setSelectedThing }) => {
 
                     <div style={{ marginLeft: '10px' }}> {/* Add margin to create space */}
                         <ExportCSVButton data={fetchedData} />
+                        <DeleteButton/>
                     </div>
                 </div>
             </div>

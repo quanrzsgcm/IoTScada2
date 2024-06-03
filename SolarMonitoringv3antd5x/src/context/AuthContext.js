@@ -17,8 +17,7 @@ export const AuthProvider = ({children}) => {
     const navigate = useNavigate()
 
     let loginUser = async (e) => {
-       
-        const response = await fetch('http://localhost:8000/api/token/', {
+        const response = await fetch(`${process.env.REACT_APP_DJANGO_URL}/api/token/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -53,8 +52,8 @@ export const AuthProvider = ({children}) => {
         navigate('/login');
     };
 
-    const updateToken = async () => {
-        const response = await fetch('http://127.0.0.1:8000/api/token/refresh/', {
+    const updateToken = async () => {        
+        const response = await fetch(`${process.env.REACT_APP_DJANGO_URL}/api/token/refresh/`, {
             method: 'POST',
             headers: {
                 'Content-Type':'application/json'
