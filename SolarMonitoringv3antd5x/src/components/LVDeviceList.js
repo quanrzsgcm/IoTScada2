@@ -511,17 +511,13 @@ const LVDeviceList = ({ setSelectedThing }) => {
             width: 200,
             fixed: 'left',
             render: function (text, record, index) {
-                const backgroundColor = index % 2 === 0 ? 'rgb(12,62,82)' : 'rgb(12,55,70)';
-
-                return {
+                const backgroundColor = index % 2 === 0 ? 'rgb(12,62,82)' : 'rgb(12,55,70)';           return {
                     props: {
                         style: { background: backgroundColor }
                     },
                     children: <div>{text}</div>
                 };
             }
-
-
         },
         {
             title: 'Label',
@@ -622,7 +618,7 @@ const LVDeviceList = ({ setSelectedThing }) => {
     }));
     const newColumns = columns.map((item) => ({
         ...item,
-        hidden: !checkedList.includes(item.dataIndex),
+        // hidden: !checkedList.includes(item.dataIndex),
         width: 'auto',
 
     }));
@@ -634,7 +630,7 @@ const LVDeviceList = ({ setSelectedThing }) => {
     const [showTitle, setShowTitle] = useState(false);
     const [showHeader, setShowHeader] = useState(true);
     const [showFooter, setShowFooter] = useState(true);
-    const [rowSelection, setRowSelection] = useState({});
+    // const [rowSelection, setRowSelection] = useState({});
     const [hasData, setHasData] = useState(true);
     const [tableLayout, setTableLayout] = useState();
     const [top, setTop] = useState('none');
@@ -642,6 +638,25 @@ const LVDeviceList = ({ setSelectedThing }) => {
     const [ellipsis, setEllipsis] = useState(false);
     const [yScroll, setYScroll] = useState(false);
     const [xScroll, setXScroll] = useState();
+
+    const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+    const start = () => {
+        setLoading(true);
+        // ajax request after empty completing
+        setTimeout(() => {
+            setSelectedRowKeys([]);
+            setLoading(false);
+        }, 1000);
+    };
+    const onSelectChange = (newSelectedRowKeys) => {
+        console.log('selectedRowKeys changed: ', newSelectedRowKeys);
+        setSelectedRowKeys(newSelectedRowKeys);
+    };
+    const rowSelection = {
+        selectedRowKeys,
+        onChange: onSelectChange,
+    };
+    const hasSelected = selectedRowKeys.length > 0;
 
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -724,8 +739,8 @@ const LVDeviceList = ({ setSelectedThing }) => {
             <div style={{ width: '100%', height: '45px', border: '1px solid #000', display: 'flex' }}>
                 <div style={{ flex: '9', borderRight: '1px solid #000', display: 'flex', alignItems: 'center' }}>
                     {deviceStageCount !== null && (
-  <DeviceStateRadio deviceStageCount={deviceStageCount}/>
-)}
+                    <DeviceStateRadio deviceStageCount={deviceStageCount}/>
+                )}
                 </div>
                 <div style={{ flex: '1' }}>
                     {/* Content for the second div (takes 1/10 of the parent's width) */}
@@ -772,10 +787,10 @@ const LVDeviceList = ({ setSelectedThing }) => {
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '0px solid red' }}>
                     <BlueButton onClick={showModal} />
-
-
                     <div style={{ marginLeft: '10px' }}> {/* Add margin to create space */}
                         <ExportCSVButton data={fetchedData} />
+                    </div>
+                    <div style={{ marginLeft: '10px' }}> {/* Add margin to create space */}
                         <DeleteButton/>
                     </div>
                 </div>
@@ -796,6 +811,8 @@ const LVDeviceList = ({ setSelectedThing }) => {
                             colorBgContainer: 'transparent',
                             colorText: "white",
                             colorTextHeading: "rgb(154,175,157)",
+                            rowSelectedBg: 'transparent',
+                            rowSelectedHoverBg: 'transparent'
                             //     headerSortHoverBg: "linear-gradient(to right, #05323e, #053e4d)",
                             //     headerSortActiveBg: "linear-gradient(to right, #05323e, #053e4d)",
                             //     // stickyScrollBarBg: "rgba(255,255,255,0.7)",
@@ -804,10 +821,18 @@ const LVDeviceList = ({ setSelectedThing }) => {
                     },
                 }}
             >
-                <Table style={{ marginTop: '10px', width: '100%' }}
+                <Table style={{ marginTop: '10px', width: '100%' }}                
+                    rowKey={(record) => record.thingId}
+                    rowSelection={{
+                        selectedRowKeys,
+                        onChange: (selectedRowKeys, selectedRows) => {
+                            setSelectedRowKeys(selectedRowKeys);
+                        }
+                    }}
                     pagination={{
                         position: [top, bottom],
                     }}
+
                     columns={newColumns}
                     rowClassName={(record, index) => {
                         if (index % 2 === 0) {
@@ -849,10 +874,10 @@ const LVDeviceList = ({ setSelectedThing }) => {
                 }}
             >
                 <Modal title="Add an inverter" centered width={650} open={isModalOpen} 
-                onOk={handleOk} onCancel={handleCancel} 
-                okButtonProps={{ style: { backgroundColor: 'rgb(1,183,225)', borderRadius: 0 } }}       
-                cancelButtonProps={{ style: { backgroundColor: 'black', borderRadius: 0, colorText: 'white', color: 'white' } }}  
-                style={{ border: '1px solid rgb(1,183,225)' }}>
+                    onOk={handleOk} onCancel={handleCancel} 
+                    okButtonProps={{ style: { backgroundColor: 'rgb(1,183,225)', borderRadius: 0 } }}       
+                    cancelButtonProps={{ style: { backgroundColor: 'black', borderRadius: 0, colorText: 'white', color: 'white' } }}  
+                    style={{ border: '1px solid rgb(1,183,225)' }}>
                     <FormInverter onFormSubmit={handleFormSubmit}  />
                 </Modal>
             </ConfigProvider>
