@@ -8,6 +8,7 @@ import DashboardLayout from './layouts/DashboardLayout';
 import SiteView from './pages/SiteView';
 import SiteKPI from './pages/SiteKPI';
 import DeviceList from './pages/DL';
+import SettingsPage from './pages/Settings';
 import TypeOfDeviceTab from './components/Tab';
 import PmForm from './components/PMForm';
 import HomePage from './pages/HomePage'
@@ -56,6 +57,8 @@ return (
         <Route path='/site-monitor/devicelist' element={<DeviceList />} />
         <Route path='/admin/manage-users' element={<DeviceList />} />
         <Route path='/admin/manage-devices' element={<DeviceList />} />
+        <Route path='/admin/settings' element={<SettingsPage />} />
+        
       </Route>
       <Route path="/login" element={<SignIn />} />
     </Routes>

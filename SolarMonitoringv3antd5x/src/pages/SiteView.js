@@ -21,6 +21,7 @@ import InverterRanking from '../components/LVInverterRanking';
 import { GiElectric } from "react-icons/gi";
 import { MdOutlineSolarPower } from "react-icons/md";
 import App3 from '../assets/charts/test';
+import EventSourceComponent from '../components/EventSourceComponent';
 
 export default function SiteView() {
     const [placeholdervalue, setPlaceholdervalue] = useState(149);
@@ -42,7 +43,7 @@ export default function SiteView() {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + String(authTokens.access)
+                    // 'Authorization': 'Bearer ' + String(authTokens.access)
                 },
             })
                 .then(response => {
@@ -72,7 +73,7 @@ export default function SiteView() {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + String(authTokens.access)
+                    // 'Authorization': 'Bearer ' + String(authTokens.access)
                 },
             })
                 .then(response => {
@@ -175,21 +176,19 @@ export default function SiteView() {
     const handleMouseLeave = () => {
         setShowInfo(false);
     };
-    const screenWidth = window.innerWidth;
-    const screenHeight = window.innerHeight;
-
-    console.log("Screen Width: ", screenWidth);
-    console.log("Screen Height: ", screenHeight);
 
     return (
         <MainviewLayout>
-            <div style={{        
+            {/* <div style={{        
                 height: '110px',
                 border: '1px solid red'                
             }}>
             {dateString} <br>
             </br>
             {selectedLabel}
+            </div> */}
+            <div>
+            <EventSourceComponent/>
             </div>
 
             <div style={{

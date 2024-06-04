@@ -2366,4 +2366,35 @@ def get_connection_ditto_neuron(request, connection_id=None):
    
    
 #    """
-   
+
+def handle_threshold(request):
+    if request.method == 'GET':
+        target_url = os.getenv("BASE_URL_DITTO")
+
+        username = os.getenv("USERNAME")
+        password = os.getenv("PASSWORD")
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Basic "
+            + b64encode((username + ":" + password).encode()).decode("utf-8"),
+        }
+        target_url_with_id = f"{target_url}/api/2/things/my.threshold:th1"
+        print("Target URL with ID:", target_url_with_id)
+        try:
+            response = requests.get(target_url_with_id, headers=headers)
+            print("Ditto start")
+            print(response.status_code)
+            print(response.text)
+            print("Ditto end")
+            
+            if response.status_code == 200:
+                data = response.json()  # Parse JSON data from the response
+                return JsonResponse(data)
+            else:
+                # Return an error response if the status code is not 200
+                return JsonResponse({'error': 'Failed to fetch data from Ditto', 'status_code': response.status_code}, status=response.status_code)
+        except requests.RequestException as e:
+            # Handle any exceptions that occur during the request
+            print(f"RequestException: {e}")
+            return JsonResponse({'error': 'Request failed', 'details': str(e)}, status=500)

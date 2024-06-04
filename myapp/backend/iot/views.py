@@ -25,6 +25,7 @@ from .serializers import PowerMeterDataSerializer
 
 from .models import PowerMeterData, DailyEnergySum, MonthlyEnergySum, Inverter, InverterMeasurement, InverterState
 from django.db.models import Sum
+from django.http import StreamingHttpResponse
 
 # Load environment variables from the .env file
 load_dotenv()
@@ -1086,7 +1087,7 @@ def realtimesitedata(request):
     site_id = request.GET.get('siteId')
     if site_id:
         # Retrieve the base URL from the environment
-        target_url = os.getenv("BASE_URL_GET_ALL_THING")    
+        target_url = os.getenv("BASE_URL_GET_ALL_THING")
 
         tempurl = "/my.site:site" + site_id
         target_url = target_url + tempurl    
@@ -1109,8 +1110,6 @@ def realtimesitedata(request):
         return JsonResponse(data, safe=False)
     else:
         return JsonResponse({'error': 'siteId parameter is missing'}, status=400)
-
-
 
 def total_energy_view(request):
     # 1. Get the intervals from the dateString send by Frontend
@@ -1145,7 +1144,6 @@ def total_energy_view(request):
         print(converted_time)
     return JsonResponse({"result": "latest_measurement"})
     
-
 @csrf_exempt   
 def inverter_activepower(request):
     body = json.loads(request.body)
@@ -1165,7 +1163,6 @@ def inverter_activepower(request):
         start, end = time_range['start'], time_range['end']
         print("Start:", start)
         print("End:", end)
-
 
         measurements = InverterMeasurement.objects.filter(
                     inverter_id=inverter_id,
@@ -1218,17 +1215,19 @@ def inverter_control_get_polling_rate(request):
     }
 
     response = requests.get(target_url, headers=headers)
+    print(response.status_code)
+    print(response.text)
     if response.status_code == 200:       
         print(response.text)
         response_dict = response.json()
         result = response_dict["groups"][0]["interval"]
-        text_result = str(result // 1000) + "s"  
+        text_result = str(result // 1000) + "s"
 
-           
+        return JsonResponse({'pollingrate': text_result})
+    return JsonResponse({'error': 'internal server error'}, status=500)
 
-    return JsonResponse({'pollingrate': text_result})
 
-### TODO ADD EACH MQTT FOR EACH COMMANDS
+
 @csrf_exempt   
 def inverter_control(request): 
     counter = 2
@@ -1326,7 +1325,6 @@ def inverter_control(request):
     # Return a JSON response indicating success (or you can return other relevant data)
     return JsonResponse({"message": "Data published to MQTT topic successfully."})
     
-
 
 @csrf_exempt
 # @permission_classes([IsAuthenticated])
@@ -1483,15 +1481,38 @@ def inverter_control_set_polling_rate(inv_value, pollingrate):
         "node": inv_value,
         "group": "test",
         "interval": pollingrate
-    }
-
-    
+    }    
 
     response = requests.put(target_url, headers=headers, json=data)
     if response.status_code == 200:       
         print(response.text)
-        response_dict = response.json()
-
-           
+        response_dict = response.json()          
 
     return JsonResponse({'pollingrate': 'okj'})
+
+def sse_stream(request):
+    print(os.path.exists('event.txt'))
+    print(os.path.exists('event.txt'))
+    current_dir = os.getcwd()
+    print("Current working directory:", current_dir)
+    print("sse hooked")
+    def event_stream():
+        i = 1
+        while True:
+            while not os.path.exists('event.txt'):
+                sleep(1)  # Check every 0.1 seconds
+            # Read the event file and clear it
+            sleep(1)  # Check every 0.1 seconds
+            with open('event.txt', 'r') as f:
+                f.read()
+            os.remove('event.txt')
+
+            notification = "New notification " + str(i)
+            i+=1
+            yield f"data: {notification}\n\n"
+            print("sending sse")
+            sleep(2)  # Adjust the sleep time as needed
+
+    response = StreamingHttpResponse(event_stream(), content_type='text/event-stream')
+    response['Cache-Control'] = 'no-cache'
+    return response

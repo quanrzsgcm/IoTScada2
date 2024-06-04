@@ -226,7 +226,7 @@ const ChartLeft = ({ dateString, unitoftime, inverter_id }) => {
                         fontWeight: 700,
                     },
                     offsetX: 50, // Set the left offset for the y-axis title
-                    offsetY: -125, // Set the left offset for the y-axis title
+                    offsetY: -150, // Set the left offset for the y-axis title
 
                 },
                 labels: {
@@ -251,7 +251,7 @@ const ChartLeft = ({ dateString, unitoftime, inverter_id }) => {
                         fontWeight: 700,
                     },
                     offsetX: -50, // Set the left offset for the y-axis title
-                    offsetY: -125, // Set the left offset for the y-axis title
+                    offsetY: -150, // Set the left offset for the y-axis title
 
                 },
                 labels: {

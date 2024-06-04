@@ -31,9 +31,8 @@ efficiency ,
 "meterReadTotalEnergy" ,
 "productionToday" ,
 "reactivePower" ,
-stage , 
 "yieldToday")
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
         """
 
         # Execute the query with the data tuple

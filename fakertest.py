@@ -14,6 +14,10 @@ conn = psycopg2.connect(**insert_data_3.db_params)
 def generate_samples():
     meterReadTotalEnergy = os.getenv("ENERGY_VAL")
     meterReadTotalEnergy = int(meterReadTotalEnergy)
+    yieldToday = os.getenv("YIELD_VAL")
+    yieldToday = int(yieldToday)
+
+    
     # Set the timezone to Vietnam (Asia/Ho_Chi_Minh)
     local_timezone = pytz.timezone('Asia/Ho_Chi_Minh')
 
@@ -21,7 +25,7 @@ def generate_samples():
     current_year = datetime.now().year
 
     # Create a datetime object for November 1st of the current year with your local timezone
-    current_timestamp = local_timezone.localize(datetime(current_year, 5, 14)) # YYMMDD
+    current_timestamp = local_timezone.localize(datetime(current_year, 6, 3)) # YYMMDD
     print(current_timestamp)
 
     for _ in range(200):
@@ -36,12 +40,11 @@ def generate_samples():
         apparentPower = random.randint(1, 100)
         efficiency = random.randint(1, 100)
         meterReadTotalEnergy = meterReadTotalEnergy + random.randint(1, 100)
-        productionToday = random.randint(1, 100)
+        productionToday = meterReadTotalEnergy
         reactivePower = random.randint(1, 100)
-        stage =  random.randint(1, 100)
-        yieldToday = random.randint(1, 100)
+        yieldToday = yieldToday + random.randint(1, 100)
 
-        yield (timestamp, internalTemp, inputPower, gridFrequency, powerFactor, inverter_id, activePower, apparentPower, efficiency, meterReadTotalEnergy, productionToday, reactivePower, stage, yieldToday)
+        yield (timestamp, internalTemp, inputPower, gridFrequency, powerFactor, inverter_id, activePower, apparentPower, efficiency, meterReadTotalEnergy, productionToday, reactivePower , yieldToday)
 
         # Add 1 minute and 1 second        
         current_timestamp += timedelta(minutes=20, seconds=1)
@@ -49,6 +52,7 @@ def generate_samples():
 
     # Set or update a key-value pair in the .env file
     set_key(".env", "ENERGY_VAL", str(meterReadTotalEnergy))
+    set_key(".env", "YIELD_VAL", str(yieldToday))
 
 
 # Print the generated samples

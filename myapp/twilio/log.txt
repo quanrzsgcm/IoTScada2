@@ -1,0 +1,9 @@
+INFO:twilio.http_client:-- BEGIN Twilio API Request --
+INFO:twilio.http_client:POST Request: https://api.singapore.sg1.twilio.com/2010-04-01/Accounts/ACaa3ec0a9359019f4b4db8e158fc532a1/Messages.json
+INFO:twilio.http_client:Headers:
+INFO:twilio.http_client:User-Agent : twilio-python/9.1.0 (Linux x86_64) Python/3.11.8
+INFO:twilio.http_client:X-Twilio-Client : python-9.1.0
+INFO:twilio.http_client:Accept-Charset : utf-8
+INFO:twilio.http_client:Content-Type : application/x-www-form-urlencoded
+INFO:twilio.http_client:Accept : application/json
+INFO:twilio.http_client:-- END Twilio API Request --

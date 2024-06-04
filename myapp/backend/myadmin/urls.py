@@ -22,7 +22,6 @@ urlpatterns = [
     path('tags/', views.get_tags),
     path('get_connection_ditto_neuron/', views.get_connection_ditto_neuron),
     path('connectionsnew/', views.get_connection_ditto_neuron),
-
-    
+    path('threshold/', views.handle_threshold),    
     
 ]

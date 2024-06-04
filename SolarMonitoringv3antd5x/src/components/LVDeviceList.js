@@ -365,7 +365,7 @@ for (let i = 0; i < 20; i++) {
     };
     data.push(record);
 }
-console.log(data);
+// console.log(data);
 
 const defaultTitle = () => 'Here is title';
 const defaultFooter = () => 'Here is footer';
@@ -419,7 +419,7 @@ const LVDeviceList = ({ setSelectedThing }) => {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + String(authTokens.access)
+                    // 'Authorization': 'Bearer ' + String(authTokens.access)
                 },
             })      
                 .then(response => {

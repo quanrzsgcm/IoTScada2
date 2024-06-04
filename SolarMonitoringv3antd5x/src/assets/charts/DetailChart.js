@@ -314,7 +314,7 @@ const svgMarkup = `<svg fill="rgb(161,171,182)" width="16px" height="16px" viewB
                         fontWeight: 700,
                     },
                     offsetX: 50, // Set the left offset for the y-axis title
-                    offsetY: -125, // Set the left offset for the y-axis title
+                    offsetY: -150, // Set the left offset for the y-axis title
 
                 },
                 labels: {
@@ -339,7 +339,7 @@ const svgMarkup = `<svg fill="rgb(161,171,182)" width="16px" height="16px" viewB
                         fontWeight: 700,
                     },
                     offsetX: -50, // Set the left offset for the y-axis title
-                    offsetY: -125, // Set the left offset for the y-axis title
+                    offsetY: -150, // Set the left offset for the y-axis title
 
                 },
                 labels: {

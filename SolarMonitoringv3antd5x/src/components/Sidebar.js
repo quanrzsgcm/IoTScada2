@@ -53,10 +53,6 @@ const Sidebar = ({ image, collapsed, rtl, toggled, handleToggleSidebar, userRole
           path: `/site-monitor/sitekpi`,
         },
         {
-          title: 'Add new device',
-          path: `/site-monitor/addnewdevice`,
-        },
-        {
           title: 'Device List',
           path: `/site-monitor/devicelist`,
         },

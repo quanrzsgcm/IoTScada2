@@ -324,7 +324,6 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
                         },
                         InputNumber: {
                             colorText: 'white',
-                            colorBgContainer: 'red'
 
                         }
                     },
@@ -617,7 +616,6 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
                         <span style={{ marginLeft: '20px', fontSize: '16px', color: 'white' }}>Production</span>
                         <div style={{ marginRight: '20px'}} >
                         <App  setDateString={setDateString} selectedLabel={selectedLabel} uppersetSelectedLabel={setSelectedLabel} />
-                        {dateString}
                         </div>
                     </div>
                     <div style={{

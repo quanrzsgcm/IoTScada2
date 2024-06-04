@@ -10,6 +10,9 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from datetime import datetime
 import pytz
+import os
+from base64 import b64encode
+import requests
 
 # INSERT INTO iot_invertermeasurement (
 #     timestamp, 
@@ -53,10 +56,65 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
+def get_thresholds():
+    target_url = os.getenv("BASE_URL_DITTO")  
+    target_url = target_url + '/api/2/things/my.threshold:th1'
+    print("Target URL:", target_url)
+
+    username = os.getenv("USERNAME")
+    password = os.getenv("PASSWORD")
+
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Basic ' + b64encode((username + ':' + password).encode()).decode('utf-8'),
+    }
+
+    # Forward the request to the target URL with authentication headers
+    response = requests.get(target_url, headers=headers)
+
+    data = response.json()
+    # Pretty print the JSON data
+    pretty_data = json.dumps(data, indent=4)
+    print(pretty_data)
+    print(data['features']['thresholds']['properties']['internalTempWarning'])
+    print(data['features']['thresholds']['properties']['internalTempFault'])
+
+    internalTempWarning = data['features']['thresholds']['properties']['internalTempWarning']    
+    internalTempFault = data['features']['thresholds']['properties']['internalTempFault']
+    return internalTempWarning, internalTempFault
+
+# def check_for_thresh_hold():
 
 class Command(BaseCommand):
     def handle(self, *args, **kwargs):
+        threshold_warning, threshold_fault = get_thresholds()
         message_queue = queue.Queue()
+        message_value_queue = queue.Queue()
+
+        def check_for_thresh_hold():
+            while True:
+                try:
+                    value = message_value_queue.get()
+                    print(value)
+                    print(bcolors.WARNING + str(value) + bcolors.ENDC)
+                    internalTemp = value.get('internalTemp')
+                    internalTempWarning, internalTempFault = get_thresholds()  # Get thresholds within the loop
+                    if internalTemp is not None:
+                        if internalTemp >= internalTempFault:
+                            print(bcolors.FAIL + "Set alarm for fault! Temperature is too high: " + str(internalTemp) + bcolors.ENDC)
+                        elif internalTemp >= internalTempWarning:
+                            print(bcolors.WARNING + "Set alarm for warning! Temperature is elevated: " + str(internalTemp) + bcolors.ENDC)
+                        else:
+                            print(bcolors.OKCYAN + "Temperature is within normal range: " + str(internalTemp) + bcolors.ENDC)
+                    else:
+                        print("Internal temperature value is not available.")
+                except Exception as e:
+                    print("Error in check_for_thresh_hold:", e)
+                finally:
+                    message_value_queue.task_done()
+
+
+
         def process_messages():
             while True:
                 msg = message_queue.get()
@@ -127,7 +185,7 @@ class Command(BaseCommand):
                             
                             print(f"Duration : {duration}")
                             print("debug3")
-
+                            
 
                             InverterState.objects.create(
                                 inverter=inv_instance,
@@ -139,6 +197,7 @@ class Command(BaseCommand):
 
 
                             if path == "/features/measurements/properties/state":
+                                print('path == /features/measurements/properties/state')
                                 continue
 
                             # Check for None or missing values
@@ -148,6 +207,8 @@ class Command(BaseCommand):
                                 # Handle the None case here if needed
                                 print("meterReadTotalEnergy is None")
                                 # continue
+                            message_value_queue.put(value)
+                            
                             # Create InverterMeasurement object and save it to the database
                             InverterMeasurement.objects.create(
                                 inverter=inv_instance,
@@ -163,7 +224,6 @@ class Command(BaseCommand):
                                 reactivePower=value.get("reactivePower"),
                                 apparentPower=value.get("apparentPower"),
                                 powerFactor=value.get("powerFactor"),
-                                stage=value.get("stage")
                             )
                     elif thing == 'my.site':
                         site_id = parts[1]  # This will give 'site1'
@@ -196,44 +256,10 @@ class Command(BaseCommand):
 
         def on_message(client, userdata, msg):
             message_queue.put(msg)
-
-            # print(msg.topic + " " + str(msg.payload.decode()))
-            # try:
-            #     payload = json.loads(msg.payload.decode())
-            #     topic = payload["topic"]
-            #     parts = topic.split('/')
-            #     thing = parts[0]
-            #     if thing == 'my.inverter':
-            #         inverter_id = parts[1]  # This will give 'inv1'
-            #         inverter_id = int(inverter_id[3:])
-            #         inv_instance = Inverter.objects.get(inverterID=inverter_id)
-            #         if "value" in payload:
-            #             value = payload["value"]
-            #             # Create InverterMeasurement object and save it to the database
-            #             InverterMeasurement.objects.create(
-            #                 inverter=inv_instance,
-            #                 timestamp=payload["timestamp"],
-            #                 meterReadTotalEnergy=value.get("meterReadTotalEnergy"),
-            #                 activePower=value.get("activePower"),
-            #                 inputPower=value.get("inputPower"),
-            #                 efficiency=value.get("efficiency"),
-            #                 internalTemp=value.get("internalTemp"),
-            #                 gridFrequency=value.get("gridFrequency"),
-            #                 productionToday=value.get("productionToday"),
-            #                 yieldToday=value.get("yieldToday"),
-            #                 reactivePower=value.get("reactivePower"),
-            #                 apparentPower=value.get("apparentPower"),
-            #                 powerFactor=value.get("powerFactor"),
-            #                 stage=value.get("stage")
-            #             )
-            #     elif thing == 'my.site':
-            #         print("site site")
-            # except Exception as e:
-            #     print("Error processing message:", e)
-
         
         # Start a separate thread to process messages
         threading.Thread(target=process_messages, daemon=True).start()
+        threading.Thread(target=check_for_thresh_hold, daemon=True).start()
         
         client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
         client.on_connect = on_connect
