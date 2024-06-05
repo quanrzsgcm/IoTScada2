@@ -56,6 +56,26 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
+def get_inverter_name(myinv):
+    target_url = os.getenv("BASE_URL_DITTO")  
+    target_url = target_url + '/api/2/things/' + myinv
+    # print("Target URL:", target_url)
+
+    username = os.getenv("USERNAME")
+    password = os.getenv("PASSWORD")
+
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Basic ' + b64encode((username + ':' + password).encode()).decode('utf-8'),
+    }
+
+    # Forward the request to the target URL with authentication headers
+    response = requests.get(target_url, headers=headers)
+    data = response.json()
+    name = data['attributes']['name']    
+    return name
+    
+
 def get_thresholds():
     target_url = os.getenv("BASE_URL_DITTO")  
     target_url = target_url + '/api/2/things/my.threshold:th1'
@@ -86,7 +106,21 @@ def get_thresholds():
     outputPowerFault = data['features']['thresholds']['properties']['outputPowerFault']
     return internalTempWarning, internalTempFault, inputPowerWarning, inputPowerFault, outputPowerWarning, outputPowerFault
 
-# def check_for_thresh_hold():
+def send_events(data_to_write): 
+    # data_to_write = {
+    #     "name": "John Doe",
+    #     "age": 30,
+    #     "city": "New York"
+    # }
+    # Check if we are now in the desired directory
+    print("Current working directory:", os.getcwd())
+    # # Write events to a file
+    with open('event.txt', 'w') as f:
+        f.write(data_to_write)
+        # json.dump(data_to_write, f)
+    # time.sleep(2)  # Adjust the interval as needed
+
+    # send_event()
 
 class Command(BaseCommand):
     def handle(self, *args, **kwargs):
@@ -102,6 +136,7 @@ class Command(BaseCommand):
                     thing = parts[0]
                     inverter_id = parts[1]  # This will give 'inv1'
                     inverter_id = int(inverter_id[3:])
+                    inverter_name = get_inverter_name('my.inverter:inv' + str(inverter_id))
                     inv_instance = Inverter.objects.get(inverterID=inverter_id)
                     timestamp = payload["timestamp"]
 
@@ -126,10 +161,12 @@ class Command(BaseCommand):
                     if internalTemp is not None:
                         if internalTemp >= internalTempFault:
                             internalTempStatus = InverterAlarm.FAULT
-                            print(bcolors.FAIL + "Set alarm for internalTemp fault! Temperature is too high: " + str(internalTemp) + bcolors.ENDC)
+                            print(bcolors.FAIL + f"{inverter_name} Temperature is too high: " + str(internalTemp) + bcolors.ENDC)
+                            send_events(f"{inverter_name} Temperature is too high: " + str(internalTemp))
                         elif internalTemp >= internalTempWarning:
                             internalTempStatus = InverterAlarm.WARNING
                             print(bcolors.WARNING + "Set alarm for internalTemp warning! Temperature is elevated: " + str(internalTemp) + bcolors.ENDC)
+                            send_events("Set alarm for internalTemp warning! Temperature is elevated: " + str(internalTemp))
                         else:
                             print(bcolors.OKCYAN + "internalTemp is within normal range: " + str(internalTemp) + bcolors.ENDC)
                     else:

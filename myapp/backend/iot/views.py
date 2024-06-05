@@ -1152,15 +1152,8 @@ def realtimesitekpi(request):
     print("Average temp:", average_temp)
     print("Total irradiance:", site_irradiance_total)
     print("Average irradiance:", average_irradiance)
-
-
-
-
-
     return JsonResponse({'dev': 'siteId parameter is missing'})
-
-
-    
+   
 
 @csrf_exempt
 def realtimesitedata(request):
@@ -1570,6 +1563,7 @@ def inverter_control_set_polling_rate(inv_value, pollingrate):
 
     return JsonResponse({'pollingrate': 'okj'})
 
+@csrf_exempt
 def sse_stream(request):
     print(os.path.exists('event.txt'))
     current_dir = os.getcwd()
@@ -1583,11 +1577,11 @@ def sse_stream(request):
             # Read the event file and clear it
             sleep(1)  # Check every 0.1 seconds
             with open('event.txt', 'r') as f:
-                # content = f.read()
-                data_read = json.load(f)
+                content = f.read()
+                # data_read = json.load(f)
             os.remove('event.txt')
 
-            notification = "New notification " + data_read
+            notification = "New notification " + content
             i+=1
             yield f"data: {notification}\n\n"
             print("sending sse")
