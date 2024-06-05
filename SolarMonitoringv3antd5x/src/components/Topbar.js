@@ -5,19 +5,20 @@ import { FaBars } from 'react-icons/fa';
 import logo from '../assets/images/logo.png';
 import AuthContext from '../context/AuthContext';
 import { DownOutlined } from '@ant-design/icons';
-import { Dropdown, Space } from 'antd';
-import { Button, Modal, Input } from 'antd';
+import { Dropdown, Space, ConfigProvider } from 'antd';
+import { Button, Modal, Input, Badge } from 'antd';
+import { FaCaretDown } from "react-icons/fa";
+import { FaBell } from "react-icons/fa";
 
 
 export default function Topbar(props) {
   const { user } = useContext(AuthContext);
-
+  const hasNotifications = true; // Replace with actual notification logic
+  const [modal1Open, setModal1Open] = useState(false);
   return (
-
-
     <Navbar className='topbar' sticky='top'>
       <Container fluid>
-        <Navbar.Brand className="d-flex align-items-center">
+        <Navbar.Brand className="d-flex align-items-center w-100">
           <button
             className='btn btn-white me-4'
             onClick={() => {
@@ -27,18 +28,55 @@ export default function Topbar(props) {
             <FaBars className='text-white fs-5' />
           </button>
           <img src={logo} alt='' style={{ height: '50px' }} />
-          {user ? (
-            <UserDropDown />
-          ) : null}
+          <div style={{ color: 'white', fontSize: '16px', border: '0px solid red', flex: 1, justifyContent: 'flex-end' }}>
+            {user ? (
+              <div style={{ display: 'flex', color: 'white', fontSize: '16px', border: '0px solid black', justifyContent: 'flex-end' }}>
+                <div>
+                  <ConfigProvider
+                    theme={{
+                      components: {
+                        Badge: {
+                          dotSize: 10,
+                          indicatorHeightSM: 10,
+                          textFontSizeSM: 10
+                        },
+                      },
+                    }}
+                  >
+                      <Badge count={5} size='small' offset={[-10, 1]}>
+                        <FaBell style={{ marginRight: '10px', color: 'white' }} onClick={() => setModal1Open(true)} />
+                      </Badge>
+
+                  </ConfigProvider>
+                  <Modal
+                    title="20px to Top"
+                    style={{
+                      top: 80,
+                      left: 690,
+                    }}
+                    open={modal1Open}
+                    onOk={() => setModal1Open(false)}
+                    onCancel={() => setModal1Open(false)}
+                  >
+                    <p>some contents...</p>
+                    <p>some contents...</p>
+                    <p>some contents...</p>
+                  </Modal>
+
+
+                  {/* {hasNotifications && (
+                  <span className="notification-dot"></span>
+                )} */}
+                </div>
+                <UserDropDown />
+              </div>
+
+            ) : null}
+          </div>
+
         </Navbar.Brand>
       </Container>
-      <p>
-
-        <pre>
-          {JSON.stringify(user)}
-        </pre>
-      </p>
-    </Navbar>
+    </Navbar >
 
 
 
@@ -76,14 +114,26 @@ const UserDropDown = () => {
           items,
         }}
         trigger={['click']}
-        className="topright" // This class will push the dropdown to the right
       >
-        <a href="#" onClick={(e) => e.preventDefault()}>
-          <Space>
+        {/* <a href="#" onClick={(e) => e.preventDefault()} style={{ textDecoration: 'none' }}>
+          <span style={{ color: 'white', fontSize: '16px', border: '1px solid blue', }}>
             {user['first_name']}
-            <DownOutlined />
-          </Space>
+          </span>
+          <span style={{ color: 'white', fontSize: '16px', border: '1px solid blue' }}>
+            <FaCaretDown />
+          </span>
+
+        </a> */}
+        <a href="#" onClick={(e) => e.preventDefault()} style={{ textDecoration: 'none' }}>
+          <span style={{ color: 'white', fontSize: '16px', border: '0px solid blue' }}>
+            {user['first_name']}
+            {/* wheandoyoumat@gmail.com */}
+          </span>
+          <span style={{ color: 'white', fontSize: '16px', border: '0px solid blue' }}>
+            <FaCaretDown />
+          </span>
         </a>
+
       </Dropdown>
       <ChangeTimeZone p_isModalOpen={isModalOpen} p_setIsModalOpen={setIsModalOpen} />
       <text>{isModalOpen}</text>

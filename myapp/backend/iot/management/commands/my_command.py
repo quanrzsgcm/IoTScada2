@@ -2,7 +2,7 @@
 from django.core.management.base import BaseCommand
 import paho.mqtt.client as mqtt
 import json
-from iot.models import InverterMeasurement, Inverter, Site, SiteMeasurements, InverterState
+from iot.models import InverterMeasurement, Inverter, Site, SiteMeasurements, InverterState, InverterAlarm
 import queue
 import threading
 import time
@@ -59,7 +59,7 @@ class bcolors:
 def get_thresholds():
     target_url = os.getenv("BASE_URL_DITTO")  
     target_url = target_url + '/api/2/things/my.threshold:th1'
-    print("Target URL:", target_url)
+    # print("Target URL:", target_url)
 
     username = os.getenv("USERNAME")
     password = os.getenv("PASSWORD")
@@ -74,45 +74,112 @@ def get_thresholds():
 
     data = response.json()
     # Pretty print the JSON data
-    pretty_data = json.dumps(data, indent=4)
-    print(pretty_data)
-    print(data['features']['thresholds']['properties']['internalTempWarning'])
-    print(data['features']['thresholds']['properties']['internalTempFault'])
+    # pretty_data = json.dumps(data, indent=4)
+    # print(pretty_data)
+
 
     internalTempWarning = data['features']['thresholds']['properties']['internalTempWarning']    
     internalTempFault = data['features']['thresholds']['properties']['internalTempFault']
-    return internalTempWarning, internalTempFault
+    inputPowerWarning = data['features']['thresholds']['properties']['inputPowerWarning']    
+    inputPowerFault = data['features']['thresholds']['properties']['inputPowerFault']
+    outputPowerWarning = data['features']['thresholds']['properties']['outputPowerWarning']    
+    outputPowerFault = data['features']['thresholds']['properties']['outputPowerFault']
+    return internalTempWarning, internalTempFault, inputPowerWarning, inputPowerFault, outputPowerWarning, outputPowerFault
 
 # def check_for_thresh_hold():
 
 class Command(BaseCommand):
     def handle(self, *args, **kwargs):
-        threshold_warning, threshold_fault = get_thresholds()
         message_queue = queue.Queue()
         message_value_queue = queue.Queue()
 
         def check_for_thresh_hold():
             while True:
                 try:
-                    value = message_value_queue.get()
-                    print(value)
+                    payload = message_value_queue.get()
+                    topic = payload["topic"]
+                    parts = topic.split('/')
+                    thing = parts[0]
+                    inverter_id = parts[1]  # This will give 'inv1'
+                    inverter_id = int(inverter_id[3:])
+                    inv_instance = Inverter.objects.get(inverterID=inverter_id)
+                    timestamp = payload["timestamp"]
+
+                    if "value" in payload:
+                        value = payload["value"]
+
                     print(bcolors.WARNING + str(value) + bcolors.ENDC)
+
                     internalTemp = value.get('internalTemp')
-                    internalTempWarning, internalTempFault = get_thresholds()  # Get thresholds within the loop
+                    inputPower = value.get('inputPower')
+                    outputPower = value.get('activePower')
+
+                    (internalTempWarning, internalTempFault,
+                    inputPowerWarning, inputPowerFault,
+                    outputPowerWarning, outputPowerFault) = get_thresholds()
+
+                    internalTempStatus = InverterAlarm.NORMAL
+                    inputPowerStatus = InverterAlarm.NORMAL
+                    outputPowerStatus = InverterAlarm.NORMAL
+
+                    # Checking internalTemp
                     if internalTemp is not None:
                         if internalTemp >= internalTempFault:
-                            print(bcolors.FAIL + "Set alarm for fault! Temperature is too high: " + str(internalTemp) + bcolors.ENDC)
+                            internalTempStatus = InverterAlarm.FAULT
+                            print(bcolors.FAIL + "Set alarm for internalTemp fault! Temperature is too high: " + str(internalTemp) + bcolors.ENDC)
                         elif internalTemp >= internalTempWarning:
-                            print(bcolors.WARNING + "Set alarm for warning! Temperature is elevated: " + str(internalTemp) + bcolors.ENDC)
+                            internalTempStatus = InverterAlarm.WARNING
+                            print(bcolors.WARNING + "Set alarm for internalTemp warning! Temperature is elevated: " + str(internalTemp) + bcolors.ENDC)
                         else:
-                            print(bcolors.OKCYAN + "Temperature is within normal range: " + str(internalTemp) + bcolors.ENDC)
+                            print(bcolors.OKCYAN + "internalTemp is within normal range: " + str(internalTemp) + bcolors.ENDC)
                     else:
                         print("Internal temperature value is not available.")
+
+                    # Checking inputPower
+                    if inputPower is not None:
+                        if inputPower >= inputPowerFault:
+                            inputPowerStatus = InverterAlarm.FAULT
+                            print(bcolors.FAIL + "Set alarm for inputPower fault! Power is too high: " + str(inputPower) + bcolors.ENDC)
+                        elif inputPower >= inputPowerWarning:
+                            inputPowerStatus = InverterAlarm.WARNING
+                            print(bcolors.WARNING + "Set alarm for inputPower warning! Power is elevated: " + str(inputPower) + bcolors.ENDC)
+                        else:
+                            print(bcolors.OKCYAN + "inputPower is within normal range: " + str(inputPower) + bcolors.ENDC)
+                    else:
+                        print("Input power value is not available.")
+
+                    # Checking outputPower
+                    if outputPower is not None:
+                        if outputPower >= outputPowerFault:
+                            outputPowerStatus = InverterAlarm.FAULT
+                            print(bcolors.FAIL + "Set alarm for outputPower fault! Power is too high: " + str(outputPower) + bcolors.ENDC)
+                        elif outputPower >= outputPowerWarning:
+                            outputPowerStatus = InverterAlarm.WARNING
+                            print(bcolors.WARNING + "Set alarm for outputPower warning! Power is elevated: " + str(outputPower) + bcolors.ENDC)
+                        else:
+                            print(bcolors.OKCYAN + "outputPower is within normal range: " + str(outputPower) + bcolors.ENDC)
+                    else:
+                        print("Output power value is not available.")
+
+                    # Save the alarm record
+                    alarm = InverterAlarm(
+                        inverter=inv_instance,
+                        timestamp=timestamp,
+                        activePower=outputPower,
+                        inputPower=inputPower,
+                        internalTemp=internalTemp,
+                        activePowerStatus=outputPowerStatus,
+                        inputPowerStatus=inputPowerStatus,
+                        internalTempStatus=internalTempStatus,
+                        duration=0  # Adjust this as necessary
+                    )
+                    alarm.save()
+
+
                 except Exception as e:
                     print("Error in check_for_thresh_hold:", e)
                 finally:
                     message_value_queue.task_done()
-
 
 
         def process_messages():
@@ -207,7 +274,7 @@ class Command(BaseCommand):
                                 # Handle the None case here if needed
                                 print("meterReadTotalEnergy is None")
                                 # continue
-                            message_value_queue.put(value)
+                            message_value_queue.put(payload)
                             
                             # Create InverterMeasurement object and save it to the database
                             InverterMeasurement.objects.create(

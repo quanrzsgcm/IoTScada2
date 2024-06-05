@@ -8,6 +8,32 @@ import ApplyButton from '../components/ApplyButton';
 
 
 export default function SettingsPage() {
+    const applySetting = () => {
+        console.log('TRIGGERED')
+        console.log(`${process.env.REACT_APP_DJANGO_URL}/myadmin/threshold/`);
+        fetch(`${process.env.REACT_APP_DJANGO_URL}/myadmin/threshold/`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                // 'Authorization': 'Bearer ' + String(authTokens.access)
+            },
+            body: JSON.stringify(requestBody)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Update the state with the fetched data
+                console.log('Response from server', data);
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });           
+    };
+    
     const HomeIcon = (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -55,7 +81,7 @@ export default function SettingsPage() {
     const [value, setValue] = useState([0, 10, 20]);
     const start = value[0] / 100;
     const end = value[value.length - 1] / 100;
-    const [switch1, setSwitch1] = useState('No');
+    const [switch1, setSwitch1] = useState(null);
     const [inputValue, setInputValue] = useState(1);
     const onChange = (newValue) => {
         setInputValue(newValue);
@@ -98,7 +124,38 @@ export default function SettingsPage() {
 
     const [fetchedData,setFetchedData] = useState(null);
 
-    const [defaultValueminutes, setDefaultValueminutes] = useState(null)
+    const [defaultValueminutes, setDefaultValueminutes] = useState(null);
+
+    const [requestBody, setRequestBody] = useState({
+        internalTempWarning: null,
+        internalTempFault: null,
+
+        inputPowerWarning: null,
+        inputPowerFault: null,
+
+        outputPowerWarning: null,
+        outputPowerFault: null,
+        
+        on: null,
+        minutesToAlarm: null
+    });
+
+    useEffect(() => {
+        // Update requestBody whenever Input1, Input2, or Input3 changes
+        setRequestBody({
+            internalTempWarning: Input1,
+            internalTempFault: Input2,
+
+            inputPowerWarning: Input3,
+            inputPowerFault: Input4,
+
+            outputPowerWarning: Input5,
+            outputPowerFault: Input6,
+
+            on: switch1,
+            minutesToAlarm: Input7
+        });
+    }, [Input1, Input2, Input3, Input4, Input5, Input6, Input7, switch1]);
 
 
     useEffect(() => {
@@ -135,6 +192,7 @@ export default function SettingsPage() {
 
     useEffect(() => {
         if (fetchedData) {
+            setSwitch1(fetchedData.features?.idlealarm?.properties?.on ?? '')
             setDefaultValueminutes(fetchedData.features?.idlealarm?.properties?.minutesToAlarm ?? '');
             setInput1(fetchedData.features?.thresholds?.properties?.internalTempWarning ?? '');
             setInput2(fetchedData.features?.thresholds?.properties?.internalTempFault ?? '');
@@ -153,6 +211,7 @@ export default function SettingsPage() {
                     components: {                        
                         InputNumber: {
                             colorText: 'white',
+                            colorTextDisabled: 'rgba(0, 0, 0, 0.25)',
                         }
                     },
                 }}
@@ -171,7 +230,7 @@ export default function SettingsPage() {
                         onChange={onChangeInput7} min={1} max={100}
                         controls={false} 
                         value={defaultValueminutes}
-                        // value={limitOutputInModal ? limitOutputInModal : null} 
+                        disabled={!switch1}
                         style={{marginLeft:'0px', backgroundColor: '#043b3e', color: 'white', border: "0px solid #009bc4", borderRadius: 0 , width: '40px'}} />
                 <span style={{ marginLeft: '10px' }}>minutes </span>
 
@@ -182,7 +241,8 @@ export default function SettingsPage() {
                     border: '0px solid blue',
                     flexDirection: 'row',
                     height: '30px',
-                    marginTop: '20px'
+                    marginTop: '20px',
+                    alignItems: 'center'
                 }}>
                     <div style={{
                         display: 'flex',
@@ -229,7 +289,7 @@ export default function SettingsPage() {
                     border: '0px solid blue',
                     flexDirection: 'row',
                     height: 'auto',
-                    
+                    alignItems: 'center'                                        
                 }}>
                     <div style={{
                         display: 'flex',
@@ -250,7 +310,7 @@ export default function SettingsPage() {
                         border: '0px solid white',
                         flex: '1 1 200px',
                         justifyContent: 'space-between',
-
+                        alignItems: 'center'                        
                     }}>
                         
                         <InputNumber 
@@ -263,10 +323,7 @@ export default function SettingsPage() {
                         onChange={onChangeInput2} min={Input1} max={100} 
                         controls={false} 
                         value={Input2 ? Input2 : null} 
-                        style={{marginRight:'50px', backgroundColor: '#043b3e', color: 'white', border: "0px solid #009bc4", borderRadius: 0 }} />                  
-                    
-
-
+                        style={{marginRight:'50px', backgroundColor: '#043b3e', color: 'white', border: "0px solid #009bc4", borderRadius: 0 }} />
                     </div>
                     <div style={{
                         display: 'flex',
@@ -303,7 +360,7 @@ export default function SettingsPage() {
                         border: '0px solid white',
                         flex: '1 1 200px',
                         justifyContent: 'space-between',
-
+                        alignItems: 'center'   
                     }}>
                         
                         <InputNumber 
@@ -357,7 +414,7 @@ export default function SettingsPage() {
                         border: '0px solid white',
                         flex: '1 1 200px',
                         justifyContent: 'space-between',
-
+                        alignItems: 'center'   
                     }}>
                         
                         <InputNumber 
@@ -396,7 +453,7 @@ export default function SettingsPage() {
                 <CancelButton/>
                 </span>
                 <span>
-                <ApplyButton/>
+                <ApplyButton onClick={applySetting}/>
 
                 </span>
                 </div>

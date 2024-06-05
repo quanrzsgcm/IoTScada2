@@ -1079,8 +1079,88 @@ def get_total_energy(unitoftime, startTime, endTime, meter_id):
     return result
 
 
+@csrf_exempt
+def realtimesitekpi(request):
+    # Retrieve the base URL from the environment
+    target_url = os.getenv("BASE_URL_DITTO")  
+    target_url = target_url + '/api/2/search/things?namespaces=my.inverter&option=size(200)'
+    print("Target URL:", target_url)
+
+    username = os.getenv("USERNAME")
+    password = os.getenv("PASSWORD")
+
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Basic ' + b64encode((username + ':' + password).encode()).decode('utf-8'),
+    }
+
+    # Forward the request to the target URL with authentication headers
+    response = requests.get(target_url, headers=headers)
+    data = response.json()
+    print(json.dumps(data, indent=4))
+    # Initialize total capacity
+    total_capacity = 0
+
+    # Loop through items and sum up the capacity for each item
+    for item in data["items"]:
+        total_capacity += item["features"]["measurements"]["properties"]["capacity"]
+
+    print("Total Capacity:", total_capacity)
+
+    total_activePower = 0
+
+    for item in data["items"]:
+        total_activePower += item["features"]["measurements"]["properties"]["activePower"]
+
+    print("Total Active Power:", total_activePower)
 
 
+    # Retrieve the base URL from the environment
+    target_url = os.getenv("BASE_URL_DITTO")  
+    target_url = target_url + '/api/2/search/things?namespaces=my.ws&option=size(200)'
+    print("Target URL:", target_url)
+
+    username = os.getenv("USERNAME")
+    password = os.getenv("PASSWORD")
+
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Basic ' + b64encode((username + ':' + password).encode()).decode('utf-8'),
+    }
+
+    # Forward the request to the target URL with authentication headers
+    response = requests.get(target_url, headers=headers)
+    data = response.json()
+    print(json.dumps(data, indent=4))
+
+    site_temp_total = 0
+    site_irradiance_total = 0
+    num_items = len(data["items"])
+
+    for item in data["items"]:
+        site_temp_total += item["features"]["measurements"]["properties"]["temperature"]
+        site_irradiance_total += item["features"]["measurements"]["properties"]["irradiance"]
+
+    if num_items > 0:
+        average_temp = site_temp_total / num_items
+        average_irradiance = site_irradiance_total / num_items
+    else:
+        average_temp = 0
+        average_irradiance = 0
+
+    print("Total temp:", site_temp_total)
+    print("Average temp:", average_temp)
+    print("Total irradiance:", site_irradiance_total)
+    print("Average irradiance:", average_irradiance)
+
+
+
+
+
+    return JsonResponse({'dev': 'siteId parameter is missing'})
+
+
+    
 
 @csrf_exempt
 def realtimesitedata(request):
@@ -1492,7 +1572,6 @@ def inverter_control_set_polling_rate(inv_value, pollingrate):
 
 def sse_stream(request):
     print(os.path.exists('event.txt'))
-    print(os.path.exists('event.txt'))
     current_dir = os.getcwd()
     print("Current working directory:", current_dir)
     print("sse hooked")
@@ -1504,10 +1583,11 @@ def sse_stream(request):
             # Read the event file and clear it
             sleep(1)  # Check every 0.1 seconds
             with open('event.txt', 'r') as f:
-                f.read()
+                # content = f.read()
+                data_read = json.load(f)
             os.remove('event.txt')
 
-            notification = "New notification " + str(i)
+            notification = "New notification " + data_read
             i+=1
             yield f"data: {notification}\n\n"
             print("sending sse")

@@ -2366,7 +2366,7 @@ def get_connection_ditto_neuron(request, connection_id=None):
    
    
 #    """
-
+@csrf_exempt
 def handle_threshold(request):
     if request.method == 'GET':
         target_url = os.getenv("BASE_URL_DITTO")
@@ -2398,3 +2398,51 @@ def handle_threshold(request):
             # Handle any exceptions that occur during the request
             print(f"RequestException: {e}")
             return JsonResponse({'error': 'Request failed', 'details': str(e)}, status=500)
+    elif request.method == 'PUT':
+        # Parse JSON data from the request body
+        data = json.loads(request.body)
+        print(data)  # Print the JSON data
+
+        target_url = os.getenv("BASE_URL_DITTO")
+
+        username = os.getenv("USERNAME")
+        password = os.getenv("PASSWORD")
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Basic "
+            + b64encode((username + ":" + password).encode()).decode("utf-8"),
+        }
+        target_url_with_id = f"{target_url}/api/2/things/my.threshold:th1"
+        print("Target URL with ID:", target_url_with_id)
+        try:
+            response = requests.get(target_url_with_id, headers=headers)
+            print("Ditto start")
+            threshold = response.json()
+            print(threshold['features']['thresholds']['properties']['internalTempWarning'])
+            threshold['features']['thresholds']['properties']['internalTempWarning'] = data.get('internalTempWarning')
+            threshold['features']['thresholds']['properties']['internalTempFault'] = data.get('internalTempFault')
+            threshold['features']['thresholds']['properties']['inputPowerWarning'] = data.get('inputPowerWarning')
+            threshold['features']['thresholds']['properties']['inputPowerFault'] = data.get('inputPowerFault')
+            threshold['features']['thresholds']['properties']['outputPowerWarning'] = data.get('outputPowerWarning')
+            threshold['features']['thresholds']['properties']['outputPowerFault'] = data.get('outputPowerFault')
+            threshold['features']['idlealarm']['properties']['on'] = data.get('on')
+            threshold['features']['idlealarm']['properties']['minutesToAlarm'] = data.get('minutesToAlarm')
+           
+            response2 = requests.put(target_url_with_id, headers=headers, json=threshold)
+            print("Ditto end")
+            
+            if response2.status_code == 200:
+                data = response2.json()  # Parse JSON data from the response
+                return JsonResponse(data)
+            elif response2.status_code == 204:
+                return JsonResponse({'status':'success'})
+            else:
+                # Return an error response if the status code is not 200
+                return JsonResponse({'error': 'Failed to fetch data from Ditto', 'status_code': response.status_code}, status=response.status_code)
+        except requests.RequestException as e:
+            # Handle any exceptions that occur during the request
+            print(f"RequestException: {e}")
+            return JsonResponse({'error': 'Request failed', 'details': str(e)}, status=500)
+      
+    

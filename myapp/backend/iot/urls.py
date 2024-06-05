@@ -10,6 +10,8 @@ urlpatterns = [
     path('my-api/main-energy/', views.handle_energy_request, name='handle_energy_request'),
     path('my-api/total-energy/', views.handle_total_energy_request, name='handle_total_energy_request'),
     path('my-api/realtimesitedata/', views.realtimesitedata, name='realtimesitedata'),
+    path('my-api/realtimesitekpi/', views.realtimesitekpi, name='realtimesitekpi'),
+
     path('my-api/testquery/', views.total_energy_view),
     path('my-api/inverterdata/', views.inverter_activepower),
     path('my-api/invertercontrol/', views.inverter_control),

@@ -8,3 +8,14 @@
   top: 16px;
   right: 16px;
 }
+
+.notification-dot {
+  position: absolute;
+  top: 10;
+  right: 90px; /* Adjust this value to move it to the left */
+  height: 10px;
+  width: 10px;
+  background-color: red;
+  border-radius: 50%;
+}
+

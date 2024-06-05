@@ -66,7 +66,34 @@ class InverterMeasurement(models.Model):
     powerFactor = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     def __str__(self):
-        return f"Measurement at {self.timestamp} for Inverter {self.inverter.model}"
+        return f"Measurement at {self.timestamp} for Inverter {self.inverter.model}"  
+    
+class InverterAlarm(models.Model):
+    alarmID = models.AutoField(primary_key=True)
+    inverter = models.ForeignKey(Inverter, on_delete=models.CASCADE)  # ForeignKey reference to Inverter model
+    timestamp = models.DateTimeField()
+    activePower = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    inputPower = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    internalTemp = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    duration = models.IntegerField(null=True)  # Duration in minutes
+    
+    NORMAL = 'normal'
+    WARNING = 'warning'
+    FAULT = 'fault'
+
+    THRESHOLD_CHOICES = [
+        (NORMAL, 'Normal'),
+        (WARNING, 'Warning'),
+        (FAULT, 'Fault'),
+    ]
+
+    activePowerStatus = models.CharField(max_length=10, choices=THRESHOLD_CHOICES, default=NORMAL)
+    inputPowerStatus = models.CharField(max_length=10, choices=THRESHOLD_CHOICES, default=NORMAL)
+    internalTempStatus = models.CharField(max_length=10, choices=THRESHOLD_CHOICES, default=NORMAL)
+
+    def __str__(self):
+        return f"InverterAlarm {self.alarmID} for Inverter {self.inverter.name} at {self.timestamp}"
+
     
 class PowerMeterData(models.Model):
     meter_id = models.CharField(max_length=10, null=True)
