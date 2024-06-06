@@ -7,18 +7,18 @@
     "features": {
         "thresholds": {
             "properties": {
-                "internalTempWarning": 50,
-                "internalTempFault": 60,
-                "inputPowerWarning": 50,
-                "inputPowerFault": 60,
-                "outputPowerWarning": 50,
-                "outputPowerFault": 60
+                "internalTempWarning": 88,
+                "internalTempFault": 99,
+                "inputPowerWarning": 12,
+                "inputPowerFault": 44,
+                "outputPowerWarning": 3,
+                "outputPowerFault": 6
             }
         },
         "idlealarm": {
             "properties": {
-                "on": true,
-                "minutesToAlarm": 5        
+                "on": false,
+                "minutesToAlarm": null
             }
         }
     }

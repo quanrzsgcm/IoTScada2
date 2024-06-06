@@ -12,8 +12,13 @@ urlpatterns = [
     path('my-api/realtimesitedata/', views.realtimesitedata, name='realtimesitedata'),
     path('my-api/realtimesitekpi/', views.realtimesitekpi, name='realtimesitekpi'),
 
+    path('my-api/getsitehistoryright/', views.get_site_history_right, name='get_site_history_right'),
+    path('my-api/getsitehistoryrightreally/', views.get_site_history_right_really, name='get_site_history_right_really'),
+
     path('my-api/testquery/', views.total_energy_view),
     path('my-api/inverterdata/', views.inverter_activepower),
+    path('my-api/inverterdatachartright/', views.inverter_productionirradiation),
+        
     path('my-api/invertercontrol/', views.inverter_control),
     path('my-api/invertercount/', views.inverter_count),
     path('my-api/inverterlist/', views.inverter_list),

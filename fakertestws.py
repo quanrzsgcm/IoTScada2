@@ -12,11 +12,8 @@ load_dotenv()
 conn = psycopg2.connect(**insert_data_3.db_params)
 
 def generate_samples():
-    meterReadTotalEnergy = os.getenv("ENERGY_VAL")
-    meterReadTotalEnergy = int(meterReadTotalEnergy)
-    yieldToday = os.getenv("YIELD_VAL")
-    yieldToday = int(yieldToday)
-
+    irradiation = os.getenv("IRRADIATION_VAL")
+    irradiation = int(irradiation)
     
     # Set the timezone to Vietnam (Asia/Ho_Chi_Minh)
     local_timezone = pytz.timezone('Asia/Ho_Chi_Minh')
@@ -31,32 +28,22 @@ def generate_samples():
     for _ in range(200):
         # measurementID =  start_id
         timestamp = current_timestamp.strftime('%Y-%m-%dT%H:%M:%S.%f%z')
-        internalTemp = random.randint(1, 100)
-        inputPower = random.randint(1, 100)
-        gridFrequency =  random.randint(1, 100)
-        powerFactor = random.randint(1, 100)
         inverter_id = 1
-        activePower = random.randint(1, 100)
-        apparentPower = random.randint(1, 100)
-        efficiency = random.randint(1, 100)
-        meterReadTotalEnergy = meterReadTotalEnergy + random.randint(1, 100)
-        productionToday = meterReadTotalEnergy
-        reactivePower = random.randint(1, 100)
-        yieldToday = yieldToday + random.randint(1, 100)
+        irradiation = irradiation + random.randint(1, 100)
+        irradiance = random.randint(1, 100)
+        temperature = random.randint(1, 100)
 
-        yield (timestamp, internalTemp, inputPower, gridFrequency, powerFactor, inverter_id, activePower, apparentPower, efficiency, meterReadTotalEnergy, productionToday, reactivePower , yieldToday)
+        yield (timestamp, irradiation, irradiance, temperature,  inverter_id)
 
         # Add 1 minute and 1 second        
         current_timestamp += timedelta(minutes=20, seconds=1)
         # current_timestamp += timedelta(seconds=1, microseconds=100000)
 
     # Set or update a key-value pair in the .env file
-    set_key(".env", "ENERGY_VAL", str(meterReadTotalEnergy))
-    set_key(".env", "YIELD_VAL", str(yieldToday))
-
+    set_key(".env", "IRRADIATION_VAL", str(irradiation))
 
 # Print the generated samples
 for sample in generate_samples():
-    insert_data_3.insertData(conn,sample)
+    insert_data_3.insertDataWS(conn,sample)
 
 conn.close()  # Close the database connection

@@ -2,14 +2,16 @@ import React, { useContext, useEffect, useState } from 'react';
 import Chart from 'react-apexcharts';
 import './apexChartsStyles.css';
 import { ToggledProvider, useToggled } from '../../context/ToggledContext';
-import rawData from '../../sampledata/chart2data'
+// import rawData from '../../sampledata/chart2data'
 
 // x =< 10 show all x
 
-const Chart2 = () => {
+const Chart2 = ({ dateString, unitoftime}) => {
     const [chartWidth, setChartWidth] = useState('110%');
 
     const { toggled, setToggled } = useToggled();
+    const [rawData, setRawData] = useState(null);
+
 
     // useEffect(() => {
     //     console.log("Toggled state changed chart2:", toggled);
@@ -19,12 +21,30 @@ const Chart2 = () => {
     //         setChartWidth('110%');
     //     }
     // }, [toggled]);
+    useEffect(() => {
+        if (dateString) { // Check if dateString is not null
+            console.log(`${process.env.REACT_APP_DJANGO_URL}/api2/my-api/getsitehistoryrightreally`);
+            fetch(`${process.env.REACT_APP_DJANGO_URL}/api2/my-api/getsitehistoryrightreally/`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ date: dateString, unitoftime: unitoftime }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data); // Log the data
+                    setRawData(data);
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    }, [dateString, unitoftime ]); // Dependencies array includes dateString and unitoftime
 
     const ExportCSV = () => {
         // Construct CSV content
         let csvContent = 'Period,Production (kWh),Irradiation (Wh/㎡)\n';
         rawData.forEach(item => {
-            csvContent += `${item.Period},${item['Production (kWh)']},${item['Irradiation (Wh/㎡)']}\n`;
+            csvContent += `${item.Time},${item['ActivePower']},${item['Irradiance']}\n`;
         });
 
         // Create a Blob object containing the CSV data
@@ -47,9 +67,9 @@ const Chart2 = () => {
     }
 
     // Extract data from rawData
-    const period = rawData.map(item => item.period);
+    const period = rawData.map(item => item['timestamp']);
     const activePower = rawData.map(item => parseFloat(item['activePower']));
-    const irradiance = rawData.map(item => parseFloat(item['irradiance']));
+    const irradiance = rawData.map(item => parseFloat(item['internalTemp']));
 
     const svgIcon = `
 <svg width="16px" height="16px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

@@ -41,7 +41,8 @@ const ChartLeft = ({ dateString, unitoftime, inverter_id }) => {
 
     useEffect(() => {
         if (dateString) { // Check if dateString is not null
-            fetch("http://localhost:8000/api2/my-api/inverterdata/", {
+            console.log(`${process.env.REACT_APP_DJANGO_URL}/api2/my-api/inverterdata`);
+            fetch(`${process.env.REACT_APP_DJANGO_URL}/api2/my-api/inverterdata/`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

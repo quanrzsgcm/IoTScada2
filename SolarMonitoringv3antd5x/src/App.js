@@ -16,6 +16,7 @@ import Header from './components/Header'
 import { AuthProvider } from './context/AuthContext'
 import { ToggledProvider } from './context/ToggledContext';
 import DeviceListAdmin from './pages/DLadmin';
+import EmptyComponent from './components/Empty';
 
 
 function App() {
@@ -55,21 +56,16 @@ return (
         <Route path='/site-monitor/sitekpi' element={<SiteKPI />} />
         <Route path='/site-monitor/addnewdevice' element={<PmForm />} />
         <Route path='/site-monitor/devicelist' element={<DeviceList />} />
-        <Route path='/admin/manage-users' element={<DeviceList />} />
-        <Route path='/admin/manage-devices' element={<DeviceList />} />
+        <Route path='/admin/manage-users' element={<EmptyComponent />} />
+        <Route path='/admin/manage-devices' element={<EmptyComponent />} />
         <Route path='/admin/settings' element={<SettingsPage />} />
-        
       </Route>
       <Route path="/login" element={<SignIn />} />
     </Routes>
     </ToggledProvider>
   </AuthProvider>
 </BrowserRouter>
-
 )
-
-
-
 }
 
 export default App;

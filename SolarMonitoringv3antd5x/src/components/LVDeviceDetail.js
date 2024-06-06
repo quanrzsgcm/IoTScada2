@@ -626,7 +626,7 @@ const LVDeviceDetail = ({ selectedThing, setSelectedThing }) => {
                         // background: 'rgb(121, 181, 162)'
 
                     }}>
-                        <Chart1 />
+                        <Chart1 dateString={dateString} unitoftime={selectedLabel} inverter_id={selectedThing}/>
                     </div>
                 </div>
 

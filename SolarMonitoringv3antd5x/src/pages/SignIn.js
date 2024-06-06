@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import '../assets/styles/SignIn.scss';
-import Logo from '../assets/images/logo.png';
+import Logo from '../assets/images/01_logobachkhoatoi2.png';
 import { Checkbox, Form, Input } from 'antd';
 import { Link } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
@@ -67,7 +67,7 @@ export default function SignIn() {
           }}
         >
           <div>
-            <label className='form-label'>Username1</label>
+            <label className='form-label'>Username</label>
             <Form.Item
               name='username'
               rules={[

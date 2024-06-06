@@ -11,7 +11,7 @@
     "features": {
         "measurements": {
             "properties": {
-                "temperature": 0,
+                "temperature": 50,
                 "irradiance": 508748.54,
                 "irradiation": 39.89,
                 "state": "Full Capability"

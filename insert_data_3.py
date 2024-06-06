@@ -46,6 +46,37 @@ efficiency ,
         # Close the cursor (do not close the connection here)
         cursor.close()
 
+def insertDataWS(conn, data_to_insert):
+    try:
+        # Create a cursor for executing SQL statements
+        cursor = conn.cursor()
+
+        # Define the SQL query with placeholders for data
+        insert_query = """
+            INSERT INTO iot_weatherstationmeasurement  (
+            timestamp ,
+            "irradiation" , 
+            "irradiance" , 
+            "temperature" , 
+            "inverter_id"
+            )
+            VALUES (%s, %s, %s, %s, %s);
+        """
+
+        # Execute the query with the data tuple
+        cursor.execute(insert_query, data_to_insert)
+
+        # Commit the transaction
+        conn.commit()
+    except psycopg2.Error as e:
+        print(f"Database error: {e}")
+    finally:
+        # Close the cursor (do not close the connection here)
+        cursor.close()
+
+
+
+
 # Never call this function or everything will be gone forever
 def deleteAllRowsFromTable(conn, table_name):
     try:

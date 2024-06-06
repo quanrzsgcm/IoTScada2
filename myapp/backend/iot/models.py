@@ -68,6 +68,29 @@ class InverterMeasurement(models.Model):
     def __str__(self):
         return f"Measurement at {self.timestamp} for Inverter {self.inverter.model}"  
     
+class WeatherStation(models.Model):
+    weatherstationid = models.AutoField(primary_key=True)
+    site = models.ForeignKey(Site, on_delete=models.CASCADE) 
+    manufacturer = models.CharField(max_length=100)
+    model = models.CharField(max_length=100)
+    serialNumber = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"Weather Station {self.model} at Site {self.site.siteName}"
+
+class WeatherStationMeasurement(models.Model):
+    measurementID = models.AutoField(primary_key=True)
+    inverter = models.ForeignKey(Inverter, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField()
+    irradiation = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    irradiance = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    temperature = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    
+    def __str__(self):
+        return f"Measurement at {self.timestamp} for Weather Station {self.inverter.model}"  
+    
+
+    
 class InverterAlarm(models.Model):
     alarmID = models.AutoField(primary_key=True)
     inverter = models.ForeignKey(Inverter, on_delete=models.CASCADE)  # ForeignKey reference to Inverter model

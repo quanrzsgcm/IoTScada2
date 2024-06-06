@@ -32,19 +32,7 @@ const App = ({ setDateString, selectedLabel, uppersetSelectedLabel }) => {
         {
             label: 'Week',
             key: '2',
-        },
-        {
-            label: 'Month',
-            key: '3',
-        },
-        {
-            label: 'Year',
-            key: '4',
-        },
-        {
-            label: 'Total',
-            key: '5',
-        },
+        },        
 
     ];
     const menuProps = {

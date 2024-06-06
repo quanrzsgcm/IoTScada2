@@ -8,11 +8,12 @@ import threading
 import time
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
-from datetime import datetime
 import pytz
 import os
 from base64 import b64encode
 import requests
+from datetime import datetime
+from dateutil import parser
 
 # INSERT INTO iot_invertermeasurement (
 #     timestamp, 
@@ -244,6 +245,14 @@ class Command(BaseCommand):
                             print(f'State: {state}')
                             timestamp=payload["timestamp"]
                             print(f'Timestamp: {timestamp}')
+                            print(f'Type of Timestamp of msg: {type(timestamp)}')
+                            # The datetime string
+                            # timestamp = "2024-06-05T14:01:50.110956980Z"
+
+                            # Parsing the string to a datetime object
+                            datetime_obj = parser.isoparse(timestamp)
+                            print(f'Timestamp after parse: {datetime_obj}')
+                            print(f'Type of Timestamp after parse: {type(datetime_obj)}')
 
                             state_start_on = ""
                             last_state = InverterState.objects.filter(inverter__inverterID=inverter_id).order_by('-timestamp').first()
@@ -254,9 +263,13 @@ class Command(BaseCommand):
                                 last_state_starton = last_state.starton
                                 
                                 print(f"Last State: {last_state_value}, Timestamp: {last_state_timestamp}, Inverter ID: {last_state_inverterID}")
+                                print(f'Type of Timestamp of last state: {type(last_state_timestamp)}')
                                 print(f"Current State: {state}, Timestamp: {timestamp}, Inverter ID: {inverter_id}")
+                                print(f'Type of Timestamp of current: {type(timestamp)}')
+
+
                                 if state != last_state_value:
-                                    print("diff state")
+                                    print("State has changed")
                                     print(type(timestamp))
                                     state_start_on = timestamp                      
                              
@@ -277,19 +290,14 @@ class Command(BaseCommand):
                                     print(type(last_state_starton))
                                     state_start_on = last_state_starton
                             else: 
-                                print("not found state")
-                                print(type(timestamp))
-                                state_start_on = timestamp         
+                                print("Not found last state")
+                                print("Use timestamp of msg to be start on")
+                                print(type(datetime_obj))
+                                state_start_on = datetime_obj
                             
-                            print(f"Start On: {state_start_on}")
-                            print("debug")
-                            
-                            duration = timezone.now() - state_start_on
-                            print("debug2")
-                            
-                            print(f"Duration : {duration}")
-                            print("debug3")
-                            
+                            print(f"Start On: {state_start_on}")                            
+                            duration = timezone.now() - state_start_on                            
+                            print(f"Duration : {duration}")                            
 
                             InverterState.objects.create(
                                 inverter=inv_instance,
@@ -297,8 +305,6 @@ class Command(BaseCommand):
                                 timestamp=payload["timestamp"],
                                 starton= state_start_on
                             )
-                            print("debug4")
-
 
                             if path == "/features/measurements/properties/state":
                                 print('path == /features/measurements/properties/state')

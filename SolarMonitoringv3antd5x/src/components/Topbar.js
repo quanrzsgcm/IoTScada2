@@ -2,7 +2,8 @@ import React, { useContext, useEffect, useState } from 'react';
 import { Navbar, Container } from 'react-bootstrap';
 import '../assets/styles/Topbar.scss';
 import { FaBars } from 'react-icons/fa';
-import logo from '../assets/images/logo.png';
+// import logo from '../assets/images/logo.png';
+import logo from '../assets/images/01_logobachkhoatoi.png';
 import AuthContext from '../context/AuthContext';
 import { DownOutlined } from '@ant-design/icons';
 import { Dropdown, Space, ConfigProvider } from 'antd';
@@ -43,7 +44,7 @@ export default function Topbar(props) {
                       },
                     }}
                   >
-                      <Badge count={5} size='small' offset={[-10, 1]}>
+                      <Badge  count={0} size='small' offset={[-10, 1]}>
                         <FaBell style={{ marginRight: '10px', color: 'white' }} onClick={() => setModal1Open(true)} />
                       </Badge>
 

@@ -23,7 +23,7 @@ import paho.mqtt.client as mqtt
 # import the PowerMeterDataSerializer from the serializer file
 from .serializers import PowerMeterDataSerializer
 
-from .models import PowerMeterData, DailyEnergySum, MonthlyEnergySum, Inverter, InverterMeasurement, InverterState
+from .models import PowerMeterData, DailyEnergySum, MonthlyEnergySum, Inverter, InverterMeasurement, InverterState, WeatherStationMeasurement, WeatherStation
 from django.db.models import Sum
 from django.http import StreamingHttpResponse
 
@@ -60,6 +60,25 @@ def time_range_extract(dateString, unitoftime, local_timezone="Asia/Ho_Chi_Minh"
     start_of_day = date_object_local.replace(hour=0, minute=0, second=0, microsecond=0)
     end_of_day = (start_of_day + timedelta(days=1)) - timedelta(microseconds=1)   
 
+    if unitoftime == "Hour": ## This return 25 values for counting
+        intervals = []
+        current_start = start_of_day
+        while current_start < end_of_day:
+            current_end = current_start + timedelta(hours=1, microseconds=-1)
+            intervals.append({
+                'start': current_start.strftime('%Y-%m-%d %H:%M:%S.%f%z'),
+                'end': current_end.strftime('%Y-%m-%d %H:%M:%S.%f%z')
+            })
+            current_start = current_start + timedelta(hours=1)
+        intervals.append({
+                'start': current_start.strftime('%Y-%m-%d %H:%M:%S.%f%z'),
+                'end': current_start.strftime('%Y-%m-%d %H:%M:%S.%f%z')
+            })
+        current_start = current_start + timedelta(hours=1)
+
+        return intervals
+
+
     if unitoftime == "Day":
         intervals = []
         current_start = start_of_day
@@ -86,6 +105,18 @@ def time_range_extract(dateString, unitoftime, local_timezone="Asia/Ho_Chi_Minh"
         print("Start of the week (Monday):", start_of_week)
         print("End of the week (Sunday):", end_of_week)
         return {"start": start_of_week, "end": end_of_week}
+
+    if unitoftime == "OneWeek":
+        intervals = []
+        current_start = start_of_day - timedelta(days=start_of_day.weekday())
+        for i in range(8):  # Iterate for 8 days
+            day_start = current_start + timedelta(days=i)
+            day_end = day_start + timedelta(hours=23, minutes=59, seconds=59, microseconds=999999)
+            intervals.append({
+                'start': day_start.strftime('%Y-%m-%d %H:%M:%S.%f%z'),
+                'end': day_end.strftime('%Y-%m-%d %H:%M:%S.%f%z')
+            })
+        return intervals
 
     elif unitoftime == "Month":
         start_of_month = start_of_day.replace(day=1)
@@ -1160,12 +1191,7 @@ def realtimesitedata(request):
     site_id = request.GET.get('siteId')
     if site_id:
         # Retrieve the base URL from the environment
-        target_url = os.getenv("BASE_URL_GET_ALL_THING")
-
-        tempurl = "/my.site:site" + site_id
-        target_url = target_url + tempurl    
-        print("Target URL:", target_url)
-
+        target_url = os.getenv("BASE_URL_DITTO")
         username = os.getenv("USERNAME")
         password = os.getenv("PASSWORD")
 
@@ -1174,13 +1200,60 @@ def realtimesitedata(request):
             'Authorization': 'Basic ' + b64encode((username + ':' + password).encode()).decode('utf-8'),
         }
 
-        # Forward the request to the target URL with authentication headers
-        response = requests.get(target_url, headers=headers)
+        tempurl = "/api/2/things/my.inverter:inv"
+        tempurl = target_url + tempurl   
+        unique_inverter_ids = Inverter.objects.values_list('inverterID', flat=True).distinct()
+        print(unique_inverter_ids)
 
+        # Converting the result to a list of IDs
+        unique_inverter_ids = list(unique_inverter_ids)
+        print(unique_inverter_ids) 
+
+        print("Target URL:", target_url)
+
+        total_capacity = 0
+
+        for inverter_id in unique_inverter_ids:
+            target_url = tempurl + str(inverter_id)
+
+            
+            # Forward the request to the target URL with authentication headers
+            response = requests.get(target_url, headers=headers)
+            data = response.json()
+            total_capacity += data['features']['measurements']['properties']['capacity']
+            print(total_capacity)
+            print(total_capacity)
+            print(total_capacity)
+
+        target_url = os.getenv("BASE_URL_DITTO")
+
+        tempurl = "/api/2/things/my.ws:ws1"
+        tempurl = target_url + tempurl 
+
+        response = requests.get(tempurl, headers=headers)
+        print(response.text)
+        print(response.status_code)
         data = response.json()
-        print(data)
+        site_temp = data['features']['measurements']['properties']['temperature']
+        print(site_temp)
+        print(site_temp)
+        print(site_temp)
 
-        return JsonResponse(data, safe=False)
+        irradiation = data['features']['measurements']['properties']['irradiation']
+        print(irradiation)
+        print(irradiation)
+        print(irradiation)    
+
+        irradiance = data['features']['measurements']['properties']['irradiance']
+        
+        result = {
+            'irradiation' : irradiation,
+            'temperature': site_temp,
+            'capacity': total_capacity,
+            'irradiance': irradiance                       
+        }
+
+        return JsonResponse(result)
     else:
         return JsonResponse({'error': 'siteId parameter is missing'}, status=400)
 
@@ -1217,49 +1290,407 @@ def total_energy_view(request):
         print(converted_time)
     return JsonResponse({"result": "latest_measurement"})
     
+
+def test_function_for_active(dateString):
+    interval = time_range_extract(dateString, "Hour")
+    for mini in interval:
+        print(mini)
+    print("end")
+
+def one_inverter_production_and_irradiation_week(dateString, inverter_id):
+    intervals = time_range_extract(dateString, "OneWeek")
+    list_of_days = ['T2','T3','T4','T5','T6','T7','CN']
+    result = []
+    i = 0
+    for interval in intervals:
+        print(interval)
+        if i >= 7:
+            break
+
+        latest_measurement = InverterMeasurement.objects.filter(
+            timestamp__gte=intervals[i+1]['start'],
+            inverter_id=inverter_id
+        ).order_by('timestamp').values('meterReadTotalEnergy').first()
+
+        latest_measurement_irradiation = WeatherStationMeasurement.objects.filter(
+            timestamp__gte=intervals[i+1]['start'],
+            inverter_id=inverter_id
+        ).order_by('timestamp').values('irradiation').first()
+
+        # If you want the value directly
+        if latest_measurement is None:
+            break
+
+        if latest_measurement_irradiation is None:
+            break
+
+
+        meter_read_total_energy_start_next = latest_measurement['meterReadTotalEnergy'] if latest_measurement else None
+        print(meter_read_total_energy_start_next)
+
+        irradiation_start_next = latest_measurement_irradiation['irradiation'] if latest_measurement_irradiation else None
+        print(irradiation_start_next)
+
+        # Assuming you have a model InverterMeasurement
+        latest_measurement = InverterMeasurement.objects.filter(
+            timestamp__gte=intervals[i]['start'],
+            inverter_id=inverter_id
+        ).order_by('timestamp').values('meterReadTotalEnergy').first()
+
+        latest_measurement_irradiation = WeatherStationMeasurement.objects.filter(
+            timestamp__gte=intervals[i]['start'],
+            inverter_id=inverter_id
+        ).order_by('timestamp').values('irradiation').first()
+
+        # If you want the value directly
+        meter_read_total_energy_start = latest_measurement['meterReadTotalEnergy'] if latest_measurement else None
+        print(meter_read_total_energy_start)
+
+        irradiation_start = latest_measurement_irradiation['irradiation'] if latest_measurement_irradiation else None
+        print(irradiation_start)
+
+        new_point = {
+            'period': list_of_days[i],
+            'production': meter_read_total_energy_start_next - meter_read_total_energy_start,
+            'irradiation': irradiation_start_next - irradiation_start 
+        }
+
+        result.append(new_point)
+        print('---------------------------')      
+        i+=1
+
+    return result 
+
+def one_inverter_production_and_irradiation(dateString, inverter_id):
+    intervals = time_range_extract(dateString, "Hour")  
+
+    list_of_hours = [f"{hour}:00" for hour in range(24)]
+
+    # print(list_of_hours)
+
+    result = []
+    i = 0
+    for interval in intervals:
+        if i >= 24:
+            break
+        # print(intervals[i])
+        # print(f'i = {i}')
+
+        # print(intervals[i+1]['start'])
+        # print(intervals[i]['start'])
+
+        latest_measurement = InverterMeasurement.objects.filter(
+            timestamp__gte=intervals[i+1]['start'],
+            inverter_id=inverter_id
+        ).order_by('timestamp').values('meterReadTotalEnergy').first()
+
+        latest_measurement_irradiation = WeatherStationMeasurement.objects.filter(
+            timestamp__gte=intervals[i+1]['start'],
+            inverter_id=inverter_id
+        ).order_by('timestamp').values('irradiation').first()
+
+        # If you want the value directly
+        if latest_measurement is None:
+            break
+
+        if latest_measurement_irradiation is None:
+            break
+
+
+        meter_read_total_energy_start_next = latest_measurement['meterReadTotalEnergy'] if latest_measurement else None
+        # print(meter_read_total_energy_start_next)
+
+        irradiation_start_next = latest_measurement_irradiation['irradiation'] if latest_measurement_irradiation else None
+        # print(irradiation_start_next)
+
+        # Assuming you have a model InverterMeasurement
+        latest_measurement = InverterMeasurement.objects.filter(
+            timestamp__gte=intervals[i]['start'],
+            inverter_id=inverter_id
+        ).order_by('timestamp').values('meterReadTotalEnergy').first()
+
+        latest_measurement_irradiation = WeatherStationMeasurement.objects.filter(
+            timestamp__gte=intervals[i]['start'],
+            inverter_id=inverter_id
+        ).order_by('timestamp').values('irradiation').first()
+
+        # If you want the value directly
+        meter_read_total_energy_start = latest_measurement['meterReadTotalEnergy'] if latest_measurement else None
+        # print(meter_read_total_energy_start)
+
+        irradiation_start = latest_measurement_irradiation['irradiation'] if latest_measurement_irradiation else None
+        # print(irradiation_start)
+
+        new_point = {
+            'period': list_of_hours[i],
+            'production': meter_read_total_energy_start_next - meter_read_total_energy_start,
+            'irradiation': irradiation_start_next - irradiation_start 
+        }
+
+        result.append(new_point)
+        i+=1
+        continue
+    return result
+
 @csrf_exempt   
-def inverter_activepower(request):
+def inverter_productionirradiation(request):
     body = json.loads(request.body)
     print(body)  # Print the whole body for debugging
-
-    # Extract the date string
-    date_string = body.get('date')
     inverter_id = body.get('inverter_id')
     parts = inverter_id.split(":")
     inverter_id = parts[1][3:]
     inverter_id = int(inverter_id)
-    print(inverter_id)
+    print(inverter_id) 
+    # Extract the date string
+    date_string = body.get('date')
+    unitoftime = body.get('unitoftime')
+    if unitoftime == 'Week':
+        result = one_inverter_production_and_irradiation_week(date_string, inverter_id)
+        result = list(result)
+        return JsonResponse(result, safe=False)
+
+
+    elif unitoftime == 'Day':
+        result = one_inverter_production_and_irradiation(date_string, inverter_id)
+        result = list(result)
+        return JsonResponse(result, safe=False)
+
+    return JsonResponse({'error':'Internal Server Error'})
+
+@csrf_exempt
+def get_site_history_right(request):
+    body = json.loads(request.body)
+    print(body)  # Print the whole body for debugging
+    # Extract the date string
+    date_string = body.get('date')
+    unitoftime = body.get('unitoftime')
+    if unitoftime == 'Week':
+        # result = one_inverter_production_and_irradiation_week(date_string, inverter_id)
+        result = list(result)
+        return JsonResponse(result, safe=False)
+
+
+    elif unitoftime == 'Day':
+        # Querying for unique inverter IDs
+        unique_inverter_ids = Inverter.objects.values_list('inverterID', flat=True).distinct()
+        print(unique_inverter_ids)
+
+        # Converting the result to a list of IDs
+        unique_inverter_ids = list(unique_inverter_ids)
+        print(unique_inverter_ids)        
+       
+        result1 = one_inverter_production_and_irradiation(date_string, 1)
+        print(result1)
+        result2 = one_inverter_production_and_irradiation(date_string, 2)
+        print(result2)
+
+
+        result = list(result1)
+        return JsonResponse(result, safe=False)    
+
+    return JsonResponse({'error': 'Out of bound unit of time'}, status=500)
+
+
+@csrf_exempt
+def get_site_history_right_really(request):
+    print("called")
+    body = json.loads(request.body)
+    print(body)  # Print the whole body for debugging
+    # Extract the date string
+    date_string = body.get('date')
+    unitoftime = body.get('unitoftime')
     
+    if date_string:
+        if unitoftime == 'Day':
+            time_range = time_range_extract(date_string, "OneDay")
+            start, end = time_range['start'], time_range['end']
+            print("Start:", start)
+            print("End:", end)
+
+            measurements = InverterMeasurement.objects.filter(
+                        inverter_id=1,
+                        timestamp__gte=start,
+                        timestamp__lte=end,
+                    ).order_by('timestamp')
+            
+            # Serialize the queryset into a list of dictionaries
+            measurement_list = list(measurements.values())
+
+            # Convert the timestamp to UTC+7
+            for measurement in measurement_list:
+                utc_timestamp = measurement['timestamp']
+                # Assuming the timestamps are already aware and in UTC, adjust by 7 hours
+                utc_plus_7_timestamp = utc_timestamp + timedelta(hours=7)
+                measurement['timestamp'] = utc_plus_7_timestamp.isoformat()
+                utc_timestamp = measurement['timestamp']
+                # Extract only the time part (hours and minutes)
+                time_part = utc_timestamp.split('T')[1][:5]
+                measurement['timestamp'] = time_part
+
+
+            return JsonResponse(measurement_list, safe=False)     
+
+        if unitoftime == "Week":
+            time_range = time_range_extract(date_string, unitoftime)
+            start, end = time_range['start'], time_range['end']
+            print("Start:", start)
+            print("End:", end)
+
+            measurements = InverterMeasurement.objects.filter(
+                        inverter_id=1,
+                        timestamp__gte=start,
+                        timestamp__lte=end,
+                    ).order_by('timestamp')
+            
+            # Serialize the queryset into a list of dictionaries
+            measurement_list = list(measurements.values())
+
+            # Convert the timestamp to UTC+7
+            for measurement in measurement_list:
+                utc_timestamp = measurement['timestamp']
+                # Assuming the timestamps are already aware and in UTC, adjust by 7 hours
+                utc_plus_7_timestamp = utc_timestamp + timedelta(hours=7)
+                measurement['timestamp'] = utc_plus_7_timestamp.isoformat()
+                # utc_timestamp = measurement['timestamp']
+                # # Extract only the time part (hours and minutes)
+                # time_part = utc_timestamp.split('T')[1][:5]
+                # measurement['timestamp'] = time_part
+
+
+            return JsonResponse(measurement_list, safe=False)   
+
+        return JsonResponse({'error': 'Out of bound unit of time'}, status=500)
+
+    return JsonResponse({'error': 'Not found datestring'}, status=500)
+  
+
+@csrf_exempt
+def inverter_activepower(request):
+    body = json.loads(request.body)
+    date_string = body.get('date')
+    unitoftime = body.get('unitoftime')
+    inverter_id = body.get('inverter_id')
+    parts = inverter_id.split(":")
+    inverter_id = parts[1][3:]
+    inverter_id = int(inverter_id)
+    print(inverter_id)    
 
     if date_string:
-        time_range = time_range_extract(date_string, "OneDay")
-        start, end = time_range['start'], time_range['end']
-        print("Start:", start)
-        print("End:", end)
+        if unitoftime == 'Day':
 
-        measurements = InverterMeasurement.objects.filter(
-                    inverter_id=inverter_id,
-                    timestamp__gte=start,
-                    timestamp__lte=end,
-                ).order_by('timestamp')
-        
-         # Serialize the queryset into a list of dictionaries
-        measurement_list = list(measurements.values())
+            time_range = time_range_extract(date_string, "OneDay")
+            start, end = time_range['start'], time_range['end']
+            print("Start:", start)
+            print("End:", end)
 
-        # Convert the timestamp to UTC+7
-        for measurement in measurement_list:
-            utc_timestamp = measurement['timestamp']
-            # Assuming the timestamps are already aware and in UTC, adjust by 7 hours
-            utc_plus_7_timestamp = utc_timestamp + timedelta(hours=7)
-            measurement['timestamp'] = utc_plus_7_timestamp.isoformat()
-            utc_timestamp = measurement['timestamp']
-            # Extract only the time part (hours and minutes)
-            time_part = utc_timestamp.split('T')[1][:5]
-            measurement['timestamp'] = time_part
+            measurements = InverterMeasurement.objects.filter(
+                        inverter_id=inverter_id,
+                        timestamp__gte=start,
+                        timestamp__lte=end,
+                    ).order_by('timestamp')
+            
+            # Serialize the queryset into a list of dictionaries
+            measurement_list = list(measurements.values())
+
+            # Convert the timestamp to UTC+7
+            for measurement in measurement_list:
+                utc_timestamp = measurement['timestamp']
+                # Assuming the timestamps are already aware and in UTC, adjust by 7 hours
+                utc_plus_7_timestamp = utc_timestamp + timedelta(hours=7)
+                measurement['timestamp'] = utc_plus_7_timestamp.isoformat()
+                utc_timestamp = measurement['timestamp']
+                # Extract only the time part (hours and minutes)
+                time_part = utc_timestamp.split('T')[1][:5]
+                measurement['timestamp'] = time_part
 
 
-        return JsonResponse(measurement_list, safe=False)          
-  
+            return JsonResponse(measurement_list, safe=False)     
+
+        if unitoftime == "Week":
+            time_range = time_range_extract(date_string, unitoftime)
+            start, end = time_range['start'], time_range['end']
+            print("Start:", start)
+            print("End:", end)
+
+            measurements = InverterMeasurement.objects.filter(
+                        inverter_id=inverter_id,
+                        timestamp__gte=start,
+                        timestamp__lte=end,
+                    ).order_by('timestamp')
+            
+            # Serialize the queryset into a list of dictionaries
+            measurement_list = list(measurements.values())
+
+            # Convert the timestamp to UTC+7
+            for measurement in measurement_list:
+                utc_timestamp = measurement['timestamp']
+                # Assuming the timestamps are already aware and in UTC, adjust by 7 hours
+                utc_plus_7_timestamp = utc_timestamp + timedelta(hours=7)
+                measurement['timestamp'] = utc_plus_7_timestamp.isoformat()
+                # utc_timestamp = measurement['timestamp']
+                # # Extract only the time part (hours and minutes)
+                # time_part = utc_timestamp.split('T')[1][:5]
+                # measurement['timestamp'] = time_part
+
+
+            return JsonResponse(measurement_list, safe=False)  
+            
+        if unitoftime == "Month":
+            time_range = time_range_extract(date_string, unitoftime)
+            start, end = time_range['start'], time_range['end']
+            print("Start:", start)
+            print("End:", end)
+
+            measurements = InverterMeasurement.objects.filter(
+                        inverter_id=inverter_id,
+                        timestamp__gte=start,
+                        timestamp__lte=end,
+                    ).order_by('timestamp')
+            
+            # Serialize the queryset into a list of dictionaries
+            measurement_list = list(measurements.values())
+
+            # Convert the timestamp to UTC+7
+            for measurement in measurement_list:
+                utc_timestamp = measurement['timestamp']
+                # Assuming the timestamps are already aware and in UTC, adjust by 7 hours
+                utc_plus_7_timestamp = utc_timestamp + timedelta(hours=7)
+                measurement['timestamp'] = utc_plus_7_timestamp.isoformat()
+                # utc_timestamp = measurement['timestamp']
+                # # Extract only the time part (hours and minutes)
+                # time_part = utc_timestamp.split('T')[1][:5]
+                # measurement['timestamp'] = time_part
+
+
+            return JsonResponse(measurement_list, safe=False)  
+
+        elif unitoftime == "Year":
+            time_range = time_range_extract(date_string, unitoftime)
+            start, end = time_range['start'], time_range['end']
+            print("Start:", start)
+            print("End:", end)
+
+            measurements = InverterMeasurement.objects.filter(
+                        inverter_id=inverter_id,
+                        timestamp__gte=start,
+                        timestamp__lte=end,
+                    ).order_by('timestamp')
+            
+            # Serialize the queryset into a list of dictionaries
+            measurement_list = list(measurements.values())
+
+            # Convert the timestamp to UTC+7
+            for measurement in measurement_list:
+                utc_timestamp = measurement['timestamp']
+                # Assuming the timestamps are already aware and in UTC, adjust by 7 hours
+                utc_plus_7_timestamp = utc_timestamp + timedelta(hours=7)
+                measurement['timestamp'] = utc_plus_7_timestamp.isoformat()
+                # utc_timestamp = measurement['timestamp']
+                # # Extract only the time part (hours and minutes)
+                # time_part = utc_timestamp.split('T')[1][:5]
+                # measurement['timestamp'] = time_part
+
+            return JsonResponse(measurement_list, safe=False)
     return JsonResponse({"here":"there"})
 
 @csrf_exempt   
@@ -1399,19 +1830,12 @@ def inverter_control(request):
     return JsonResponse({"message": "Data published to MQTT topic successfully."})
     
 
+
+
+
 @csrf_exempt
 # @permission_classes([IsAuthenticated])
 def inverter_count(request): 
-    # target_url = (
-    #     "http://localhost:8080/api/2/things"  # Replace with your actual target URL
-    # )
-    # # Extract authentication headers from the incoming request
-    # auth_headers = {}
-    # for header, value in request.headers.items():
-    #     if header.startswith("Authorization"):
-    #         auth_headers[header] = value
-
-    # Retrieve the base URL from the environment
     target_url = os.getenv("BASE_URL_DITTO")
   
     target_url = target_url + '/api/2/search/things/count?namespaces=my.inverter'

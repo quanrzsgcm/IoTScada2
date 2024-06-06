@@ -5,7 +5,7 @@ import { ToggledProvider, useToggled } from '../../context/ToggledContext';
 
 // x =< 10 show all x
 
-const Chart1 = () => {
+const Chart1 = ({ dateString, unitoftime}) => {
     const [chartWidth, setChartWidth] = useState('110%');
 
     const { toggled, setToggled } = useToggled()
@@ -20,145 +20,169 @@ const Chart1 = () => {
     // }, [toggled]);
 
     // Sample data
-    const rawData = [
-        // { Period: '0:00', 'Production (kWh)': 0, 'Irradiation (Wh/㎡)': 0 },
-        // { Period: '1:00', 'Production (kWh)': 0, 'Irradiation (Wh/㎡)': 0 },
-        // { Period: '2:00', 'Production (kWh)': 0, 'Irradiation (Wh/㎡)': 0 },
-        // { Period: '3:00', 'Production (kWh)': 0, 'Irradiation (Wh/㎡)': 0 },
-        // { Period: '4:00', 'Production (kWh)': 0, 'Irradiation (Wh/㎡)': 0 },
-        // { Period: '5:00', 'Production (kWh)': 0, 'Irradiation (Wh/㎡)': 3.09 },
-        // { Period: '6:00', 'Production (kWh)': 73.56, 'Irradiation (Wh/㎡)': 77.1 },
-        // { Period: '7:00', 'Production (kWh)': 283.41, 'Irradiation (Wh/㎡)': 270.06 },
-        // { Period: '8:00', 'Production (kWh)': 492, 'Irradiation (Wh/㎡)': 482.78 },
-        // { Period: '9:00', 'Production (kWh)': 690.22, 'Irradiation (Wh/㎡)': 710.71 },
-        // { Period: '10:00', 'Production (kWh)': 453.47, 'Irradiation (Wh/㎡)': 481.08 },        
-        {
-            "Period": "0:00",
-            "Production (kWh)": 0,
-            "Irradiation (Wh/㎡)": 0
-        },
-        {
-            "Period": "1:00",
-            "Production (kWh)": 0,
-            "Irradiation (Wh/㎡)": 0
-        },
-        {
-            "Period": "2:00",
-            "Production (kWh)": 0,
-            "Irradiation (Wh/㎡)": 0
-        },
-        {
-            "Period": "3:00",
-            "Production (kWh)": 0,
-            "Irradiation (Wh/㎡)": 0
-        },
-        {
-            "Period": "4:00",
-            "Production (kWh)": 0,
-            "Irradiation (Wh/㎡)": 0
-        },
-        {
-            "Period": "5:00",
-            "Production (kWh)": 3.75,
-            "Irradiation (Wh/㎡)": 3.49
-        },
-        {
-            "Period": "6:00",
-            "Production (kWh)": 66.75,
-            "Irradiation (Wh/㎡)": 72.69
-        },
-        {
-            "Period": "7:00",
-            "Production (kWh)": 256.88,
-            "Irradiation (Wh/㎡)": 250.96
-        },
-        {
-            "Period": "8:00",
-            "Production (kWh)": 486.63,
-            "Irradiation (Wh/㎡)": 477.86
-        },
-        {
-            "Period": "9:00",
-            "Production (kWh)": 687.31,
-            "Irradiation (Wh/㎡)": 688.44
-        },
-        {
-            "Period": "10:00",
-            "Production (kWh)": 739.22,
-            "Irradiation (Wh/㎡)": 831.39
-        },
-        {
-            "Period": "11:00",
-            "Production (kWh)": 761.84,
-            "Irradiation (Wh/㎡)": 834.8
-        },
-        {
-            "Period": "12:00",
-            "Production (kWh)": 826,
-            "Irradiation (Wh/㎡)": 913.28
-        },
-        {
-            "Period": "13:00",
-            "Production (kWh)": 730.09,
-            "Irradiation (Wh/㎡)": 834.39
-        },
-        {
-            "Period": "14:00",
-            "Production (kWh)": 608.5,
-            "Irradiation (Wh/㎡)": 675.93
-        },
-        {
-            "Period": "15:00",
-            "Production (kWh)": 435.34,
-            "Irradiation (Wh/㎡)": 495.3
-        },
-        {
-            "Period": "16:00",
-            "Production (kWh)": 213.59,
-            "Irradiation (Wh/㎡)": 250.36
-        },
-        {
-            "Period": "17:00",
-            "Production (kWh)": 46.5,
-            "Irradiation (Wh/㎡)": 55.62
-        },
-        {
-            "Period": "18:00",
-            "Production (kWh)": 0,
-            "Irradiation (Wh/㎡)": 0.63
-        },
-        {
-            "Period": "19:00",
-            "Production (kWh)": 0,
-            "Irradiation (Wh/㎡)": 0
-        },
-        {
-            "Period": "20:00",
-            "Production (kWh)": 0,
-            "Irradiation (Wh/㎡)": 0
-        },
-        {
-            "Period": "21:00",
-            "Production (kWh)": 0,
-            "Irradiation (Wh/㎡)": 0
-        },
-        {
-            "Period": "22:00",
-            "Production (kWh)": 0,
-            "Irradiation (Wh/㎡)": 0
-        },
-        {
-            "Period": "23:00",
-            "Production (kWh)": 0,
-            "Irradiation (Wh/㎡)": 0
+    // const rawData = [
+    //     // { Period: '0:00', 'Production (kWh)': 0, 'Irradiation (Wh/㎡)': 0 },
+    //     // { Period: '1:00', 'Production (kWh)': 0, 'Irradiation (Wh/㎡)': 0 },
+    //     // { Period: '2:00', 'Production (kWh)': 0, 'Irradiation (Wh/㎡)': 0 },
+    //     // { Period: '3:00', 'Production (kWh)': 0, 'Irradiation (Wh/㎡)': 0 },
+    //     // { Period: '4:00', 'Production (kWh)': 0, 'Irradiation (Wh/㎡)': 0 },
+    //     // { Period: '5:00', 'Production (kWh)': 0, 'Irradiation (Wh/㎡)': 3.09 },
+    //     // { Period: '6:00', 'Production (kWh)': 73.56, 'Irradiation (Wh/㎡)': 77.1 },
+    //     // { Period: '7:00', 'Production (kWh)': 283.41, 'Irradiation (Wh/㎡)': 270.06 },
+    //     // { Period: '8:00', 'Production (kWh)': 492, 'Irradiation (Wh/㎡)': 482.78 },
+    //     // { Period: '9:00', 'Production (kWh)': 690.22, 'Irradiation (Wh/㎡)': 710.71 },
+    //     // { Period: '10:00', 'Production (kWh)': 453.47, 'Irradiation (Wh/㎡)': 481.08 },        
+    //     {
+    //         "Period": "0:00",
+    //         "Production (kWh)": 0,
+    //         "Irradiation (Wh/㎡)": 0
+    //     },
+    //     {
+    //         "Period": "1:00",
+    //         "Production (kWh)": 0,
+    //         "Irradiation (Wh/㎡)": 0
+    //     },
+    //     {
+    //         "Period": "2:00",
+    //         "Production (kWh)": 0,
+    //         "Irradiation (Wh/㎡)": 0
+    //     },
+    //     {
+    //         "Period": "3:00",
+    //         "Production (kWh)": 0,
+    //         "Irradiation (Wh/㎡)": 0
+    //     },
+    //     {
+    //         "Period": "4:00",
+    //         "Production (kWh)": 0,
+    //         "Irradiation (Wh/㎡)": 0
+    //     },
+    //     {
+    //         "Period": "5:00",
+    //         "Production (kWh)": 3.75,
+    //         "Irradiation (Wh/㎡)": 3.49
+    //     },
+    //     {
+    //         "Period": "6:00",
+    //         "Production (kWh)": 66.75,
+    //         "Irradiation (Wh/㎡)": 72.69
+    //     },
+    //     {
+    //         "Period": "7:00",
+    //         "Production (kWh)": 256.88,
+    //         "Irradiation (Wh/㎡)": 250.96
+    //     },
+    //     {
+    //         "Period": "8:00",
+    //         "Production (kWh)": 486.63,
+    //         "Irradiation (Wh/㎡)": 477.86
+    //     },
+    //     {
+    //         "Period": "9:00",
+    //         "Production (kWh)": 687.31,
+    //         "Irradiation (Wh/㎡)": 688.44
+    //     },
+    //     {
+    //         "Period": "10:00",
+    //         "Production (kWh)": 739.22,
+    //         "Irradiation (Wh/㎡)": 831.39
+    //     },
+    //     {
+    //         "Period": "11:00",
+    //         "Production (kWh)": 761.84,
+    //         "Irradiation (Wh/㎡)": 834.8
+    //     },
+    //     {
+    //         "Period": "12:00",
+    //         "Production (kWh)": 826,
+    //         "Irradiation (Wh/㎡)": 913.28
+    //     },
+    //     {
+    //         "Period": "13:00",
+    //         "Production (kWh)": 730.09,
+    //         "Irradiation (Wh/㎡)": 834.39
+    //     },
+    //     {
+    //         "Period": "14:00",
+    //         "Production (kWh)": 608.5,
+    //         "Irradiation (Wh/㎡)": 675.93
+    //     },
+    //     {
+    //         "Period": "15:00",
+    //         "Production (kWh)": 435.34,
+    //         "Irradiation (Wh/㎡)": 495.3
+    //     },
+    //     {
+    //         "Period": "16:00",
+    //         "Production (kWh)": 213.59,
+    //         "Irradiation (Wh/㎡)": 250.36
+    //     },
+    //     {
+    //         "Period": "17:00",
+    //         "Production (kWh)": 46.5,
+    //         "Irradiation (Wh/㎡)": 55.62
+    //     },
+    //     {
+    //         "Period": "18:00",
+    //         "Production (kWh)": 0,
+    //         "Irradiation (Wh/㎡)": 0.63
+    //     },
+    //     {
+    //         "Period": "19:00",
+    //         "Production (kWh)": 0,
+    //         "Irradiation (Wh/㎡)": 0
+    //     },
+    //     {
+    //         "Period": "20:00",
+    //         "Production (kWh)": 0,
+    //         "Irradiation (Wh/㎡)": 0
+    //     },
+    //     {
+    //         "Period": "21:00",
+    //         "Production (kWh)": 0,
+    //         "Irradiation (Wh/㎡)": 0
+    //     },
+    //     {
+    //         "Period": "22:00",
+    //         "Production (kWh)": 0,
+    //         "Irradiation (Wh/㎡)": 0
+    //     },
+    //     {
+    //         "Period": "23:00",
+    //         "Production (kWh)": 0,
+    //         "Irradiation (Wh/㎡)": 0
+    //     }
+    // ];
+
+    const [rawData, setRawData] = useState(null);
+
+    useEffect(() => {
+        if (dateString) { // Check if dateString is not null
+            console.log(`${process.env.REACT_APP_DJANGO_URL}/api2/my-api/getsitehistoryright/`);
+            fetch(`${process.env.REACT_APP_DJANGO_URL}/api2/my-api/getsitehistoryright/`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ date: dateString, unitoftime: unitoftime }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data); // Log the data
+                    setRawData(data);
+                })
+                .catch(error => console.error('Error:', error));
         }
-    ];
+    }, [dateString, unitoftime]); // Dependencies array includes dateString and unitoftime
+
+
+
 
     const ExportCSV = () => {
         // Construct CSV content
         let csvContent = 'Period,Production (kWh),Irradiation (Wh/㎡)\n';
         rawData.forEach(item => {
-        csvContent += `${item.Period},${item['Production (kWh)']},${item['Irradiation (Wh/㎡)']}\n`;
+            csvContent += `${item.period},${item['production']},${item['irradiation']}\n`;
         });
 
         // Create a Blob object containing the CSV data
@@ -182,9 +206,9 @@ const Chart1 = () => {
     }
 
     // Extract data from rawData
-    const period = rawData.map(item => item.Period);
-    const production = rawData.map(item => parseFloat(item['Production (kWh)']));
-    const irradiation = rawData.map(item => parseFloat(item['Irradiation (Wh/㎡)']));
+    const period = rawData.map(item => item.period);
+    const production = rawData.map(item => parseFloat(item['production']));
+    const irradiation = rawData.map(item => parseFloat(item['irradiation']));
     const svgIcon = `
 <svg width="16px" height="16px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
   <path d="M12.5535 16.5061C12.4114 16.6615 12.2106 16.75 12 16.75C11.7894 16.75 11.5886 16.6615 11.4465 16.5061L7.44648 12.1311C7.16698 11.8254 7.18822 11.351 7.49392 11.0715C7.79963 10.792 8.27402 10.8132 8.55352 11.1189L11.25 14.0682V3C11.25 2.58579 11.5858 2.25 12 2.25C12.4142 2.25 12.75 2.58579 12.75 3V14.0682L15.4465 11.1189C15.726 10.8132 16.2004 10.792 16.5061 11.0715C16.8118 11.351 16.833 11.8254 16.5535 12.1311L12.5535 16.5061Z" fill="rgb(161,171,182)"/>

@@ -1096,7 +1096,7 @@ def create_device(node, request, host, port):
     print(response.status_code)
     if response.status_code == 409:
         return 1
-    device_setting(request, node, token, '192.168.1.2', 502)
+    device_setting(request, node, token, host, 502)
     return 0
 
 def device_setting(request, node, token, host, port):

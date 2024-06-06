@@ -55,13 +55,12 @@ export default function SiteView() {
                 .then(data => {
                     // Update the state with the fetched data
                     console.log('Fetched data:', data);
-                    setRealTimeSiteData({
-                        capacity: data.features.measurements.properties.capacity,
-                        temp: data.features.measurements.properties.temp,
-                        irradiation: data.features.measurements.properties.irradiation,
-                        yield: data.features.measurements.properties.yield,
-                        production: data.features.measurements.properties.production,
-                        powerratio: data.features.measurements.properties.powerratio,
+                    setRealTimeSiteData({ 
+                        irradiation: data.irradiation,
+                        capacity: data.capacity,
+                        temp: data.temperature,
+                        // production: data.production,
+                        // powerratio: data.powerratio,
                     });
                 })
                 .catch(error => {
@@ -187,9 +186,9 @@ export default function SiteView() {
             </br>
             {selectedLabel}
             </div> */}
-            <div>
+            {/* <div>
             <EventSourceComponent/>
-            </div>
+            </div> */}
 
             <div style={{
                 display: 'flex',
@@ -262,21 +261,13 @@ export default function SiteView() {
                 <span style={{ color: 'white', marginRight: '5px' }}>{realtimesitedata.irradiation}</span>
                 <span style={{ color: 'white', marginRight: '40px' }}>Wh/㎡</span>
 
-                <span style={{ color: '#9cafb0', marginRight: '5px' }}>Yield</span>
-                <span style={{ color: 'white', marginRight: '5px' }}>{realtimesitedata.yield}</span>
-                <span style={{ color: 'white', marginRight: '40px' }}>h</span>
-
+               
                 <span style={{ color: '#9cafb0', marginRight: '5px' }}>Production</span>
                 <span style={{ color: 'white', marginRight: '5px' }}>{realtimesitedata.production}</span>
-                <span style={{ color: 'white', marginRight: '40px' }}>MWh</span>
-
-                <span style={{ color: '#9cafb0', marginRight: '5px' }}>Power Ratio</span>
-                <span style={{ color: 'white', marginRight: '5px' }}>{realtimesitedata.powerratio}</span>
-                <span style={{ color: 'white', marginRight: '40px' }}>%</span>
+                <span style={{ color: 'white', marginRight: '40px' }}>MWh</span>               
 
 
                 <span style={{ marginLeft: 'auto' }}>
-
                     <Tooltip placement="rightTop" tooltipColor="red" title="prompt text" key="green" overlayInnerStyle={{ backgroundColor: "black" }} overlayStyle={{ border: "red" }}>
                         <IoInformationCircleOutline />
                     </Tooltip>
@@ -297,12 +288,12 @@ export default function SiteView() {
                 <div style={{  flex: '0 0 50%' , marginRight: '0px', 
                 border: '0px solid red',
                  overflow: 'hidden' }}> {/* Border color for the first child div */}
-                    <Chart1 />
+                    <Chart1 dateString={dateString} unitoftime={selectedLabel}/>
                 </div>
                 <div style={{ flex: '0 0 50%' ,marginLeft: '0px', 
                 border: '0px solid blue', 
                 overflow: 'hidden' }}> {/* Border color for the second child div */}
-                    <Chart2 />
+                    <Chart2 dateString={dateString} unitoftime={selectedLabel}/>
                 </div>
             </div>
 
