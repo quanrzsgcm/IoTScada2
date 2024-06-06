@@ -3,7 +3,7 @@ curl -X PUT 'http://localhost:8080/api/2/policies/my.test:policy' -u 'ditto:ditt
 curl -X PUT 'http://159.223.78.150:8080/api/2/policies/my.test:policy' -u 'ditto:ditto' -H 'Content-Type: application/json' -d @policy.json
 
 CREATE THINGS
-curl -X PUT 'http://159.223.78.150:8080/api/2/things/my.inverter:inv1' -u 'ditto:ditto' -H 'Content-Type: application/json' -d @inverter.json
+curl -X DELETE 'http://159.223.78.150:8080/api/2/things/my.inverter:inv4' -u 'ditto:ditto' -H 'Content-Type: application/json' -d @inverter.json
 curl -X PUT 'http://159.223.78.150:8080/api/2/things/my.ws:ws1' -u 'ditto:ditto' -H 'Content-Type: application/json' -d @weatherstation.json
 curl -X PUT 'http://159.223.78.150:8080/api/2/things/my.threshold:th1' -u 'ditto:ditto' -H 'Content-Type: application/json' -d @threshold.json
 curl -X PUT 'http://159.223.78.150:8080/api/2/things/my.site:site1' -u 'ditto:ditto' -H 'Content-Type: application/json' -d @threshold.json

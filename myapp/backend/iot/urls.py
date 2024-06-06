@@ -22,6 +22,7 @@ urlpatterns = [
     path('my-api/invertercontrol/', views.inverter_control),
     path('my-api/invertercount/', views.inverter_count),
     path('my-api/inverterlist/', views.inverter_list),
+    path('my-api/inverterlist2/', views.inverter_list2),
     path('my-api/invertergetpr/', views.inverter_control_get_polling_rate),
     path('my-api/sse/', views.sse_stream),
 ]

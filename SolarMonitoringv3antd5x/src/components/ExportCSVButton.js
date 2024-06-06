@@ -6,18 +6,17 @@ const ExportCSVButton = ({ data }) => {
   const headers = [
     // Define headers for your CSV file
     { label: 'Name', key: 'name' },
-    { label: 'Label', key: 'label' },
-    { label: 'Stage', key: 'stage' },
-
-    // { label: 'Stage Start On', key: 'stage_start_on' },
-    // { label: 'Stage Duration', key: 'stage_duration' },
-    // { label: 'Meter-read Total Energy', key: 'meter_read_total_energy' },
-    // { label: 'Active Power', key: 'active_power' },
-    // { label: 'Input Power', key: 'input_power' },
-    // { label: 'Efficiency', key: 'efficiency' },
+    { label: 'Label', key: 'labels' },
+    { label: 'Stage', key: 'state' },
+    { label: 'Stage Start On', key: 'stageStartOn' },
+    { label: 'Stage Duration', key: 'duration' },
+    { label: 'Meter-read Total Energy', key: 'meterReadTotalEnergy' },
+    { label: 'Active Power', key: 'activePower' },
+    { label: 'Input Power', key: 'inputPower' },
+    { label: 'Efficiency', key: 'efficiency' },
     // { label: 'Grid Freq.', key: 'grid_freq' },
-    // { label: 'Production Today', key: 'production_today' },
-    // { label: 'Yield Today', key: 'yield_today' },
+    { label: 'Production Today', key: 'productionToday' },
+    { label: 'Yield Today', key: 'yieldToday' },
 
   ];
 

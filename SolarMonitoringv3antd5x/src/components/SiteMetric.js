@@ -24,7 +24,7 @@ overflow: 'hidden', height: `calc(100%/4)`, justifyContent: 'flex-start' }}>
   <div style={{ 
     // border: '1px solid red', 
     flex: 4, display: 'flex', alignItems: 'center' }}>
-    <span style={{color: "white", fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginLeft: '10px'}}>Production</span>
+    <span style={{color: "white", fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginLeft: '50px'}}>Production</span>
   </div>
   <div style={{ 
     // border: '1px solid yellow', 
@@ -43,7 +43,7 @@ overflow: 'hidden', height: `calc(100%/4)`, justifyContent: 'flex-start' }}>
   <div style={{ 
     // border: '1px solid red', 
     flex: 4, display: 'flex', alignItems: 'center' }}>
-    <span style={{color: "white", fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginLeft: '10px'}}>Yield</span>
+    <span style={{color: "white", fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginLeft: '50px'}}>Yield</span>
   </div>
   <div style={{ 
     // border: '1px solid yellow', 
@@ -62,7 +62,7 @@ overflow: 'hidden', height: `calc(100%/4)`, justifyContent: 'flex-start' }}>
   <div style={{ 
     // border: '1px solid red', 
     flex: 4, display: 'flex', alignItems: 'center' }}>
-    <span style={{color: "white", fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginLeft: '10px'}}>Revenue</span>
+    <span style={{color: "white", fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginLeft: '50px'}}>Revenue</span>
   </div>
   <div style={{ 
     // border: '1px solid yellow',
@@ -81,7 +81,7 @@ overflow: 'hidden', height: `calc(100%/4)`, justifyContent: 'flex-start' }}>
   <div style={{ 
     // border: '1px solid red', 
     flex: 4, display: 'flex', alignItems: 'center' }}>
-    <span style={{color: "white", fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginLeft: '10px'}}>CO<sub style={{ fontSize: 'smaller' }}>2</sub>
+    <span style={{color: "white", fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginLeft: '50px'}}>CO<sub style={{ fontSize: 'smaller' }}>2</sub>
     <span style={{ marginLeft: '5px' }}>Reduction</span></span>
   </div>
   <div style={{ 

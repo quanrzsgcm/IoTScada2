@@ -1928,6 +1928,48 @@ def inverter_list(request):
 
     return JsonResponse(data, safe=False)
 
+def inverter_list2(request): 
+    # Retrieve the base URL from the environment
+    target_url = os.getenv("BASE_URL_DITTO")  
+    target_url = target_url + '/api/2/search/things?namespaces=my.inverter&option=size(200)'   
+    print("Target URL:", target_url)
+
+    username = os.getenv("USERNAME")
+    password = os.getenv("PASSWORD")
+
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Basic ' + b64encode((username + ':' + password).encode()).decode('utf-8'),
+    }
+
+    # Forward the request to the target URL with authentication headers
+    response = requests.get(target_url, headers=headers)
+
+    data = response.json()
+    # Pretty print the JSON data
+    pretty_data = json.dumps(data, indent=4)
+    print(pretty_data)
+    
+    # Print the pretty JSON to the console
+    result = []
+
+    for item in data['items']:
+        parts = item['thingId'].split(":")
+        number = parts[1][3:]
+        number = int(number)
+        print(number)
+
+        new_entry = {
+            'inverter' : item['attributes']['name'],
+            'production': item['features']['measurements']['properties']['productionToday'],
+            'yield' : item['features']['measurements']['properties']['yieldToday']
+        }
+
+        result.append(new_entry)            
+
+    return JsonResponse(result, safe=False)
+
+
 def refresh_token():
     # Retrieve the base URL from the environment
     target_url = os.getenv("BASE_URL_NEURON")  
