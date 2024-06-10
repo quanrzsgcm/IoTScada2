@@ -1,4 +1,39 @@
 # Readme.md
+
+## Source code structure
+
+### `SolarMonitoringv3antd5x` folder
+(Folder `SolarMonitoring`and`SolarMonitoringv2` is old version, we dont use them anymore )
+This folder contain React source code
+The `deploy.sh` is used to build the code to static files, then transfer them to a VPS and use `nginx` to serve those files on the VPS. 
+The whole React app is using Routing (URL) from `SolarMonitoringv3antd5x/src/App.js`
+ `<DashboardLayout` is a  React component that render Topbar and Sidebar `SolarMonitoringv3antd5x/src/layouts/DashboardLayout.js`
+ 
+ ### `myapp/backend` folder
+ This folder is the main backend project using Django. A Django `project` is divided into smaller folders called `App`.
+ The settings for the whole Django project is in file `myapp/backend/backend/settings.py`
+ 
+ `myapp/backend/iot` folder is an App for IoT related HTTP request processing.  For example: 
+ - Get list of inverters
+ - Get time-series data of inverters
+     
+	 
+ `myapp/backend/myadmin` folder is an App for admin related HTTP request processing. In this project the admin app is used for settings the sites: 
+ - Create inverters/ Delete inverters
+ - Manage connections (Ditto - Django)
+ 
+### `ditto_related` folder
+This folder contains source code and commands (cURL) to interact with Ditto. 
+
+MQTT example: 
+https://github.com/eclipse-ditto/ditto-examples/tree/master/mqtt-quick-introduction
+
+HTTP API:
+https://eclipse.dev/ditto/http-api-doc.html
+
+Go to https://github.com/eclipse-ditto/ditto-examples to see more examples with Ditto
+
+
 ## Deployment
 Deploy in a Linux machine
 ### Ditto
@@ -15,11 +50,7 @@ To stop Ditto:
 More info in deployment:
 https://github.com/eclipse-ditto/ditto/tree/master/deployment/docker
 
-MQTT example: 
-https://github.com/eclipse-ditto/ditto-examples/tree/master/mqtt-quick-introduction
 
-HTTP API:
-https://eclipse.dev/ditto/http-api-doc.html
 
 
 ### React - Frontend
@@ -65,6 +96,7 @@ First go to `myapp` folder:
 `(venv) $ pip install -r requirements.txt` 
 This detects the change, upgrades the package, and leaves everything else alone.
 
+By default Django use SQLite database, to change that to Postgres, I've edit the `settings.py` file
 Then to run Django:
 `(venv) $ cd backend`
 `(venv) $ python manage.py runserver`
