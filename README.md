@@ -1,4 +1,4 @@
-# Readme.md
+# README.md
 
 ## Source code structure
 
